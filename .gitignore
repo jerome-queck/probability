@@ -1,0 +1,37 @@
+# macOS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Env / secrets
+.env
+.env.*
+*.local
+
+# Private course and learning material
+*.[pP][dD][fF]
+*.ppt
+*.pptx
+*.doc
+*.docx
+/course-materials/
+/private-notes/
+/student-data/
+
+# Generated site output and installed dependencies
+/node_modules/
+/dist/
+/.sites-runtime/
+/.sites-checkout/
+*.tar.gz
+
+# Source handouts and private extracts never enter this tree
+/sources-private/
+*.txt.private
+# Verification evidence and audit trails stay local unless a reviewer needs them
+/artifacts/
+/.audit/
+/.verify-run/
