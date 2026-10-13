@@ -49,11 +49,12 @@ Every browser command fails if the page logs a console error or throws.
 dir, then for every state in `features/smoke.json` and every width it lists (default both
 `desktop` 1280×800 and `mobile` 390×844) it: drives the state in real headless Chrome through
 Playwright (click, hover, focus, keyboard, typing, sliders), checks the text (`expect`), elements that must be hidden (`expectHidden`) and the expected route,
-checks rendering — no horizontal overflow, no display formula wider than its box (clipped math), no KaTeX errors, KaTeX fonts loaded, all text in the
+checks rendering — no horizontal overflow, no display formula wider than its box (clipped math), no inline formula leaving a scrap (under 40px) alone on a new line, no KaTeX errors, KaTeX fonts loaded, all text in the
 bundled Inter / Source Serif 4 faces, WCAG contrast (4.5:1, or 3:1 for large text) — saves a
-full-page screenshot and ARIA snapshot to `artifacts/visual/<feature>/<state>.<width>.png`, and
+full-page screenshot and ARIA snapshot to `artifacts/smoke/<feature>/<state>.<width>.png`, and
 compares the screenshot with `baselines/<feature>/<state>.<width>.png` (pixelmatch, threshold
-0.1, at most 0.2% of pixels may differ; a diff image is written next to the screenshot).
+0.03, at most 0.2% of pixels may differ; a diff image is written next to the screenshot).
+After the states it sweeps every lesson page plus Practice and Reference at both widths with the same rendering checks (no screenshots), so a clipped or orphaned formula on a page without a smoke state still fails.
 `--only <feature>/<state>` limits the run.
 
 **Look at the screenshots.** A verifier opens the PNGs for every state the change touches (and a
@@ -67,7 +68,7 @@ in the PR evidence. A new feature or state needs new entries in `smoke.json`, th
 
 ## Evidence
 
-Save to `artifacts/<feature>/` (git-ignored). CI uploads `artifacts/` as the `verify-evidence`
+Save to `artifacts/<feature>/` (git-ignored). CI uploads `artifacts/smoke/` (screenshots, ARIA snapshots, diff images) as the `smoke-evidence`
 artifact on every run; the PR’s “Verify evidence” line links to that run and lists the
 screenshots a human or verifier looked at. A proof shows the
 action and the resulting state: the route and heading after a click, the lab result text after a

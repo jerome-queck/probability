@@ -82,7 +82,7 @@ A PR auto-merges (squash) only when all hold:
 3. CI `check` is green on a head that is up to date with `main` (the ruleset requires it).
 4. Evidence is in the PR body (the `evidence` CI job checks the template fields): verdict and
    verified head, review record naming the reviewer, skills used with model and effort, and for
-   feature changes a link to the CI run whose `verify-evidence` artifact holds the driver run
+   feature changes a link to the CI run whose `smoke-evidence` artifact holds the driver run
    and screenshots.
 
 A new push resets 1 and 2. Force-pushes, deleting `main`, and weakening a gate need Jerome’s
