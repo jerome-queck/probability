@@ -9,6 +9,7 @@ import {
   mkdirSync,
   mkdtempSync,
   openSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -497,6 +498,50 @@ async function smoke() {
           await page.close();
         }
       }
+    }
+    // Sweep: every lesson at both widths gets the rendering checks, so a clipped or
+    // orphaned formula on a page that has no smoke state still fails.
+    if (!only) {
+      const contentDir = join(root, 'src/content');
+      const slug = (t) =>
+        t
+          .normalize('NFKD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '');
+      const all = readdirSync(contentDir)
+        .filter((f) => /^part\d+\.json$/.test(f))
+        .flatMap((f) => JSON.parse(readFileSync(join(contentDir, f), 'utf8')));
+      const routes = [
+        ...all.map((l) => `/lessons/${l.id.toLowerCase()}-${slug(l.title)}`),
+        '/practice',
+        '/reference',
+      ];
+      for (const vp of Object.keys(viewports)) {
+        const page = await browserApp.newPage({
+          viewport: viewports[vp],
+          deviceScaleFactor: 1,
+          reducedMotion: 'reduce',
+        });
+        try {
+          for (const route of routes) {
+            await page.goto(url + route, { waitUntil: 'networkidle' });
+            if (
+              (await page.locator('h1').first().innerText()) ===
+              'Page not found'
+            )
+              failures.push(`sweep ${route}@${vp}: page not found`);
+            for (const p of await renderingProblems(page))
+              failures.push(`sweep ${route}@${vp}: ${p}`);
+          }
+        } finally {
+          await page.close();
+        }
+      }
+      console.log(
+        `sweep: ${routes.length} pages checked at ${Object.keys(viewports).length} widths`,
+      );
     }
   } finally {
     try {

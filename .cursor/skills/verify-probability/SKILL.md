@@ -53,7 +53,8 @@ checks rendering — no horizontal overflow, no display formula wider than its b
 bundled Inter / Source Serif 4 faces, WCAG contrast (4.5:1, or 3:1 for large text) — saves a
 full-page screenshot and ARIA snapshot to `artifacts/smoke/<feature>/<state>.<width>.png`, and
 compares the screenshot with `baselines/<feature>/<state>.<width>.png` (pixelmatch, threshold
-0.1, at most 0.2% of pixels may differ; a diff image is written next to the screenshot).
+0.03, at most 0.2% of pixels may differ; a diff image is written next to the screenshot).
+After the states it sweeps every lesson page plus Practice and Reference at both widths with the same rendering checks (no screenshots), so a clipped or orphaned formula on a page without a smoke state still fails.
 `--only <feature>/<state>` limits the run.
 
 **Look at the screenshots.** A verifier opens the PNGs for every state the change touches (and a
