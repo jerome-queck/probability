@@ -58,6 +58,15 @@ export function keepShortTail(input: string): string {
       i++;
       continue;
     }
+    // \left…\right never breaks inside, so it counts as one level of nesting.
+    const lr = /^\\(left|right)(?![a-zA-Z])\s*(\\[{}|]|\\[a-zA-Z]+|.)/.exec(
+      latex.slice(i),
+    );
+    if (lr) {
+      depth += lr[1] === 'left' ? 1 : -1;
+      i += lr[0].length - 1;
+      continue;
+    }
     if (c === '{' || c === '(' || c === '[') depth++;
     else if (c === '}' || c === ')' || c === ']') depth--;
     else if (depth === 0) {

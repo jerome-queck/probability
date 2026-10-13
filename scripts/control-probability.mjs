@@ -537,6 +537,12 @@ async function smoke() {
               'Page not found'
             )
               failures.push(`sweep ${route}@${vp}: page not found`);
+            // Open answers and hints too, so their maths is checked as well.
+            const show = page.getByRole('button', {
+              name: /^Show (answer|a hint|another hint)/,
+            });
+            for (let n = 0; n < 60 && (await show.count()); n++)
+              await show.first().click();
             for (const p of await renderingProblems(page))
               failures.push(`sweep ${route}@${vp}: ${p}`);
           }

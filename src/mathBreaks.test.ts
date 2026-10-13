@@ -38,3 +38,31 @@ test('products in brackets, \\big brackets and a long last factor stay whole', (
   );
   assert.equal(keepShortTail('\\left(a+b\\right)'), '\\left(a+b\\right)');
 });
+
+test('sized and \\left…\\right delimiters still parse', () => {
+  assert.equal(keepShortTail('\\bigl(n-k\\bigr)'), '\\bigl({n-k}\\bigr)');
+  assert.equal(
+    keepShortTail('\\left\\{a+b+c\\right\\}'),
+    '\\left\\{a+b+c\\right\\}',
+  );
+});
+
+test('every formula in the lessons still renders after grouping', async () => {
+  const { readdirSync, readFileSync } = await import('node:fs');
+  const katex = (await import('katex')).default;
+  const dir = new URL('./content/', import.meta.url);
+  const strings: string[] = [];
+  const walk = (v: unknown): void => {
+    if (typeof v === 'string') strings.push(v);
+    else if (v && typeof v === 'object') Object.values(v).forEach(walk);
+  };
+  for (const file of readdirSync(dir).filter((f) => /^part\d+\.json$/.test(f)))
+    walk(JSON.parse(readFileSync(new URL(file, dir), 'utf8')));
+  let count = 0;
+  for (const text of strings)
+    for (const m of text.matchAll(/\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]/g)) {
+      katex.renderToString(keepShortTail(m[1] ?? m[2]), { throwOnError: true });
+      count++;
+    }
+  assert.ok(count > 50, `only ${count} formulas found`);
+});
