@@ -1,0 +1,41 @@
+{
+  "name": "probability",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "preview": "vite preview --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "format:check": "biome format .",
+    "lint": "biome lint .",
+    "test": "node --test src/math/*.test.ts src/content/*.test.ts scripts/*.test.mjs",
+    "check:forbidden": "node scripts/check-forbidden.mjs",
+    "check:content": "node scripts/check-content.mjs",
+    "check:drift": "node scripts/check-drift.mjs",
+    "check:rules": "node scripts/check-rule-table.mjs",
+    "smoke": "node scripts/control-probability.mjs smoke",
+    "check": "npm run check:forbidden && npm run check:content && npm run check:drift && npm run check:rules && npm run typecheck && npm run lint && npm run format:check && npm test && npm run build && npm run smoke",
+    "check:evidence": "node scripts/check-evidence.mjs"
+  },
+  "dependencies": {
+    "katex": "^0.18.10",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
+    "@types/katex": "^0.16.8",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@typescript/typescript6": "^6.0.2",
+    "playwright-core": "^1.64.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4"
+  }
+}

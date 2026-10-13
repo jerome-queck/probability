@@ -1,0 +1,135 @@
+[
+  {
+    "id": "F01",
+    "title": "Sample spaces and events",
+    "cluster": "Foundations",
+    "question": "How do we describe an uncertain experiment precisely enough to reason about it?",
+    "prerequisites": [],
+    "summary": "An experiment is modelled by the set \\(S\\) of all its possible outcomes. Events are subsets of \\(S\\), so the language of sets becomes the language of “or”, “and” and “not”.",
+    "intuition": "Before asking how likely something is, write down everything that could happen. Each question about the experiment then picks out a subset of that list.",
+    "definition": [
+      "The sample space \\(S\\) of an experiment is the set of all possible outcomes. An event is a subset \\(E\\subseteq S\\); we say \\(E\\) occurs when the outcome lies in \\(E\\).",
+      "For events \\(E,F\\): the union \\(E\\cup F\\) occurs when at least one occurs; the intersection \\(EF=E\\cap F\\) occurs when both occur; the complement \\(E^c=S\\setminus E\\) occurs when \\(E\\) does not. Events with \\(EF=\\varnothing\\) are mutually exclusive.",
+      "Rolling one die gives \\(S=\\{1,2,3,4,5,6\\}\\); the event “even” is \\(\\{2,4,6\\}\\). Measuring a lifetime in hours gives \\(S=[0,\\infty)\\), an uncountable sample space."
+    ],
+    "theorem": "For any events \\(E_1,\\dots,E_n\\), De Morgan’s laws hold: \\[\\Big(\\bigcup_{i=1}^n E_i\\Big)^c=\\bigcap_{i=1}^n E_i^c,\\qquad \\Big(\\bigcap_{i=1}^n E_i\\Big)^c=\\bigcup_{i=1}^n E_i^c.\\] Union and intersection are also commutative, associative and distribute over each other: \\((E\\cup F)G=EG\\cup FG\\) and \\(EF\\cup G=(E\\cup G)(F\\cup G)\\).",
+    "hypotheses": [
+      "All events are subsets of the same sample space \\(S\\); complements are taken inside \\(S\\).",
+      "The laws hold for any finite collection, and the same proof works for countably many events."
+    ],
+    "proof": [
+      "Take an outcome \\(s\\). It lies in \\(\\big(\\bigcup_i E_i\\big)^c\\) exactly when it lies in none of the \\(E_i\\).",
+      "Lying in none of the \\(E_i\\) means lying in every complement \\(E_i^c\\), that is, in \\(\\bigcap_i E_i^c\\). The two sets have the same members, so they are equal.",
+      "Apply the first law to the events \\(E_i^c\\) and take complements of both sides; since \\((E^c)^c=E\\), this gives the second law. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "Two coins are tossed. Let \\(A\\) be “at least one head” and \\(B\\) be “the coins match”. Describe \\(A^c\\), \\(AB\\) and \\((A\\cup B)^c\\).",
+      "steps": [
+        "List outcomes: \\(S=\\{HH,HT,TH,TT\\}\\). Then \\(A=\\{HH,HT,TH\\}\\) and \\(B=\\{HH,TT\\}\\).",
+        "\\(A^c=\\{TT\\}\\): no heads at all. \\(AB=\\{HH\\}\\): at least one head and matching.",
+        "\\(A\\cup B=S\\), so \\((A\\cup B)^c=\\varnothing\\). Check with De Morgan: \\(A^cB^c=\\{TT\\}\\cap\\{HT,TH\\}=\\varnothing\\)."
+      ],
+      "conclusion": "\\(A^c=\\{TT\\}\\), \\(AB=\\{HH\\}\\) and \\((A\\cup B)^c=\\varnothing\\)."
+    },
+    "practice": {
+      "prompt": "Show that for any events \\(E\\) and \\(F\\), the sets \\(EF\\) and \\(EF^c\\) are mutually exclusive and their union is \\(E\\).",
+      "hints": [
+        "Intersect the two sets and use \\(FF^c=\\varnothing\\).",
+        "Use the distributive law on \\(E(F\\cup F^c)\\)."
+      ],
+      "answer": "\\((EF)(EF^c)=E(FF^c)=E\\varnothing=\\varnothing\\), so they are mutually exclusive. And \\(EF\\cup EF^c=E(F\\cup F^c)=ES=E\\)."
+    },
+    "caution": "An event is a set of outcomes, not a single outcome. “The die shows 3” is the event \\(\\{3\\}\\), and the empty set is a legitimate event that never occurs.",
+    "bridge": "Once events are sets, a probability is a function that assigns numbers to sets. The next lesson lists the rules that function must obey.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 2 (sample space and events)."
+  },
+  {
+    "id": "F02",
+    "title": "The axioms of probability",
+    "cluster": "Foundations",
+    "question": "Which few rules must every probability assignment obey, and what follows from them?",
+    "prerequisites": [
+      "F01"
+    ],
+    "summary": "Three axioms (non-negativity, total mass one, countable additivity) are enough to derive the complement rule, monotonicity and inclusion–exclusion.",
+    "intuition": "Think of probability as one unit of mass spread over the sample space. Mass is never negative, it all lies somewhere in \\(S\\), and the mass of disjoint pieces adds up.",
+    "definition": [
+      "A probability on \\(S\\) assigns a number \\(P(E)\\) to each event so that: (1) \\(0\\le P(E)\\le 1\\); (2) \\(P(S)=1\\); (3) for mutually exclusive events \\(E_1,E_2,\\dots\\), \\(P\\big(\\bigcup_{i\\ge1}E_i\\big)=\\sum_{i\\ge1}P(E_i)\\).",
+      "Axiom 3 is called countable additivity. Taking all but finitely many \\(E_i\\) empty gives finite additivity, once we know \\(P(\\varnothing)=0\\)."
+    ],
+    "theorem": "For all events \\(E,F\\): \\(P(\\varnothing)=0\\); \\(P(E^c)=1-P(E)\\); if \\(E\\subseteq F\\) then \\(P(E)\\le P(F)\\); and \\[P(E\\cup F)=P(E)+P(F)-P(EF).\\] More generally (inclusion–exclusion) \\(P\\big(\\bigcup_{i=1}^nE_i\\big)=\\sum_i P(E_i)-\\sum_{i<j}P(E_iE_j)+\\sum_{i<j<k}P(E_iE_jE_k)-\\cdots+(-1)^{n+1}P(E_1\\cdots E_n)\\).",
+    "hypotheses": [
+      "The additivity step needs the pieces to be mutually exclusive; that is why each proof first splits sets into disjoint parts.",
+      "Only the three axioms are used, so the results hold for every probability, whether or not outcomes are equally likely."
+    ],
+    "proof": [
+      "Take \\(E_1=S\\) and \\(E_i=\\varnothing\\) for \\(i\\ge2\\). Axiom 3 gives \\(P(S)=P(S)+\\sum_{i\\ge2}P(\\varnothing)\\), and the sum of non-negative equal terms is finite only if \\(P(\\varnothing)=0\\).",
+      "\\(E\\) and \\(E^c\\) are disjoint with union \\(S\\), so \\(1=P(S)=P(E)+P(E^c)\\).",
+      "If \\(E\\subseteq F\\), then \\(F=E\\cup E^cF\\) with the two pieces disjoint, so \\(P(F)=P(E)+P(E^cF)\\ge P(E)\\).",
+      "Write \\(E\\cup F=E\\cup E^cF\\) (disjoint) and \\(F=EF\\cup E^cF\\) (disjoint). Then \\(P(E\\cup F)=P(E)+P(E^cF)\\) and \\(P(E^cF)=P(F)-P(EF)\\); substitute.",
+      "The general formula follows by induction on \\(n\\), applying the two-set rule to \\(\\big(\\bigcup_{i<n}E_i\\big)\\cup E_n\\) and distributing \\(E_n\\) over the union. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "In a group, 60% read news online, 45% listen to podcasts and 25% do both. What fraction does neither?",
+      "steps": [
+        "Let \\(N\\) be “reads online”, \\(Q\\) “listens to podcasts”. Then \\(P(N\\cup Q)=0.60+0.45-0.25=0.80\\).",
+        "“Neither” is \\((N\\cup Q)^c=N^cQ^c\\), so its probability is \\(1-0.80\\)."
+      ],
+      "conclusion": "20% do neither."
+    },
+    "practice": {
+      "prompt": "Prove Boole’s inequality \\(P(E\\cup F\\cup G)\\le P(E)+P(F)+P(G)\\) from the axioms.",
+      "hints": [
+        "Start from the two-set formula: \\(P(A\\cup B)\\le P(A)+P(B)\\) because \\(P(AB)\\ge0\\).",
+        "Apply it twice, with \\(A=E\\cup F\\) and \\(B=G\\)."
+      ],
+      "answer": "From \\(P(A\\cup B)=P(A)+P(B)-P(AB)\\) and \\(P(AB)\\ge0\\) we get \\(P(A\\cup B)\\le P(A)+P(B)\\). Hence \\(P(E\\cup F\\cup G)\\le P(E\\cup F)+P(G)\\le P(E)+P(F)+P(G)\\)."
+    },
+    "caution": "Adding probabilities is only valid for mutually exclusive events. For overlapping events, \\(P(E)+P(F)\\) counts the overlap twice and can even exceed 1.",
+    "bridge": "When the sample space is finite and all outcomes are equally likely, the axioms reduce probability to counting, which is the subject of the next chapter.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 2 (axioms of probability; some simple propositions)."
+  },
+  {
+    "id": "F03",
+    "title": "Equally likely outcomes",
+    "cluster": "Foundations",
+    "question": "When every outcome is equally likely, how does probability become a counting problem?",
+    "prerequisites": [
+      "F02"
+    ],
+    "summary": "If \\(S\\) is finite and each outcome has the same probability, then \\(P(E)=|E|/|S|\\). The hard part moves to counting \\(E\\) and \\(S\\) in the same way.",
+    "intuition": "With \\(N\\) equally likely outcomes, each carries mass \\(1/N\\). An event’s probability is just the share of outcomes it contains.",
+    "definition": [
+      "A finite sample space \\(S=\\{s_1,\\dots,s_N\\}\\) has equally likely outcomes when \\(P(\\{s_i\\})=1/N\\) for every \\(i\\).",
+      "Write \\(|E|\\) for the number of outcomes in \\(E\\)."
+    ],
+    "theorem": "If \\(S\\) is finite with equally likely outcomes, then for every event \\(E\\), \\[P(E)=\\frac{|E|}{|S|}.\\]",
+    "hypotheses": [
+      "The outcomes in your list must really be equally likely. Describing two dice by their sum gives eleven outcomes that are not equally likely.",
+      "Count \\(E\\) and \\(S\\) in the same model: if order matters in \\(S\\), it must matter in \\(E\\)."
+    ],
+    "proof": [
+      "Each axiom is satisfied by \\(P(\\{s_i\\})=1/N\\) extended by additivity, and additivity forces this extension.",
+      "An event \\(E\\) is the disjoint union of its \\(|E|\\) single-outcome events, so finite additivity gives \\(P(E)=\\sum_{s\\in E}1/N=|E|/N\\). \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "Two fair dice are rolled. What is the probability that the sum is 7?",
+      "steps": [
+        "Model the dice as distinguishable: \\(S=\\{(i,j):1\\le i,j\\le 6\\}\\), with \\(|S|=36\\) equally likely pairs.",
+        "The event is \\(\\{(1,6),(2,5),(3,4),(4,3),(5,2),(6,1)\\}\\), with 6 outcomes."
+      ],
+      "conclusion": "\\(P(\\text{sum}=7)=6/36=1/6\\)."
+    },
+    "practice": {
+      "prompt": "A fair coin is tossed four times. Find the probability of exactly two heads.",
+      "hints": [
+        "Use ordered sequences of H and T as outcomes. How many are there?",
+        "Count the sequences with heads in exactly two of the four positions."
+      ],
+      "answer": "There are \\(2^4=16\\) equally likely sequences, and \\(\\binom42=6\\) have exactly two heads, so the probability is \\(6/16=3/8\\)."
+    },
+    "caution": "Combining data can reverse a comparison (Simpson’s paradox): a treatment can have the higher success rate in every subgroup yet the lower rate overall, because the groups have different sizes. Compare like with like before reading off a ratio.",
+    "bridge": "Counting \\(|E|\\) quickly needs systematic tools: the multiplication principle, permutations and combinations.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 2 (sample spaces having equally likely outcomes)."
+  }
+]
