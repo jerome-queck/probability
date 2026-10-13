@@ -921,6 +921,7 @@ main {
   height: 6px;
   border-radius: 999px;
   background: #ece7db;
+  box-shadow: inset 0 0 0 1px #8a8273;
   overflow: hidden;
 }
 .chapter-progress-bar span {

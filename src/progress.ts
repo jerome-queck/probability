@@ -4,6 +4,8 @@ export type Verdict = 'got-it' | 'review';
 export type Progress = {
   studied: string[];
   practice: Record<string, Verdict>;
+  /** Set when the last change could not be written to this browser's storage. */
+  unsaved?: true;
 };
 
 const key = 'probability.progress.v1';
@@ -26,22 +28,59 @@ export function parseProgress(raw: string | null): Progress {
 
 type Listener = () => void;
 const listeners = new Set<Listener>();
-let snapshot: Progress = (() => {
+function readStored(): Progress | null {
   try {
     return parseProgress(localStorage.getItem(key));
   } catch {
-    return empty;
+    return null;
   }
-})();
+}
+let snapshot: Progress = readStored() ?? empty;
+const notify = () => {
+  for (const listener of listeners) listener();
+};
 
-function save(next: Progress) {
-  snapshot = next;
+// Another tab changed progress: take its value so this tab never writes over it.
+if (typeof window !== 'undefined')
+  window.addEventListener('storage', (event) => {
+    if (event.key !== key) return;
+    snapshot = parseProgress(event.newValue);
+    notify();
+  });
+
+// Read-modify-write against storage, so a change made in another tab is kept.
+function update(change: (current: Progress) => Progress) {
+  const { unsaved: _, ...current } = readStored() ?? snapshot;
+  const next = change(current);
   try {
     localStorage.setItem(key, JSON.stringify(next));
+    snapshot = next;
   } catch {
-    // Progress still works for this visit when storage is blocked.
+    // Storage is blocked or full: keep the change for this visit and say it was not saved.
+    snapshot = { ...next, unsaved: true };
   }
-  for (const listener of listeners) listener();
+  notify();
+}
+
+export function toggleStudiedIn(progress: Progress, id: string): Progress {
+  return {
+    ...progress,
+    studied: progress.studied.includes(id)
+      ? progress.studied.filter((item) => item !== id)
+      : [...progress.studied, id],
+  };
+}
+
+/** Choosing the verdict that is already set clears it. */
+export function setVerdictIn(
+  progress: Progress,
+  id: string,
+  verdict: Verdict,
+): Progress {
+  const practice = { ...progress.practice };
+  if (practice[id] === verdict) delete practice[id];
+  else practice[id] = verdict;
+  return { ...progress, practice };
 }
 
 export const progressStore = {
@@ -51,16 +90,10 @@ export const progressStore = {
   },
   getSnapshot: () => snapshot,
   toggleStudied(id: string) {
-    const has = snapshot.studied.includes(id);
-    save({
-      ...snapshot,
-      studied: has
-        ? snapshot.studied.filter((item) => item !== id)
-        : [...snapshot.studied, id],
-    });
+    update((current) => toggleStudiedIn(current, id));
   },
   setVerdict(id: string, verdict: Verdict) {
-    save({ ...snapshot, practice: { ...snapshot.practice, [id]: verdict } });
+    update((current) => setVerdictIn(current, id, verdict));
   },
 };
 

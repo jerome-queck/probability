@@ -254,7 +254,8 @@ function useProgress() {
 // After reading the answer the reader records how it went; "review again" problems are
 // listed first on the Practice page.
 function SelfCheck({ id }: { id: string }) {
-  const verdict = useProgress().practice[id];
+  const { practice, unsaved } = useProgress();
+  const verdict = practice[id];
   return (
     <fieldset className="self-check">
       <legend className="self-check-label">How did it go?</legend>
@@ -274,13 +275,15 @@ function SelfCheck({ id }: { id: string }) {
       >
         ↺ Review again
       </button>
-      {verdict && (
-        <span className="self-check-saved" aria-live="polite">
-          {verdict === 'got-it'
-            ? 'Saved. Nice work.'
-            : 'Saved. It will be first on the Practice page.'}
-        </span>
-      )}
+      <span className="self-check-saved" aria-live="polite">
+        {!verdict
+          ? ''
+          : unsaved
+            ? 'Not saved: this browser is blocking storage, so it lasts this visit only.'
+            : verdict === 'got-it'
+              ? 'Saved. Nice work.'
+              : 'Saved. Problems to review are listed first on the Practice page.'}
+      </span>
     </fieldset>
   );
 }

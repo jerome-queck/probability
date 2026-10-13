@@ -1,6 +1,24 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { nextUnstudied, parseProgress } from './progress.ts';
+import {
+  nextUnstudied,
+  parseProgress,
+  setVerdictIn,
+  toggleStudiedIn,
+} from './progress.ts';
+
+test('toggling and verdicts change only the lesson named and can be undone', () => {
+  const start = { studied: ['F02'], practice: { F02: 'review' as const } };
+  const marked = toggleStudiedIn(start, 'F01');
+  assert.deepEqual(marked.studied, ['F02', 'F01']);
+  assert.deepEqual(toggleStudiedIn(marked, 'F01').studied, ['F02']);
+  const judged = setVerdictIn(start, 'F01', 'got-it');
+  assert.deepEqual(judged.practice, { F02: 'review', F01: 'got-it' });
+  assert.deepEqual(setVerdictIn(judged, 'F01', 'got-it').practice, {
+    F02: 'review',
+  });
+  assert.deepEqual(start.practice, { F02: 'review' });
+});
 
 test('parseProgress tolerates missing, corrupt and foreign data', () => {
   assert.deepEqual(parseProgress(null), { studied: [], practice: {} });

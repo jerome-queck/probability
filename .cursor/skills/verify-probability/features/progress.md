@@ -8,6 +8,8 @@ Progress kept in the browser (`localStorage` key `probability.progress.v1`): les
 - `progress.sidebar` — studied lessons get a tick in the chapter list; chapter counts read “studied/total”.
 - `progress.home` — each chapter card shows a progress bar (“1 of 3 studied”); once anything is studied the main action becomes “Continue with <next unstudied lesson>”.
 - `progress.self-check` — after “Show answer”, “✓ I got it” / “↺ Review again” record a verdict; “Review again” problems are listed first on the Practice page.
+- Pressing the chosen verdict again clears it. Each change re-reads storage first and follows `storage` events, so a second tab never overwrites progress. If storage is blocked the message says “Not saved” instead of “Saved.”.
+- With every lesson studied the home action reads “Every lesson studied: start again”.
 
 ## How to get to it (user POV)
 

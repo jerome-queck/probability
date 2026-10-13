@@ -25,12 +25,9 @@ export function AtlasViews({
       : progress.practice[id] === 'got-it'
         ? 2
         : 1;
-  const continueId = progress.studied.length
-    ? nextUnstudied(
-        lessons.map((l) => l.id),
-        progress,
-      )
-    : undefined;
+  const order = lessons.map((l) => l.id);
+  const started = order.some((id) => progress.studied.includes(id));
+  const continueId = started ? nextUnstudied(order, progress) : undefined;
   if (view === 'practice')
     return (
       <div className="overview-shell">
@@ -104,7 +101,10 @@ export function AtlasViews({
               </button>
             ) : (
               <button type="button" onClick={() => open(lessons[0].id)}>
-                Begin at the beginning <span aria-hidden="true">→</span>
+                {started
+                  ? 'Every lesson studied: start again'
+                  : 'Begin at the beginning'}{' '}
+                <span aria-hidden="true">→</span>
               </button>
             )}
             <button
@@ -221,6 +221,7 @@ function ChapterProgress({ done, total }: { done: number; total: number }) {
         aria-valuemin={0}
         aria-valuemax={total}
         aria-valuenow={done}
+        aria-valuetext={`${done} of ${total} studied`}
       >
         <span style={{ width: `${(100 * done) / total}%` }} />
       </div>
