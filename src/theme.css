@@ -1069,7 +1069,7 @@ main {
 }
 @media (max-width: 520px) {
   .math-block .katex {
-    font-size: 0.95em;
+    font-size: 0.88em;
   }
   .reference-list > div {
     padding: 14px 14px;

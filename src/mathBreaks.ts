@@ -3,7 +3,7 @@
 // the next line, and a short bracket such as (n−k) torn in half. Braces make a group KaTeX
 // will not break inside, so both are wrapped in braces.
 const breakAfter =
-  /^(=|<|>|\+|-|\\(?:le|leq|ge|geq|ne|neq|approx|sim|equiv|cdot|times|pm|mp|cup|cap)(?![a-zA-Z]))/;
+  /^(=|<|>|\+|-|\\(?:le|leq|ge|geq|ne|neq|approx|sim|equiv|subseteq|subset|supseteq|supset|in|notin|to|cdot|times|pm|mp|cup|cap)(?![a-zA-Z]))/;
 
 // Wrap the inside of every bracket pair with at most 20 visible characters in braces, so the
 // bracket cannot be torn across lines. \left…\right pairs already never break.

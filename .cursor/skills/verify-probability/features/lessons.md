@@ -13,6 +13,7 @@ Chapters currently published (kept in sync by `check:drift`):
 
 - Foundations
 - Counting
+- Conditional probability
 
 ## How to get to it (user POV)
 
