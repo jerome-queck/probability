@@ -1,0 +1,27 @@
+---
+description: pstack per-role model choices (overrides skill defaults)
+alwaysApply: true
+---
+# pstack model configuration. One line per role. Delete a line to fall back to the skill default.
+# `inherit-parent` or `auto` as a value: the role runs on the parent chat model (omit Task `model`). Alias entries in a panel list still count toward its fan-out.
+# budget: per-role (Jerome 2026-10-14: grok-4.7 tiers only, never Claude, GPT, Gemini or Composer; the tier is the effort). Detected with `cursor-agent models`. Non-fast tiers.
+# Task subagents accept only grok-4.7-high among grok-4.7 tiers (checked in a cursor-agent session's Task allowlist), so every pstack role uses it.
+# Per-role effort is set where the tier can be chosen: the top-level verifier, reviewer and math runs (cursor-agent --model, see the repo's AGENTS.md):
+#   verifier grok-4.7-xhigh, interrogate lead grok-4.7-xhigh, math grok-4.7-xhigh, mechanical/merge work grok-4.7-medium.
+feature, refactoring: grok-4.7-high
+bug-fix: grok-4.7-high
+perf-issue: grok-4.7-high
+hillclimb: grok-4.7-high
+judgment and prose: grok-4.7-high
+hardest tasks: grok-4.7-high
+how explorer: grok-4.7-high
+how explainer: grok-4.7-high
+why investigators: grok-4.7-high
+why synthesizer: grok-4.7-high
+reflect tooling: grok-4.7-high
+reflect judgment, divergent, synthesizer: grok-4.7-high
+arena runners: grok-4.7-high, grok-4.7-high
+arena cross-judge pool: grok-4.7-high
+swarm workers: grok-4.7-high
+architect runners: grok-4.7-high, grok-4.7-high
+interrogate reviewers: grok-4.7-high, grok-4.7-high

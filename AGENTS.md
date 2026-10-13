@@ -49,11 +49,23 @@ evidence in the PR.
 
 Agents may use any pstack skill when `poteto-mode` calls for it or when they judge it is
 needed (for example `interrogate` for review, `tdd`, `create-verification-skill`,
-`maintain-verification-skill`, `correct`, `show-me-your-work`). Model and effort per role come from
-`setup-pstack`: every role runs on `grok-4.7` with a per-role effort, written to
-`.grok/rules/pstack-models.md` (Grok Build loads `.grok/rules/*.md` in every session in this
-repo; the same file is installed at `~/.grok/rules/pstack-models.md` and, for Cursor,
-`~/.cursor/rules/pstack-models.mdc`). Run a role as `grok -m grok-4.7 --effort <effort>`.
+`maintain-verification-skill`, `correct`, `show-me-your-work`). Agents run on the
+Cursor CLI (`cursor-agent`, also `agent`) with pstack installed as its Cursor plugin. Models are
+`grok-4.7` tiers only (never Claude, GPT, Gemini or Composer); the tier is the effort.
+`setup-pstack` writes `~/.cursor/rules/pstack-models.mdc` (copy in `.cursor/rules/`): pstack's
+Task subagents accept only `grok-4.7-high`, so every pstack role uses it. The review workflow
+picks its tier per role and runs each role as a fresh headless session with
+`scripts/agent-run.sh <role> <prompt-file> <out-prefix>`, always in its own git worktree:
+
+| Role | Tier | What it does |
+|---|---|---|
+| verifier | `grok-4.7-xhigh` | independent verifier using `verify-probability`; looks at the screenshots |
+| review | `grok-4.7-xhigh` | `interrogate` lead; its two reviewers run `grok-4.7-high` |
+| math | `grok-4.7-xhigh` | independent math check of lesson content against the sources |
+| chore | `grok-4.7-medium` | mechanical work: merges, baselines, PR bodies |
+
+Before each batch of sessions, check the plan usage (`/usage` in `cursor-agent`) and stop if
+on-demand spend is above $0.
 
 ## Public-content rule (hard)
 
@@ -124,10 +136,11 @@ End each run with four short parts:
 - **Couldn’t do:** anything skipped or blocked, and why.
 
 Decision trails go in `.audit/<task>.tsv` (git-ignored; pstack `show-me-your-work` format)
-with these columns: `ts, phase, decision, why, evidence, result, skills, model, effort` —
+with these columns: `ts, phase, decision, why, evidence, result, skills, runner, model, session` —
 `skills` names every pstack or repo skill invoked for that step (for example
-`poteto-mode,verify-probability`), and `model`/`effort` record what ran it (`grok-4.7`, effort
-from `.grok/rules/pstack-models.md`). The PR’s “Skills used” line summarises the same. One-way-door decisions get a short record in `docs/adr/`.
+`poteto-mode,verify-probability`), `runner` is `cursor-agent`, `model` is the tier slug that ran
+it (for example `grok-4.7-xhigh`; the tier is the effort) and `session` is the session id that
+`scripts/agent-run.sh` prints. The PR’s “Skills used” line summarises the same. One-way-door decisions get a short record in `docs/adr/`.
 
 ## Parallel agents
 
