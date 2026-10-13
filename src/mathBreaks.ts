@@ -5,12 +5,44 @@
 const breakAfter =
   /^(=|<|>|\+|-|\\(?:le|leq|ge|geq|ne|neq|approx|sim|equiv|cdot|times|pm|mp|cup|cap)(?![a-zA-Z]))/;
 
+// Wrap the inside of every bracket pair of at most 30 source characters in braces, so the
+// bracket cannot be torn across lines. \left…\right pairs already never break.
 function groupShortBrackets(latex: string): string {
-  return latex.replace(
-    /(?<!\\left|\\big|\\Big)\(([^()]{1,12})\)/g,
-    (m, inner) =>
-      inner.includes('{') || inner.includes('}') ? m : `({${inner}})`,
+  const open: number[] = [];
+  const pairs: [number, number][] = [];
+  for (let i = 0; i < latex.length; i++) {
+    const c = latex[i];
+    if (c === '\\' && /[{}()]/.test(latex[i + 1] ?? '')) {
+      i++;
+      continue;
+    }
+    if (c === '(') open.push(i);
+    else if (c === ')' && open.length) {
+      const from = open.pop() as number;
+      if (i - from - 1 <= 30 && !/\\left\s*$/.test(latex.slice(0, from)))
+        pairs.push([from, i]);
+    }
+  }
+  // Only outermost short pairs; inner ones are already inside the group.
+  const outer = pairs.filter(
+    ([a, b]) => !pairs.some(([c, d]) => c < a && b < d),
   );
+  let out = latex;
+  for (const [a, b] of outer.sort((x, y) => y[0] - x[0])) {
+    const inner = out.slice(a + 1, b);
+    let depth = 0;
+    let balanced = true;
+    for (const ch of inner.replace(/\\[{}]/g, '')) {
+      if (ch === '{') depth++;
+      if (ch === '}' && --depth < 0) balanced = false;
+    }
+    if (!balanced || depth !== 0) continue;
+    // Keep a closing size command such as \big outside the group, next to its bracket.
+    const size = /\\[bB]igg?[lr]?\s*$/.exec(inner)?.[0] ?? '';
+    const body = inner.slice(0, inner.length - size.length);
+    out = `${out.slice(0, a + 1)}{${body}}${size}${out.slice(b)}`;
+  }
+  return out;
 }
 
 const visible = (s: string) =>
@@ -37,7 +69,7 @@ export function keepShortTail(input: string): string {
     }
   }
   const last = cuts.at(-1);
-  if (last === undefined || visible(latex.slice(last)) > 6) return latex;
+  if (last === undefined || visible(latex.slice(last)) > 10) return latex;
   const from = cuts.length > 1 ? cuts[cuts.length - 2] : 0;
   return `${latex.slice(0, from)}{${latex.slice(from)}}`;
 }

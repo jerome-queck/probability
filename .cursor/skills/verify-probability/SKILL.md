@@ -49,7 +49,7 @@ Every browser command fails if the page logs a console error or throws.
 dir, then for every state in `features/smoke.json` and every width it lists (default both
 `desktop` 1280×800 and `mobile` 390×844) it: drives the state in real headless Chrome through
 Playwright (click, hover, focus, keyboard, typing, sliders), checks the text (`expect`), elements that must be hidden (`expectHidden`) and the expected route,
-checks rendering — no horizontal overflow, no display formula wider than its box (clipped math), no inline formula leaving a scrap alone on a new line, no KaTeX errors, KaTeX fonts loaded, all text in the
+checks rendering — no horizontal overflow, no display formula wider than its box (clipped math), no inline formula leaving a scrap (under 40px) alone on a new line, no KaTeX errors, KaTeX fonts loaded, all text in the
 bundled Inter / Source Serif 4 faces, WCAG contrast (4.5:1, or 3:1 for large text) — saves a
 full-page screenshot and ARIA snapshot to `artifacts/smoke/<feature>/<state>.<width>.png`, and
 compares the screenshot with `baselines/<feature>/<state>.<width>.png` (pixelmatch, threshold

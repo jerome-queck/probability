@@ -242,7 +242,7 @@ async function renderingProblems(page) {
     // on the next line.
     for (const el of document.querySelectorAll('.math-inline .katex-html')) {
       const rects = [...el.getClientRects()].filter((r) => r.width > 0);
-      if (rects.length > 1 && rects[rects.length - 1].width < 24)
+      if (rects.length > 1 && rects[rects.length - 1].width < 40)
         problems.push(
           `orphaned formula fragment: “${el.textContent.slice(-20)}” wraps alone onto a new line`,
         );

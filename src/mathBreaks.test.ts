@@ -26,3 +26,15 @@ test('long tails and relations inside groups are left alone', () => {
     'P({E})=\\sum_{i=1}^{n} q_i r_i',
   );
 });
+
+test('products in brackets, \\big brackets and a long last factor stay whole', () => {
+  assert.equal(
+    keepShortTail('(8\\cdot 7\\cdot 6)/(3\\cdot 2\\cdot 1)=336/6=56'),
+    '({8\\cdot 7\\cdot 6})/({3\\cdot 2\\cdot 1})={336/6=56}',
+  );
+  assert.equal(
+    keepShortTail('\\big(1-\\tfrac{1}{365}\\big)'),
+    '\\big({1-\\tfrac{1}{365}}\\big)',
+  );
+  assert.equal(keepShortTail('\\left(a+b\\right)'), '\\left(a+b\\right)');
+});
