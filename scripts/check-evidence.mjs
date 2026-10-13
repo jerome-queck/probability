@@ -124,7 +124,8 @@ if (touchesFeatures) {
 if (
   !/verify-probability/.test(field('Skills used')) ||
   !/grok-4\.7/.test(field('Skills used')) ||
-  !/effort|grok-4\.7-(low|medium|high|xhigh)/i.test(field('Skills used'))
+  !/grok-4\.7-(low|medium|high)\b/.test(field('Skills used')) ||
+  /xhigh/i.test(field('Skills used'))
 )
   errors.push(
     '“Skills used:” must list the skills used (at least verify-probability) with model and effort',

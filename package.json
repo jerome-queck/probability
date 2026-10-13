@@ -20,7 +20,8 @@
     "check:rules": "node scripts/check-rule-table.mjs",
     "smoke": "node scripts/control-probability.mjs smoke",
     "check": "npm run check:forbidden && npm run check:content && npm run check:drift && npm run check:rules && npm run typecheck && npm run lint && npm run format:check && npm test && npm run build && npm run smoke",
-    "check:evidence": "node scripts/check-evidence.mjs"
+    "check:evidence": "node scripts/check-evidence.mjs",
+    "check:models": "node scripts/check-models.mjs"
   },
   "dependencies": {
     "@fontsource/inter": "^5.3.0",

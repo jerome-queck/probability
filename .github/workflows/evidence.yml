@@ -8,6 +8,8 @@ on:
   # Transitional, for the PR that introduces pull_request_target only (the base branch has no
   # pull_request_target workflow yet). It still checks out the base commit, never the PR head.
   # Removed in the follow-up PR.
+  # TRANSITIONAL: only until this file is on main. The next PR after merge deletes this trigger,
+  # because a pull_request workflow comes from the PR's own tree and can be edited by that PR.
   pull_request:
     types: [opened, synchronize, reopened, edited]
 
