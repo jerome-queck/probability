@@ -173,6 +173,7 @@ a {
   display: none;
 }
 .topbar {
+  background: #f4e2e2;
   height: 65px;
   border-bottom: 1px solid #e0e5e8;
   background: #fff;
