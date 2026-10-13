@@ -18,5 +18,7 @@
   { "feature": "routing", "id": "not-found", "url": "/lessons/z99-nothing", "expect": ["Page not found"] },
   { "feature": "routing", "id": "topbar", "url": "/practice", "actions": [{ "click": { "role": "button", "name": "Reference" } }], "expectPath": "/reference" },
   { "feature": "routing", "id": "mobile-drawer-open", "url": "/", "viewports": ["mobile"], "actions": [{ "click": { "role": "button", "name": "Open lessons" } }], "expect": ["Browse by chapter"] },
-  { "feature": "routing", "id": "mobile-drawer-closed", "url": "/", "viewports": ["mobile"], "actions": [{ "click": { "role": "button", "name": "Open lessons" } }, { "press": "Escape" }] }
+  { "feature": "routing", "id": "mobile-drawer-closed", "url": "/", "viewports": ["mobile"], "actions": [{ "click": { "role": "button", "name": "Open lessons" } }, { "press": "Escape" }] },
+  {"feature": "labs", "id": "birthday-default", "url": "/lessons/c04-counting-in-action-birthdays-and-matchings#lab", "expect": ["P(at least one shared birthday)"]},
+  {"feature": "labs", "id": "birthday-moved", "url": "/lessons/c04-counting-in-action-birthdays-and-matchings#lab", "actions": [{"range": {"name": "people", "value": 40}}], "expect": ["P(at least one shared birthday)"]}
 ]

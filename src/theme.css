@@ -1004,3 +1004,5 @@ main {
     transition: none;
   }
 }
+
+/* On phones a long unbroken formula is worse than a wrap: let inline maths break. */

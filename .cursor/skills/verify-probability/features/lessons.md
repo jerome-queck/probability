@@ -12,6 +12,7 @@ Each lesson at `/lessons/<id>-<slug>` has: idea, definitions, the claim with its
 Chapters currently published (kept in sync by `check:drift`):
 
 - Foundations
+- Counting
 
 ## How to get to it (user POV)
 
