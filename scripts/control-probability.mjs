@@ -126,7 +126,9 @@ async function launch() {
     process.kill(-child.pid, 'SIGTERM');
   } catch {}
   rmSync(statePathOf(), { force: true });
-  throw new Error(`server did not answer on ${url}; see ${log}`);
+  throw new Error(
+    `server did not answer on ${url}; the server log is kept as server.log next to the screenshots (smoke) or at ${log} (launch)`,
+  );
 }
 
 function alive(pid) {
@@ -233,6 +235,15 @@ async function renderingProblems(page) {
       if (el.getClientRects().length && el.scrollWidth > el.clientWidth + 1)
         problems.push(
           `clipped display math: ${el.scrollWidth}px formula in a ${el.clientWidth}px box (“${el.textContent.slice(0, 40)}”)`,
+        );
+    }
+    // A wrapped inline formula must not leave a scrap (one symbol and its period) alone
+    // on the next line.
+    for (const el of document.querySelectorAll('.math-inline .katex-html')) {
+      const rects = [...el.getClientRects()].filter((r) => r.width > 0);
+      if (rects.length > 1 && rects[rects.length - 1].width < 24)
+        problems.push(
+          `orphaned formula fragment: “${el.textContent.slice(-20)}” wraps alone onto a new line`,
         );
     }
     if (document.querySelector('.math-error'))

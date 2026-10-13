@@ -58,31 +58,53 @@ const touchesFeatures = files.some((f) =>
 if (touchesFeatures) {
   const verify = field('Verify evidence');
   const runId = /actions\/runs\/(\d+)/.exec(verify)?.[1];
-  let hasArtifact = false;
   if (runId) {
+    // The repository is public, so the run and its artifacts are read without a token:
+    // the evidence job's token has no Actions permission.
+    const repo =
+      process.env.GITHUB_REPOSITORY ||
+      gh(
+        'repo',
+        'view',
+        '--json',
+        'nameWithOwner',
+        '-q',
+        '.nameWithOwner',
+      ).trim();
+    const api = `https://api.github.com/repos/${repo}/actions/runs/${runId}`;
     try {
-      const repo =
-        process.env.GITHUB_REPOSITORY ||
-        gh(
-          'repo',
-          'view',
-          '--json',
-          'nameWithOwner',
-          '-q',
-          '.nameWithOwner',
-        ).trim();
-      const listed = JSON.parse(
-        gh('api', `repos/${repo}/actions/runs/${runId}/artifacts`),
+      const [run, listed] = await Promise.all(
+        [api, `${api}/artifacts`].map(async (url) => {
+          const res = await fetch(url, {
+            headers: { accept: 'application/vnd.github+json' },
+          });
+          if (!res.ok) throw new Error(`${url} answered ${res.status}`);
+          return res.json();
+        }),
       );
-      hasArtifact = listed.artifacts.some(
-        (a) => a.name === 'smoke-evidence' && !a.expired && a.size_in_bytes > 0,
+      if (run.head_sha !== head)
+        errors.push(
+          `feature change: run ${runId} is for ${String(run.head_sha).slice(0, 7)}, not the PR head ${head.slice(0, 7)}`,
+        );
+      if (run.conclusion !== 'success')
+        errors.push(
+          `feature change: run ${runId} concluded “${run.conclusion}”, not success`,
+        );
+      if (
+        !listed.artifacts.some(
+          (a) =>
+            a.name === 'smoke-evidence' && !a.expired && a.size_in_bytes > 0,
+        )
+      )
+        errors.push(
+          `feature change: run ${runId} has no smoke-evidence artifact (screenshots)`,
+        );
+    } catch (error) {
+      errors.push(
+        `feature change: could not read run ${runId} from the GitHub API (${error.message})`,
       );
-    } catch {}
+    }
   }
-  if (runId && !hasArtifact)
-    errors.push(
-      `feature change: run ${runId} has no smoke-evidence artifact (screenshots); link a run that uploaded one`,
-    );
   if (!runId || !/\.png\b/.test(verify))
     errors.push(
       'feature change: “Verify evidence:” must link the CI run (…/actions/runs/<id>, artifact smoke-evidence with the driver run) and name the screenshots inspected (*.png)',

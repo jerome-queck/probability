@@ -123,7 +123,7 @@ export function App() {
         </header>
         {route.view === 'not-found' ? (
           <div className="reading-shell">
-            <h1>Page not found</h1>
+            <h1 tabIndex={-1}>Page not found</h1>
             <p>That lesson or route is unavailable.</p>
             <button type="button" onClick={() => studyStore.openView('learn')}>
               Return to the start

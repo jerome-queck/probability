@@ -976,6 +976,13 @@ main {
 .katex {
   font-size: 1.06em;
 }
+.math-nowrap .katex,
+.math-nowrap .katex-html {
+  white-space: nowrap;
+}
+.katex-display > .katex {
+  white-space: normal;
+}
 .math-block {
   display: block;
   text-align: center;
@@ -985,8 +992,11 @@ main {
   overflow-x: auto;
   overflow-y: hidden;
 }
-.math-block > .katex {
-  text-align: initial;
+.math-block .katex-display > .katex {
+  text-align: center;
+}
+.math-block .katex-display {
+  margin: 0;
 }
 .katex-display {
   overflow-x: auto;
@@ -1053,7 +1063,7 @@ main {
   }
 }
 @media (max-width: 520px) {
-  .math-block > .katex {
+  .math-block .katex {
     font-size: 0.95em;
   }
   .reference-list > div {
