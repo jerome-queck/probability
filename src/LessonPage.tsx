@@ -1,7 +1,8 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useState, useSyncExternalStore } from 'react';
 import { lessons } from './content/lessons';
 import type { Lesson } from './content/types';
 import { MathText } from './MathText';
+import { progressStore } from './progress';
 
 const Labs = lazy(() => import('./Labs'));
 
@@ -144,6 +145,7 @@ export function LessonPage({
             </p>
             <p>Explanations, proofs and examples are written for this site.</p>
           </footer>
+          <StudiedToggle id={lesson.id} />
           <nav className="lesson-pagination" aria-label="Lesson order">
             {previous && (
               <button
@@ -237,6 +239,68 @@ export function Practice({
           <MathText text={lesson.practice.answer} />
         </p>
       )}
+      {answer && <SelfCheck id={lesson.id} />}
     </section>
+  );
+}
+
+function useProgress() {
+  return useSyncExternalStore(
+    progressStore.subscribe,
+    progressStore.getSnapshot,
+  );
+}
+
+// After reading the answer the reader records how it went; "review again" problems are
+// listed first on the Practice page.
+function SelfCheck({ id }: { id: string }) {
+  const verdict = useProgress().practice[id];
+  return (
+    <fieldset className="self-check">
+      <legend className="self-check-label">How did it go?</legend>
+      <button
+        type="button"
+        className="chip"
+        aria-pressed={verdict === 'got-it'}
+        onClick={() => progressStore.setVerdict(id, 'got-it')}
+      >
+        ✓ I got it
+      </button>
+      <button
+        type="button"
+        className="chip"
+        aria-pressed={verdict === 'review'}
+        onClick={() => progressStore.setVerdict(id, 'review')}
+      >
+        ↺ Review again
+      </button>
+      {verdict && (
+        <span className="self-check-saved" aria-live="polite">
+          {verdict === 'got-it'
+            ? 'Saved. Nice work.'
+            : 'Saved. It will be first on the Practice page.'}
+        </span>
+      )}
+    </fieldset>
+  );
+}
+
+function StudiedToggle({ id }: { id: string }) {
+  const studied = useProgress().studied.includes(id);
+  return (
+    <div className={`studied-toggle ${studied ? 'done' : ''}`}>
+      <button
+        type="button"
+        aria-pressed={studied}
+        onClick={() => progressStore.toggleStudied(id)}
+      >
+        {studied ? '✓ Studied' : 'Mark this lesson as studied'}
+      </button>
+      <span>
+        {studied
+          ? 'Shown with a tick in the chapter list. Press again to undo.'
+          : 'Progress stays in this browser.'}
+      </span>
+    </div>
   );
 }

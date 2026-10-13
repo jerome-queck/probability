@@ -829,6 +829,107 @@ main {
   margin: 10px 0;
 }
 
+/* Progress and self-check */
+.studied-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+  padding: 16px 18px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.studied-toggle button {
+  border: 1px solid var(--ok);
+  color: var(--ok);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 0.5em 1.1em;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.studied-toggle button:hover {
+  background: var(--ok-soft);
+}
+.studied-toggle.done {
+  border-style: solid;
+  border-color: #b9dcc8;
+  background: var(--ok-soft);
+}
+.studied-toggle.done button {
+  background: var(--ok);
+  color: #fff;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.self-check {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-family: var(--sans);
+}
+.self-check-label {
+  float: left;
+  padding: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin-right: 4px;
+}
+.self-check .chip[aria-pressed="true"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+.self-check-saved {
+  font-size: 0.85rem;
+  color: var(--ok);
+}
+.studied-mark {
+  margin-left: auto;
+  color: #7fe0a8;
+  font-weight: 700;
+}
+.chapter-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: -2px 0 12px;
+}
+.chapter-progress small {
+  color: var(--muted);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+.chapter-progress-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: #ece7db;
+  overflow: hidden;
+}
+.chapter-progress-bar span {
+  display: block;
+  height: 100%;
+  background: var(--ok);
+  border-radius: 999px;
+}
+
 /* Labs */
 .lab {
   background: var(--surface);
