@@ -43,7 +43,7 @@ if (
   files.some((f) => f.startsWith('src/content/')) &&
   !(
     /^clean\b/i.test(field('Math review')) &&
-    /\b(grok|reviewer|session)\b/i.test(field('Math review'))
+    /grok-4\.7/i.test(field('Math review'))
   )
 )
   errors.push(
@@ -57,16 +57,68 @@ const touchesFeatures = files.some((f) =>
 );
 if (touchesFeatures) {
   const verify = field('Verify evidence');
-  if (!/actions\/runs\/\d+/.test(verify) || !/\.png\b/.test(verify))
+  const runId = /actions\/runs\/(\d+)/.exec(verify)?.[1];
+  if (runId) {
+    // The repository is public, so the run and its artifacts are read without a token:
+    // the evidence job's token has no Actions permission.
+    const repo =
+      process.env.GITHUB_REPOSITORY ||
+      gh(
+        'repo',
+        'view',
+        '--json',
+        'nameWithOwner',
+        '-q',
+        '.nameWithOwner',
+      ).trim();
+    const api = `https://api.github.com/repos/${repo}/actions/runs/${runId}`;
+    try {
+      const [run, listed] = await Promise.all(
+        [api, `${api}/artifacts`].map(async (url) => {
+          const res = await fetch(url, {
+            headers: { accept: 'application/vnd.github+json' },
+          });
+          if (!res.ok) throw new Error(`${url} answered ${res.status}`);
+          return res.json();
+        }),
+      );
+      if (run.head_sha !== head)
+        errors.push(
+          `feature change: run ${runId} is for ${String(run.head_sha).slice(0, 7)}, not the PR head ${head.slice(0, 7)}`,
+        );
+      if (run.conclusion !== 'success')
+        errors.push(
+          `feature change: run ${runId} concluded “${run.conclusion}”, not success`,
+        );
+      if (
+        !listed.artifacts.some(
+          (a) =>
+            a.name === 'smoke-evidence' && !a.expired && a.size_in_bytes > 0,
+        )
+      )
+        errors.push(
+          `feature change: run ${runId} has no smoke-evidence artifact (screenshots)`,
+        );
+    } catch (error) {
+      errors.push(
+        `feature change: could not read run ${runId} from the GitHub API (${error.message})`,
+      );
+    }
+  }
+  if (!runId || !/\.png\b/.test(verify))
     errors.push(
-      'feature change: “Verify evidence:” must link the CI run (…/actions/runs/<id>, artifact verify-evidence with the driver run) and name the screenshots inspected (*.png)',
+      'feature change: “Verify evidence:” must link the CI run (…/actions/runs/<id>, artifact smoke-evidence with the driver run) and name the screenshots inspected (*.png)',
     );
-  if (!/\b(grok|reviewer|session)\b/i.test(field('Review')))
+  if (!/grok-4\.7/i.test(field('Review')))
     errors.push(
-      'feature change: “Review:” must name the independent reviewer (session or model)',
+      'feature change: “Review:” must name the independent reviewer and its model (grok-4.7)',
     );
 }
-if (!/verify-probability/.test(field('Skills used')))
+if (
+  !/verify-probability/.test(field('Skills used')) ||
+  !/grok-4\.7/.test(field('Skills used')) ||
+  !/effort/i.test(field('Skills used'))
+)
   errors.push(
     '“Skills used:” must list the skills used (at least verify-probability) with model and effort',
   );
