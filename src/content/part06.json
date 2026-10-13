@@ -1,0 +1,260 @@
+[
+  {
+    "id": "J01",
+    "title": "Joint distributions",
+    "cluster": "Joint distributions",
+    "question": "How do we describe the simultaneous behaviour of two or more random variables?",
+    "prerequisites": [
+      "D01",
+      "R01"
+    ],
+    "summary": "The joint distribution records how random variables behave together. A joint cdf turns rectangle probabilities into arithmetic, a joint pmf or density is summed or integrated to recover each marginal, and the probability of a region is an integral of the joint density over that region.",
+    "intuition": "One random variable spreads probability along a line. Two random variables spread it over the plane, and the marginal of either one is what remains after you collapse that plane onto a single axis.",
+    "definition": [
+      "The joint cumulative distribution function of random variables \\(X\\) and \\(Y\\) is \\(F(a,b)=P(X\\le a,\\, Y\\le b)\\), defined for all real \\(a\\) and \\(b\\). It is the probability that the random point \\((X,Y)\\) lands in the southwest quadrant with corner \\((a,b)\\).",
+      "If \\(X\\) and \\(Y\\) are discrete, their joint probability mass function is \\(p(x,y)=P(X=x,\\, Y=y)\\). The marginal pmfs are obtained by summing out the other variable: \\(p_X(x)=\\sum_y p(x,y)\\) and \\(p_Y(y)=\\sum_x p(x,y)\\). Both sums include every value the omitted variable can take, and each marginal sums to 1.",
+      "\\(X\\) and \\(Y\\) are jointly continuous when there is a nonnegative function \\(f\\), the joint density, such that \\(P((X,Y)\\in C)=\\iint_C f(x,y)\\,dx\\,dy\\) for every region \\(C\\) for which the integral is defined, and \\(\\iint_{\\mathbb{R}^2} f=1\\). Then \\(F(a,b)=\\int_{-\\infty}^{a}\\int_{-\\infty}^{b} f(u,v)\\,dv\\,du\\), and \\(f(a,b)=\\partial^2 F/\\partial a\\,\\partial b\\) at points where the mixed partial exists. The marginal densities are \\(f_X(x)=\\int_{-\\infty}^{\\infty} f(x,y)\\,dy\\) and \\(f_Y(y)=\\int_{-\\infty}^{\\infty} f(x,y)\\,dx\\).",
+      "For random variables \\(X_1,\\dots,X_n\\) the joint cdf is \\(F(a_1,\\dots,a_n)=P(X_1\\le a_1,\\dots,X_n\\le a_n)\\). In the discrete case the joint pmf is \\(p(x_1,\\dots,x_n)=P(X_1=x_1,\\dots,X_n=x_n)\\), and a marginal pmf is a sum over the unwanted coordinates. In the jointly continuous case a nonnegative joint density on \\(\\mathbb{R}^n\\) satisfies \\(P((X_1,\\dots,X_n)\\in C)=\\int_C f\\), and the marginal density of one coordinate is the integral of \\(f\\) over the other \\(n-1\\) coordinates."
+    ],
+    "theorem": "For all real \\(a_1<a_2\\) and \\(b_1<b_2\\), \\[P(a_1<X\\le a_2,\\, b_1<Y\\le b_2)=F(a_2,b_2)-F(a_1,b_2)-F(a_2,b_1)+F(a_1,b_1).\\] The marginal cdfs are limits of the joint cdf: \\(F_X(a)=\\lim_{b\\to\\infty} F(a,b)\\) and \\(F_Y(b)=\\lim_{a\\to\\infty} F(a,b)\\). The same alternating pattern gives orthant-corner probabilities in higher dimensions. For three variables, \\[P(a_1<X\\le a_2,\\, b_1<Y\\le b_2,\\, c_1<Z\\le c_2)\\] equals \\(F(a_2,b_2,c_2)-F(a_1,b_2,c_2)-F(a_2,b_1,c_2)-F(a_2,b_2,c_1)+F(a_1,b_1,c_2)+F(a_1,b_2,c_1)+F(a_2,b_1,c_1)-F(a_1,b_1,c_1)\\).",
+    "hypotheses": [
+      "The joint cdf is the function \\(F(a,b)=P(X\\le a, Y\\le b)\\), so the rectangle formula uses strict inequalities on the lower edges and weak inequalities on the upper edges. For a jointly continuous pair the distinction does not change the probability.",
+      "A marginal density formula assumes a joint density. A marginal pmf formula assumes a joint pmf. In either case every value of the variable being removed must be included in the sum or integral.",
+      "The region integral \\(P((X,Y)\\in C)=\\iint_C f\\) uses a version of the density that is zero off the support. Limits of integration have to describe \\(C\\) intersected with that support."
+    ],
+    "proof": [
+      "Fix \\(a_1<a_2\\) and \\(b_1<b_2\\). Split \\(\\{X\\le a_2,\\, Y\\le b_2\\}\\) into four disjoint pieces: \\(A=\\{X\\le a_1,\\, Y\\le b_1\\}\\), \\(B=\\{a_1<X\\le a_2,\\, Y\\le b_1\\}\\), \\(C=\\{X\\le a_1,\\, b_1<Y\\le b_2\\}\\), and \\(D=\\{a_1<X\\le a_2,\\, b_1<Y\\le b_2\\}\\). Then \\(F(a_2,b_2)=P(A)+P(B)+P(C)+P(D)\\).",
+      "The same partition gives \\(F(a_1,b_2)=P(A)+P(C)\\), \\(F(a_2,b_1)=P(A)+P(B)\\), and \\(F(a_1,b_1)=P(A)\\). Subtracting and adding therefore cancels \\(A\\), \\(B\\) and \\(C\\), and leaves \\(P(D)\\).",
+      "The events \\(\\{X\\le a,\\, Y\\le b\\}\\) increase to \\(\\{X\\le a\\}\\) as \\(b\\to\\infty\\), so continuity of probability along a nested sequence yields \\(F_X(a)=\\lim_{b\\to\\infty} F(a,b)\\). The limit \\(a\\to\\infty\\) likewise produces \\(F_Y(b)\\).",
+      "If a joint density exists, \\(P(X\\le a)=\\int_{-\\infty}^{a}\\int_{-\\infty}^{\\infty} f(x,y)\\,dy\\,dx\\). The inner integral is a function of \\(x\\) alone whose integral up to \\(a\\) recovers \\(F_X(a)\\), so that function is a marginal density of \\(X\\). The argument for \\(Y\\) is symmetric, and the same slicing produces marginal densities of any subcollection of \\(n\\) jointly continuous variables.",
+      "For three variables the cube \\((a_1,a_2]\\times(b_1,b_2]\\times(c_1,c_2]\\) is one of eight disjoint boxes determined by the two thresholds on each axis. The joint cdf at a corner equals the sum of the probabilities of the boxes lying southwest of that corner. The alternating sum in the theorem, with sign \\((-1)^r\\) when the corner uses \\(r\\) lower thresholds, cancels every box except the inner cube. The same inclusion-exclusion in \\(n\\) dimensions uses all \\(2^n\\) corners. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "A model for two timing fractions \\(X\\) and \\(Y\\) uses the joint density \\(f(x,y)=6x\\) when \\(x>0\\), \\(y>0\\) and \\(x+y<1\\), and \\(f(x,y)=0\\) elsewhere. Find the marginal density of \\(X\\), the probability \\(P(X<Y)\\), and the rectangle probability \\(P(1/4<X\\le 1/2,\\, Y\\le 1/4)\\).",
+      "steps": [
+        "For \\(0<x<1\\) the inner slice in \\(y\\) runs from 0 to \\(1-x\\), so \\(f_X(x)=\\int_0^{1-x} 6x\\,dy=6x(1-x)\\). Outside \\((0,1)\\) the marginal density is 0. As a check, \\(\\int_0^1 6x(1-x)\\,dx=6\\big[x^2/2-x^3/3\\big]_0^1=6(1/2-1/3)=1\\). The marginal cdf is the limit \\(F_X(a)=\\lim_{b\\to\\infty} F(a,b)\\). For \\(0<a<1\\) that limit equals \\(\\int_0^a 6x(1-x)\\,dx\\). At \\(a=1/2\\), \\(6\\big[x^2/2-x^3/3\\big]_0^{1/2}=6(1/8-1/24)=6\\cdot(1/12)=1/2\\).",
+        "The event \\(X<Y\\) meets the support only when \\(0<x<1/2\\) and \\(x<y<1-x\\). Thus \\(P(X<Y)=\\int_0^{1/2}\\int_x^{1-x} 6x\\,dy\\,dx=\\int_0^{1/2} 6x(1-2x)\\,dx=\\int_0^{1/2}(6x-12x^2)\\,dx=\\big[3x^2-4x^3\\big]_0^{1/2}=3/4-1/2=1/4\\).",
+        "On the rectangle \\(1/4<x\\le 1/2\\), \\(0<y\\le 1/4\\), the constraint \\(y<1-x\\) is automatic because \\(1-x\\ge 1/2\\ge 1/4\\). Direct integration gives \\(\\int_{1/4}^{1/2}\\int_0^{1/4} 6x\\,dy\\,dx=\\int_{1/4}^{1/2}(3x/2)\\,dx=(3/4)\\big[x^2\\big]_{1/4}^{1/2}=(3/4)(1/4-1/16)=9/64\\).",
+        "The same rectangle probability comes from the cdf. For \\(0\\le a\\le 3/4\\), the strip \\(0<y\\le 1/4\\) lies inside the support for every \\(x\\in(0,a]\\), so \\(F(a,1/4)=\\int_0^a (3x/2)\\,dx=(3/4)a^2\\). Also \\(F(a,0)=0\\). The corner formula therefore reads \\(F(1/2,1/4)-F(1/4,1/4)=(3/4)(1/4)-(3/4)(1/16)=12/64-3/64=9/64\\)."
+      ],
+      "conclusion": "\\(f_X(x)=6x(1-x)\\) for \\(0<x<1\\), \\(P(X<Y)=1/4\\), and \\(P(1/4<X\\le 1/2,\\, Y\\le 1/4)=9/64\\)."
+    },
+    "practice": {
+      "prompt": "The number of ovens that overheat in a morning, \\(X\\in\\{0,1,2\\}\\), and the indicator \\(Y\\) that the delivery van is late have joint pmf \\(p(0,0)=1/8\\), \\(p(0,1)=1/8\\), \\(p(1,0)=1/4\\), \\(p(1,1)=1/8\\), \\(p(2,0)=1/4\\), \\(p(2,1)=1/8\\). Find both marginal pmfs and \\(P(X>Y)\\).",
+      "hints": [
+        "Sum each row to get \\(p_X\\) and each column to get \\(p_Y\\). The six joint probabilities already add to 1, so each marginal must add to 1.",
+        "The pairs with \\(X>Y\\) are \\((1,0)\\), \\((2,0)\\) and \\((2,1)\\). Add those three joint probabilities."
+      ],
+      "answer": "\\(p_X(0)=1/8+1/8=1/4\\), \\(p_X(1)=1/4+1/8=3/8\\), \\(p_X(2)=1/4+1/8=3/8\\). \\(p_Y(0)=1/8+1/4+1/4=5/8\\) and \\(p_Y(1)=1/8+1/8+1/8=3/8\\). \\(P(X>Y)=1/4+1/4+1/8=5/8\\)."
+    },
+    "caution": "The rectangle formula is an alternating sum: the far corner \\(F(a_2,b_2)\\) enters with a plus, each of the two adjacent corners with a minus, and the near corner \\(F(a_1,b_1)\\) with a plus. Dropping the last term answers a different event. A second trap is to integrate a density formula beyond its support. Using \\(6x\\) over the whole unit square where \\(x<y\\), for the density in the example, produces \\(\\int_0^1 3y^2\\,dy=1\\), while the probability on the actual triangular support is \\(1/4\\).",
+    "bridge": "A joint distribution is a product of its marginals precisely when the coordinates carry no information about each other. That factorisation is the definition of independence.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 6 (joint distribution functions)."
+  },
+  {
+    "id": "J02",
+    "title": "Independent random variables",
+    "cluster": "Joint distributions",
+    "question": "When does one random variable carry no information about another?",
+    "prerequisites": [
+      "J01",
+      "K04"
+    ],
+    "summary": "Random variables are independent when every event defined by one of them is independent of every event defined by the other. Equivalently the joint cdf factors, and for discrete or jointly continuous variables the joint pmf or density is the product of the marginals. A density that factors as a function of \\(x\\) times a function of \\(y\\) everywhere on the plane forces independence; if the set where the density is positive is not a product set \\(A\\times B\\), such as a triangle, no such factorisation exists and the variables are dependent.",
+    "intuition": "Independence means the plane’s probability is a product of a horizontal profile and a vertical profile. If the allowed shape of \\(y\\) changes with \\(x\\), each coordinate is still telling you something about the other.",
+    "definition": [
+      "Random variables \\(X\\) and \\(Y\\) are independent when \\(P(X\\in A,\\, Y\\in B)=P(X\\in A)P(Y\\in B)\\) for all choices of \\(A\\) and \\(B\\) from the collections of events used for random variables (intervals, and their usual limits and Boolean combinations). Equivalently, the events \\(\\{X\\in A\\}\\) and \\(\\{Y\\in B\\}\\) are independent events.",
+      "The cdf criterion is the special case of southwest quadrants: \\(X\\) and \\(Y\\) are independent if and only if \\(F(a,b)=F_X(a)F_Y(b)\\) for all real \\(a\\) and \\(b\\).",
+      "A finite collection \\(X_1,\\dots,X_n\\) is independent when \\(P(X_1\\in A_1,\\dots,X_n\\in A_n)=\\prod_{i=1}^n P(X_i\\in A_i)\\) for all admissible \\(A_i\\), equivalently when the joint cdf is the product of the marginal cdfs. The variables are identically distributed when they share one common cdf. Both properties together are abbreviated iid."
+    ],
+    "theorem": "Discrete random variables \\(X\\) and \\(Y\\) are independent if and only if \\(p(x,y)=p_X(x)p_Y(y)\\) for every \\(x\\) and \\(y\\). Jointly continuous random variables are independent if and only if \\(f(x,y)=f_X(x)f_Y(y)\\) for almost every \\((x,y)\\). Factorisation criterion: if \\(f(x,y)=g(x)h(y)\\) for nonnegative integrable \\(g\\) and \\(h\\) and for almost every point of the plane, then \\(X\\) and \\(Y\\) are independent. In particular, if \\(f\\) vanishes outside a rectangle \\((a,b)\\times(c,d)\\) and equals \\(g(x)h(y)\\) on that rectangle, the criterion applies. If no version of \\(f\\) agreeing almost everywhere is positive exactly on a product set, then no such factorisation exists, and \\(X\\) and \\(Y\\) are not independent.",
+    "hypotheses": [
+      "The event definition must be checked for a generating class of sets, not for a single pair of events. The cdf identity has to hold at every \\((a,b)\\), and the pmf or density identity at every point, not merely at most points of a table.",
+      "The factorisation \\(f(x,y)=g(x)h(y)\\) is required on the whole plane, including the region where \\(f=0\\). Writing a product formula only on a triangular support does not meet the criterion.",
+      "Identical distributions are not required for independence, and independence is not implied by having the same distribution. The two conditions are separate."
+    ],
+    "proof": [
+      "Suppose the event definition holds. Taking \\(A=(-\\infty,a]\\) and \\(B=(-\\infty,b]\\) gives \\(F(a,b)=F_X(a)F_Y(b)\\). Conversely, if the cdfs factor, the rectangle formula becomes \\[P(a_1<X\\le a_2,\\, b_1<Y\\le b_2)=\\big(F_X(a_2)-F_X(a_1)\\big)\\big(F_Y(b_2)-F_Y(b_1)\\big),\\] because the alternating sum of products factors as a difference in \\(a\\) times a difference in \\(b\\). Finite disjoint unions of rectangles therefore factor, and monotone limits extend the identity from rectangles to the events used in computations with random variables.",
+      "If \\(X\\) and \\(Y\\) are discrete and \\(p(x,y)=p_X(x)p_Y(y)\\) for every pair, then for any sets \\(A\\) and \\(B\\) \\[P(X\\in A,\\, Y\\in B)=\\sum_{x\\in A}\\sum_{y\\in B} p_X(x)p_Y(y)=P(X\\in A)P(Y\\in B).\\] Conversely, singleton sets recover \\(p(x,y)=p_X(x)p_Y(y)\\).",
+      "If a joint density equals the product of the marginal densities, integrating over \\(A\\times B\\) gives the event definition. Conversely, independence gives \\(F(a,b)=F_X(a)F_Y(b)\\), and differentiating both sides where the densities are continuous produces \\(f(x,y)=f_X(x)f_Y(y)\\).",
+      "Suppose \\(f(x,y)=g(x)h(y)\\) almost everywhere, with \\(G=\\int g\\) and \\(H=\\int h\\). Then \\(GH=\\iint f=1\\), \\(f_X(x)=g(x)H\\) and \\(f_Y(y)=G h(y)\\), so \\(f_X(x)f_Y(y)=g(x)h(y)=f(x,y)\\). The previous step yields independence. If the positive set of \\(f\\) is contained in a rectangle and \\(f\\) factors there, multiply \\(g\\) and \\(h\\) by the indicators of the two sides: the product still equals \\(f\\) off the rectangle, where both sides are zero.",
+      "Suppose there were \\(g\\) and \\(h\\) with \\(f=g h\\) everywhere and with \\(f>0\\) on a non-product set. Whenever \\(g(x_1), g(x_2), h(y_1), h(y_2)\\) are all positive, all four points \\((x_i,y_j)\\) would lie in the support. A support that contains \\((x_1,y_1)\\) and \\((x_2,y_2)\\) but excludes \\((x_1,y_2)\\) cannot arise this way. The open triangle \\(x>0\\), \\(y>0\\), \\(x+y<1\\) contains \\((0.2,0.7)\\) and \\((0.7,0.2)\\), since both coordinate sums equal \\(0.9\\), but it excludes \\((0.7,0.7)\\). A product support containing the first two points would contain the third. Hence a density that is positive exactly on that triangle does not factor, and the coordinates are not independent. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "Two maintenance drones are each launched at a time chosen independently and uniformly from a 30-minute window. Their radio handshake succeeds only when the launch times differ by at most 6 minutes. Find the probability of a successful handshake.",
+      "steps": [
+        "Let \\(X\\) and \\(Y\\) be the launch times in minutes. Independence and the uniform marginals give the joint density \\(f(x,y)=1/30\\cdot 1/30=1/900\\) on the square \\((0,30)\\times(0,30)\\), and 0 outside. The support is a product set and the density factors, which agrees with independence.",
+        "The handshake fails when \\(|X-Y|>6\\). That region consists of two right triangles inside the square, each with leg \\(30-6=24\\). Their combined area is \\(24^2=576\\). The square has area \\(30^2=900\\), so the failure probability is \\(576/900=16/25\\).",
+        "Equivalently, \\(P(|X-Y|>6)=2\\int_0^{24}(24-x)/900\\,dx=(2/900)\\big[24x-x^2/2\\big]_0^{24}=(2/900)(576-288)=576/900=16/25\\). Therefore the success probability is \\(1-16/25=9/25\\).",
+        "The same value is the band area \\(2\\cdot 30\\cdot 6-6^2=324\\) divided by 900, and \\(324/900=9/25\\). In general, for an independent uniform pair on \\([0,T]\\) and a gap \\(d\\in[0,T]\\), the probability that the times differ by at most \\(d\\) is \\(1-\\big((T-d)/T\\big)^2\\)."
+      ],
+      "conclusion": "The handshake succeeds with probability \\(9/25\\)."
+    },
+    "practice": {
+      "prompt": "Suppose \\(f(x,y)=c x\\) for \\(0<y<x<1\\) and \\(f(x,y)=0\\) elsewhere. Find \\(c\\), compute \\(P(Y>1/2)\\), and decide whether \\(X\\) and \\(Y\\) are independent.",
+      "hints": [
+        "Integrate \\(c x\\) over \\(0<y<x<1\\) and set the integral equal to 1. The inner integral in \\(y\\) has length \\(x\\).",
+        "On this support \\(Y<X\\), so \\(\\{X<1/2,\\, Y>1/2\\}\\) is empty. Compare its probability with \\(P(X<1/2)P(Y>1/2)\\)."
+      ],
+      "answer": "\\(\\int_0^1\\int_0^x x\\,dy\\,dx=\\int_0^1 x^2\\,dx=1/3\\), so \\(c=3\\). The marginal \\(f_Y(y)=\\int_y^1 3x\\,dx=(3/2)(1-y^2)\\) for \\(0<y<1\\), and \\(P(Y>1/2)=\\int_{1/2}^1 (3/2)(1-y^2)\\,dy=(3/2)\\big[y-y^3/3\\big]_{1/2}^1=(3/2)\\big(2/3-11/24\\big)=(3/2)(5/24)=5/16\\). Also \\(P(X<1/2)=\\int_0^{1/2} 3x^2\\,dx=1/8\\). Then \\(P(X<1/2,\\, Y>1/2)=0\\), while \\(P(X<1/2)P(Y>1/2)=5/128\\neq 0\\). The variables are not independent. The support is the triangle \\(0<y<x<1\\), which is not a product set, so the factorisation criterion cannot apply."
+    },
+    "caution": "In the practice problem the formula \\(3x\\) is a product on the triangle \\(0<y<x<1\\), but the density equals 0 at \\((1/4,1/2)\\) while \\(3\\cdot(1/4)\\) is not 0. The factorisation criterion demands \\(f(x,y)=g(x)h(y)\\) for almost every point of the plane, including outside the triangle. The indicator of a non-rectangle does not split into a factor depending only on \\(x\\) and a factor depending only on \\(y\\).",
+    "bridge": "When the joint distribution factors, probabilities for a sum reduce to a one-dimensional convolution of the marginal pmfs or densities.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 6 (independent random variables)."
+  },
+  {
+    "id": "J03",
+    "title": "Sums of independent random variables",
+    "cluster": "Joint distributions",
+    "question": "What is the distribution of the sum of two independent random variables?",
+    "prerequisites": [
+      "J02",
+      "R07"
+    ],
+    "summary": "Independence turns the law of a sum into a convolution. Poisson rates add, binomial counts with a shared success probability add, gamma shapes with a shared rate add, the sum of two independent uniform random variables has a triangular density, and independent normals add in both mean and variance.",
+    "intuition": "A sum can land at a value in many ways, one for each way of splitting that value between the two summands. Independence makes those splits multiply, and adding the splits is convolution.",
+    "definition": [
+      "The convolution of pmfs \\(p_X\\) and \\(p_Y\\) is \\((p_X\\ast p_Y)(k)=\\sum_j p_X(j)p_Y(k-j)\\), summed over every integer \\(j\\) at which the summand can be nonzero. The convolution of densities is \\((f_X\\ast f_Y)(a)=\\int_{-\\infty}^{\\infty} f_X(a-y)f_Y(y)\\,dy\\).",
+      "Write \\(X\\sim\\mathrm{Poisson}(\\lambda)\\) for the pmf \\(e^{-\\lambda}\\lambda^k/k!\\) on \\(k=0,1,2,\\dots\\). Write \\(X\\sim\\mathrm{Bin}(n,p)\\) for \\(\\binom{n}{k}p^k(1-p)^{n-k}\\). The gamma density with shape \\(\\alpha>0\\) and rate \\(\\lambda>0\\) is \\(\\lambda e^{-\\lambda x}(\\lambda x)^{\\alpha-1}/\\Gamma(\\alpha)\\) for \\(x>0\\), where \\(\\Gamma(\\alpha)=\\int_0^{\\infty} t^{\\alpha-1}e^{-t}\\,dt\\). An exponential random variable of rate \\(\\lambda\\) is gamma\\((1,\\lambda)\\). A normal random variable \\(N(\\mu,\\sigma^2)\\) has density \\((2\\pi\\sigma^2)^{-1/2}\\exp\\big(-(x-\\mu)^2/(2\\sigma^2)\\big)\\)."
+    ],
+    "theorem": "If \\(X\\) and \\(Y\\) are independent and discrete, then \\(P(X+Y=k)=\\sum_j p_X(j)p_Y(k-j)\\). If they are independent and have densities, then \\[f_{X+Y}(a)=\\int_{-\\infty}^{\\infty} f_X(a-y)f_Y(y)\\,dy,\\] provided the integral is continuous at \\(a\\), which holds for the densities used below. Consequently: if \\(X\\sim\\mathrm{Poisson}(\\lambda_1)\\) and \\(Y\\sim\\mathrm{Poisson}(\\lambda_2)\\) are independent, then \\(X+Y\\sim\\mathrm{Poisson}(\\lambda_1+\\lambda_2)\\); if \\(X\\sim\\mathrm{Bin}(n,p)\\) and \\(Y\\sim\\mathrm{Bin}(m,p)\\) are independent with the same \\(p\\), then \\(X+Y\\sim\\mathrm{Bin}(n+m,p)\\); if \\(X\\sim\\mathrm{gamma}(\\alpha,\\lambda)\\) and \\(Y\\sim\\mathrm{gamma}(\\beta,\\lambda)\\) are independent with the same rate, then \\(X+Y\\sim\\mathrm{gamma}(\\alpha+\\beta,\\lambda)\\); if \\(X\\) and \\(Y\\) are independent and uniform on \\((0,1)\\), then \\(f_{X+Y}(a)=a\\) for \\(0<a\\le 1\\), \\(f_{X+Y}(a)=2-a\\) for \\(1<a<2\\), and \\(f_{X+Y}(a)=0\\) otherwise; if \\(X\\sim N(\\mu_1,\\sigma_1^2)\\) and \\(Y\\sim N(\\mu_2,\\sigma_2^2)\\) are independent, then \\(X+Y\\sim N(\\mu_1+\\mu_2,\\,\\sigma_1^2+\\sigma_2^2)\\).",
+    "hypotheses": [
+      "Every closure statement assumes independence. The convolution formulas also assume that one is using the marginal pmf or density of each summand.",
+      "The binomial sum requires one common success probability. The gamma sum requires one common rate. Shapes add only when the rates agree, and counts add in the binomial family only when the success probabilities agree.",
+      "Differentiating under the integral in the continuous convolution is justified when the marginal densities are piecewise continuous, as they are for the uniform and normal laws and for gamma laws with shape at least 1, at every continuity point of the resulting density. For gamma shapes below 1 the density is unbounded at 0, and the closure result still holds by evaluating the convolution integral directly."
+    ],
+    "proof": [
+      "For discrete independent \\(X\\) and \\(Y\\), condition on the value of \\(X\\): \\(P(X+Y=k)=\\sum_j P(X=j,\\, Y=k-j)=\\sum_j P(X=j)P(Y=k-j)\\), which is the discrete convolution.",
+      "Let \\(X\\sim\\mathrm{Poisson}(\\lambda_1)\\) and \\(Y\\sim\\mathrm{Poisson}(\\lambda_2)\\) be independent, and set \\(k\\ge 0\\). The convolution runs over \\(j=0,\\dots,k\\): \\[P(X+Y=k)=\\sum_{j=0}^k e^{-\\lambda_1}\\frac{\\lambda_1^j}{j!}\\, e^{-\\lambda_2}\\frac{\\lambda_2^{k-j}}{(k-j)!}=e^{-(\\lambda_1+\\lambda_2)}\\sum_{j=0}^k \\frac{\\lambda_1^j\\lambda_2^{k-j}}{j!\\,(k-j)!}.\\] Multiply and divide by \\(k!\\): that sum equals \\(\\sum_{j=0}^k\\binom{k}{j}\\lambda_1^j\\lambda_2^{k-j}/k!=(\\lambda_1+\\lambda_2)^k/k!\\) by the binomial theorem. Therefore \\(P(X+Y=k)=e^{-(\\lambda_1+\\lambda_2)}(\\lambda_1+\\lambda_2)^k/k!\\).",
+      "If \\(X\\sim\\mathrm{Bin}(n,p)\\) and \\(Y\\sim\\mathrm{Bin}(m,p)\\) are independent, the same split gives \\[P(X+Y=k)=\\sum_j \\binom{n}{j}p^j(1-p)^{n-j}\\binom{m}{k-j}p^{k-j}(1-p)^{m-k+j},\\] with the convention that a binomial coefficient is 0 when the bottom index is outside \\(\\{0,\\dots,\\text{top}\\}\\). The powers of \\(p\\) and \\(1-p\\) collect into \\(p^k(1-p)^{n+m-k}\\), and Vandermonde’s identity \\(\\sum_j \\binom{n}{j}\\binom{m}{k-j}=\\binom{n+m}{k}\\) supplies the remaining factor. Combinatorially, the number of ways to choose \\(k\\) positions out of \\(n+m\\) equals the sum over \\(j\\) of the ways to choose \\(j\\) of them from the first \\(n\\).",
+      "For independent densities, \\(F_{X+Y}(a)=P(X+Y\\le a)=\\int_{-\\infty}^{\\infty} f_Y(y)\\Big(\\int_{-\\infty}^{a-y} f_X(x)\\,dx\\Big)dy=\\int_{-\\infty}^{\\infty} f_Y(y)F_X(a-y)\\,dy\\). Differentiating in \\(a\\) by the fundamental theorem, at a continuity point of the integrand’s integral, produces \\(f_{X+Y}(a)=\\int_{-\\infty}^{\\infty} f_X(a-y)f_Y(y)\\,dy\\).",
+      "Let \\(X\\) and \\(Y\\) be independent and uniform on \\((0,1)\\), so each density equals 1 on that interval. The integrand \\(f_X(a-y)f_Y(y)\\) is 1 when \\(0<y<1\\) and \\(0<a-y<1\\), that is, when \\(y\\) lies in \\((0,1)\\cap(a-1,a)\\). For \\(0<a\\le 1\\) that intersection is \\((0,a)\\) and the integral equals \\(a\\). For \\(1<a<2\\) it is \\((a-1,1)\\) and the integral equals \\(2-a\\). Elsewhere it is empty. The graph is an isosceles triangle of height 1 on \\([0,2]\\).",
+      "Let \\(X\\sim\\mathrm{gamma}(\\alpha,\\lambda)\\) and \\(Y\\sim\\mathrm{gamma}(\\beta,\\lambda)\\) be independent, and take \\(a>0\\). The convolution lives on \\(0<y<a\\): \\[f_{X+Y}(a)=\\int_0^a \\frac{\\lambda^{\\alpha} y^{\\alpha-1}e^{-\\lambda y}}{\\Gamma(\\alpha)}\\cdot\\frac{\\lambda^{\\beta}(a-y)^{\\beta-1}e^{-\\lambda(a-y)}}{\\Gamma(\\beta)}\\,dy=\\frac{\\lambda^{\\alpha+\\beta}e^{-\\lambda a}}{\\Gamma(\\alpha)\\Gamma(\\beta)}\\int_0^a y^{\\alpha-1}(a-y)^{\\beta-1}\\,dy.\\] Substitute \\(y=au\\). With \\(dy=a\\,du\\), the integral equals \\(a^{\\alpha+\\beta-1}B\\), where the constant \\(B=\\int_0^1 u^{\\alpha-1}(1-u)^{\\beta-1}\\,du\\) is finite and positive for \\(\\alpha>0\\) and \\(\\beta>0\\). Thus \\(f_{X+Y}(a)=K\\lambda^{\\alpha+\\beta}a^{\\alpha+\\beta-1}e^{-\\lambda a}\\) with \\(K=B/(\\Gamma(\\alpha)\\Gamma(\\beta))\\) independent of \\(a\\). The substitution \\(t=\\lambda a\\) gives \\(\\int_0^{\\infty}\\lambda^{\\alpha+\\beta}a^{\\alpha+\\beta-1}e^{-\\lambda a}\\,da=\\Gamma(\\alpha+\\beta)\\). Since \\(f_{X+Y}\\) integrates to 1, \\(K\\Gamma(\\alpha+\\beta)=1\\), hence \\(K=1/\\Gamma(\\alpha+\\beta)\\). The convolution is the gamma\\((\\alpha+\\beta,\\lambda)\\) density. The shared rate is what lets \\(e^{-\\lambda y}e^{-\\lambda(a-y)}\\) leave the integral as the pure factor \\(e^{-\\lambda a}\\).",
+      "Let \\(Z_1\\) and \\(Z_2\\) be independent standard normals, with density \\(\\varphi(t)=(2\\pi)^{-1/2}e^{-t^2/2}\\). Then \\[f_{Z_1+Z_2}(a)=\\frac{1}{2\\pi}\\int_{-\\infty}^{\\infty}\\exp\\Big(-\\frac{(a-y)^2+y^2}{2}\\Big)dy.\\] The quadratic identity \\((a-y)^2+y^2=2(y-a/2)^2+a^2/2\\) rewrites the exponent as \\(-(y-a/2)^2-a^2/4\\). The substitution \\(t=u\\sqrt{2}\\) gives \\(du=dt/\\sqrt{2}\\), so \\(\\int_{-\\infty}^{\\infty}e^{-u^2}\\,du=\\sqrt{2\\pi}/\\sqrt{2}=\\sqrt{\\pi}\\), using \\(\\int e^{-t^2/2}\\,dt=\\sqrt{2\\pi}\\). Therefore the density equals \\((1/(2\\pi))\\sqrt{\\pi}\\,e^{-a^2/4}=e^{-a^2/4}/\\sqrt{4\\pi}\\), the \\(N(0,2)\\) density.",
+      "Centering does not change variances: if \\(X\\sim N(\\mu_1,\\sigma_1^2)\\) and \\(Y\\sim N(\\mu_2,\\sigma_2^2)\\) are independent, then \\(X-\\mu_1\\) and \\(Y-\\mu_2\\) are independent \\(N(0,\\sigma_1^2)\\) and \\(N(0,\\sigma_2^2)\\). Set \\(\\sigma^2=\\sigma_1^2+\\sigma_2^2\\) and \\(\\tau=\\sigma_1\\sigma_2/\\sigma\\). Their convolution is \\[f(a)=\\frac{1}{2\\pi\\sigma_1\\sigma_2}\\int_{-\\infty}^{\\infty}\\exp\\Big(-\\frac{(a-y)^2}{2\\sigma_1^2}-\\frac{y^2}{2\\sigma_2^2}\\Big)dy.\\] The exponent equals \\(-1/(2\\sigma_1^2\\sigma_2^2)\\) times \\(\\sigma_2^2(a-y)^2+\\sigma_1^2 y^2\\). Completing the square yields \\(\\sigma_2^2(a-y)^2+\\sigma_1^2 y^2=\\sigma^2(y-m)^2+a^2\\sigma_1^2\\sigma_2^2/\\sigma^2\\) with \\(m=a\\sigma_2^2/\\sigma^2\\). Dividing by \\(2\\sigma_1^2\\sigma_2^2\\) and attaching the minus sign separates the exponent into \\(-a^2/(2\\sigma^2)-(y-m)^2/(2\\tau^2)\\), because \\(1/(2\\tau^2)=\\sigma^2/(2\\sigma_1^2\\sigma_2^2)\\). The \\(y\\)-integral of \\(\\exp(-(y-m)^2/(2\\tau^2))\\) equals \\(\\tau\\sqrt{2\\pi}\\). Multiplying by \\(1/(2\\pi\\sigma_1\\sigma_2)\\) produces \\(\\tau/(\\sigma_1\\sigma_2\\sqrt{2\\pi})=1/(\\sigma\\sqrt{2\\pi})\\). The centered sum is therefore \\(N(0,\\sigma^2)\\). Adding \\(\\mu_1+\\mu_2\\) shifts the mean. For more than two independent normals, induct: the sum of the first group is normal and is independent of the next summand, since it is a function of the earlier variables alone. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "Two independent repair jobs each take a time distributed as uniform on \\((0,4)\\) hours. Let \\(Z\\) be the total time. Find the density of \\(Z\\) and compute \\(P(Z\\le 5)\\).",
+      "steps": [
+        "Each job has density \\(1/4\\) on \\((0,4)\\). Independence gives \\(f_Z(a)=\\int_{-\\infty}^{\\infty} (1/4)\\,\\mathbf{1}_{(0,4)}(a-y)\\,(1/4)\\,\\mathbf{1}_{(0,4)}(y)\\,dy\\), so \\(f_Z(a)\\) equals \\(1/16\\) times the length of \\((0,4)\\cap(a-4,a)\\).",
+        "If \\(0<a\\le 4\\), that intersection is \\((0,a)\\) and \\(f_Z(a)=a/16\\). If \\(4<a<8\\), it is \\((a-4,4)\\) and \\(f_Z(a)=(8-a)/16\\). Otherwise the intersection is empty. The density rises linearly from 0 to \\(4/16=1/4\\) and then falls linearly to 0 at 8.",
+        "The two pieces integrate to 1: \\(\\int_0^4 a/16\\,da=\\big[a^2/32\\big]_0^4=1/2\\), and the substitution \\(u=8-a\\) turns \\(\\int_4^8 (8-a)/16\\,da\\) into the same integral, also \\(1/2\\).",
+        "Now \\(P(Z\\le 5)=\\int_0^4 a/16\\,da+\\int_4^5 (8-a)/16\\,da=1/2+(1/16)\\big[8a-a^2/2\\big]_4^5\\). The antiderivative equals \\(55/2\\) at 5 and \\(24\\) at 4, so the difference is \\(7/2\\) and the second integral is \\((7/2)/16=7/32\\). Adding \\(16/32+7/32=23/32\\).",
+        "As a check, the complementary region \\(x+y>5\\) inside the square \\((0,4)^2\\) is a right triangle with leg 3 and area \\(9/2\\). Multiplying by the joint density \\(1/16\\) gives \\(P(Z>5)=9/32\\), hence \\(P(Z\\le 5)=1-9/32=23/32\\)."
+      ],
+      "conclusion": "\\(f_Z(a)=a/16\\) for \\(0<a\\le 4\\), \\(f_Z(a)=(8-a)/16\\) for \\(4<a<8\\), and \\(P(Z\\le 5)=23/32\\)."
+    },
+    "practice": {
+      "prompt": "Let \\(X\\) and \\(Y\\) be independent, with \\(p_X(0)=1/3\\), \\(p_X(1)=2/3\\), \\(p_Y(0)=1/2\\), \\(p_Y(1)=1/4\\) and \\(p_Y(2)=1/4\\). Find the pmf of \\(Z=X+Y\\) and compute \\(P(Z\\ge 2)\\).",
+      "hints": [
+        "\\(Z\\) takes values in \\(\\{0,1,2,3\\}\\). For each \\(k\\), add \\(p_X(j)p_Y(k-j)\\) over the one or two splits that land on the supports.",
+        "Once the four probabilities are in hand, add the values at 2 and at 3, and check that all four probabilities sum to 1."
+      ],
+      "answer": "\\(p_Z(0)=(1/3)(1/2)=1/6\\). \\(p_Z(1)=(1/3)(1/4)+(2/3)(1/2)=1/12+1/3=5/12\\). \\(p_Z(2)=(1/3)(1/4)+(2/3)(1/4)=1/12+1/6=1/4\\). \\(p_Z(3)=(2/3)(1/4)=1/6\\). These add as \\(2/12+5/12+3/12+2/12=1\\). \\(P(Z\\ge 2)=1/4+1/6=5/12\\)."
+    },
+    "caution": "Equal success probabilities are part of the binomial statement. A Bernoulli trial with success probability \\(1/3\\), added to an independent Bernoulli trial with success probability \\(1/2\\), has \\(P(\\mathrm{sum}=0)=1/3\\) and \\(P(\\mathrm{sum}=2)=1/6\\). If the sum were \\(\\mathrm{Bin}(2,p)\\), those two equations would force \\(p^2+(1-p)^2=1/2\\), hence \\((2p-1)^2=0\\), so \\(p=1/2\\). But then \\(P(\\mathrm{sum}=2)\\) would be \\(1/4\\), not \\(1/6\\). Dependence breaks the Poisson closure in a different way: if \\(Y=X\\) and \\(X\\) is Poisson with \\(\\lambda>0\\), then \\(X+Y=2X\\) is even with probability 1, while every Poisson law with a positive mean gives positive probability to odd values; and \\(2X\\) is not the degenerate law at 0 either, so it is not Poisson.",
+    "bridge": "Convolution builds the joint behaviour of a sum. Conditioning runs the same identities in the other direction, from the joint distribution back to a slice at a fixed value of one coordinate.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 6 (sums of independent random variables)."
+  },
+  {
+    "id": "J04",
+    "title": "Conditional distributions",
+    "cluster": "Joint distributions",
+    "question": "How does the distribution of one random variable change once another is observed?",
+    "prerequisites": [
+      "J01",
+      "K01"
+    ],
+    "summary": "The conditional pmf or density of \\(X\\) given \\(Y=y\\) is the joint divided by the marginal of \\(Y\\). Averaging those conditional probabilities against the marginal of \\(Y\\) returns the marginal of \\(X\\). Independence is exactly the case in which the conditional distribution equals the marginal. For independent Poissons, the conditional law of one of them given their sum is binomial.",
+    "intuition": "Conditioning on \\(Y=y\\) slices the joint distribution along that horizontal line and rescales the slice so that it is a distribution in \\(x\\). Mixing those slices back together with the probabilities of the lines rebuilds \\(X\\).",
+    "definition": [
+      "If \\(X\\) and \\(Y\\) are discrete and \\(p_Y(y)>0\\), the conditional pmf of \\(X\\) given \\(Y=y\\) is \\(p_{X\\mid Y}(x\\mid y)=p(x,y)/p_Y(y)\\). Equivalently \\(P(X=x\\mid Y=y)=P(X=x,\\, Y=y)/P(Y=y)\\). For each fixed \\(y\\) with \\(p_Y(y)>0\\), this is a pmf in \\(x\\): it is nonnegative and sums to 1.",
+      "If \\(X\\) and \\(Y\\) are jointly continuous and \\(f_Y(y)>0\\), the conditional density of \\(X\\) given \\(Y=y\\) is \\(f_{X\\mid Y}(x\\mid y)=f(x,y)/f_Y(y)\\). For each such \\(y\\) it integrates to 1 in \\(x\\). Probabilities given \\(Y=y\\) are integrals of this density; they are not ratios of events of probability zero.",
+      "The multiplication rule rebuilds the joint: \\(p(x,y)=p_{X\\mid Y}(x\\mid y)p_Y(y)\\) whenever \\(p_Y(y)>0\\), and \\(f(x,y)=f_{X\\mid Y}(x\\mid y)f_Y(y)\\) whenever \\(f_Y(y)>0\\). Independence says the conditional is the unconditional marginal: \\(p_{X\\mid Y}(x\\mid y)=p_X(x)\\) for every \\(y\\) with \\(p_Y(y)>0\\), and \\(f_{X\\mid Y}(x\\mid y)=f_X(x)\\) for almost every \\(y\\) with \\(f_Y(y)>0\\)."
+    ],
+    "theorem": "Law of total probability for a discrete random variable: if \\(p_Y(y)>0\\) for every \\(y\\) in the sum, or more carefully if the sum is restricted to those \\(y\\), then \\[P(X=i)=\\sum_j P(X=i\\mid Y=j)P(Y=j).\\] In density form, \\(f_X(x)=\\int_{-\\infty}^{\\infty} f_{X\\mid Y}(x\\mid y)f_Y(y)\\,dy\\). Poisson slice: if \\(X\\sim\\mathrm{Poisson}(\\lambda_1)\\) and \\(Y\\sim\\mathrm{Poisson}(\\lambda_2)\\) are independent and \\(n\\) is a nonnegative integer, then the conditional distribution of \\(X\\) given \\(X+Y=n\\) is \\(\\mathrm{Bin}\\big(n,\\, \\lambda_1/(\\lambda_1+\\lambda_2)\\big)\\).",
+    "hypotheses": [
+      "A conditional pmf is defined only when \\(p_Y(y)>0\\), and a conditional density only when \\(f_Y(y)>0\\). Dividing by a zero marginal is not a conditional distribution.",
+      "The Poisson slice uses independence of the two Poisson random variables, so that \\(P(X=k,\\, Y=n-k)=P(X=k)P(Y=n-k)\\), and it uses the already proved fact that \\(X+Y\\sim\\mathrm{Poisson}(\\lambda_1+\\lambda_2)\\).",
+      "The identity \\(P(X=i)=\\sum_j P(X=i\\mid Y=j)P(Y=j)\\) needs \\(\\{Y=j\\}\\) to partition the probability space, up to a set of probability zero. Continuous conditioning uses densities rather than the event \\(\\{Y=y\\}\\), which has probability zero."
+    ],
+    "proof": [
+      "Sum the conditional pmf in \\(x\\): \\(\\sum_x p(x,y)/p_Y(y)=p_Y(y)/p_Y(y)=1\\). Nonnegativity is inherited from \\(p\\). Thus \\(p_{X\\mid Y}(\\,\\cdot\\mid y)\\) is a pmf. In the continuous case, \\(\\int_{-\\infty}^{\\infty} f(x,y)/f_Y(y)\\,dx=f_Y(y)/f_Y(y)=1\\).",
+      "If \\(X\\) and \\(Y\\) are independent, \\(p(x,y)=p_X(x)p_Y(y)\\), so the ratio defining the conditional pmf equals \\(p_X(x)\\). In the jointly continuous case the same cancellation gives \\(f_{X\\mid Y}(x\\mid y)=f_X(x)\\). Conversely, if the conditional pmf equals the marginal for every \\(y\\) with \\(p_Y(y)>0\\), the multiplication rule says \\(p(x,y)=p_X(x)p_Y(y)\\), which is independence.",
+      "Discrete total probability is the multiplication rule summed over \\(j\\): \\(\\sum_j P(X=i\\mid Y=j)P(Y=j)=\\sum_j P(X=i,\\, Y=j)=P(X=i)\\). In the continuous case, wherever \\(f_Y(y)>0\\) the product \\(f_{X\\mid Y}(x\\mid y)f_Y(y)\\) equals \\(f(x,y)\\), and \\(\\{y:f_Y(y)=0\\}\\) does not contribute to \\(\\int f(x,y)\\,dy\\). Hence \\(\\int_{-\\infty}^{\\infty} f_{X\\mid Y}(x\\mid y)f_Y(y)\\,dy=f_X(x)\\).",
+      "Let \\(X\\sim\\mathrm{Poisson}(\\lambda_1)\\) and \\(Y\\sim\\mathrm{Poisson}(\\lambda_2)\\) be independent, and fix \\(n\\ge 0\\) and \\(k\\in\\{0,\\dots,n\\}\\). Independence gives \\(P(X=k,\\, X+Y=n)=P(X=k,\\, Y=n-k)=P(X=k)P(Y=n-k)\\). Therefore \\[P(X=k\\mid X+Y=n)=\\frac{e^{-\\lambda_1}\\lambda_1^k/k!\\cdot e^{-\\lambda_2}\\lambda_2^{n-k}/(n-k)!}{e^{-(\\lambda_1+\\lambda_2)}(\\lambda_1+\\lambda_2)^n/n!}.\\] The exponential factors cancel. What remains is \\[\\binom{n}{k}\\frac{\\lambda_1^k\\lambda_2^{n-k}}{(\\lambda_1+\\lambda_2)^n}=\\binom{n}{k}\\Big(\\frac{\\lambda_1}{\\lambda_1+\\lambda_2}\\Big)^k\\Big(\\frac{\\lambda_2}{\\lambda_1+\\lambda_2}\\Big)^{n-k}.\\] That is the \\(\\mathrm{Bin}\\big(n,\\, \\lambda_1/(\\lambda_1+\\lambda_2)\\big)\\) pmf. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "Calls of type A arrive as a Poisson process count \\(X\\sim\\mathrm{Poisson}(2)\\) and calls of type B as an independent count \\(Y\\sim\\mathrm{Poisson}(6)\\), both over the same hour. Given that exactly 4 calls arrive in total, find the conditional distribution of \\(X\\) and the probability that exactly one of the four is of type A.",
+      "steps": [
+        "Here \\(\\lambda_1+\\lambda_2=8\\) and \\(\\lambda_1/(\\lambda_1+\\lambda_2)=2/8=1/4\\). The Poisson slice theorem says that \\(X\\) given \\(X+Y=4\\) is \\(\\mathrm{Bin}(4,1/4)\\).",
+        "The binomial pmf at 1 is \\(\\binom{4}{1}(1/4)^1(3/4)^3=4\\cdot(1/4)\\cdot 27/64=27/64\\).",
+        "Check the ratio directly. \\(P(X=1,\\, Y=3)=e^{-2}\\cdot 2\\cdot e^{-6}\\cdot 6^3/3!=e^{-8}\\cdot 2\\cdot 216/6=72e^{-8}\\). And \\(P(X+Y=4)=e^{-8}\\cdot 8^4/4!=e^{-8}\\cdot 4096/24=e^{-8}\\cdot 512/3\\). The quotient is \\(72/(512/3)=216/512=27/64\\).",
+        "The multiplication rule reconciles the two expressions: \\((27/64)\\cdot(512/3)=72\\), so \\(P(X=1,\\, Y=3)=P(X=1\\mid X+Y=4)P(X+Y=4)\\)."
+      ],
+      "conclusion": "Given \\(X+Y=4\\), the count \\(X\\) is \\(\\mathrm{Bin}(4,1/4)\\), and \\(P(X=1\\mid X+Y=4)=27/64\\)."
+    },
+    "practice": {
+      "prompt": "The joint density \\(f(x,y)=(2/3)(x+2y)\\) for \\(0<x<1\\), \\(0<y<1\\), and \\(f=0\\) elsewhere. Find \\(f_{X\\mid Y}(x\\mid y)\\) for \\(0<y<1\\), and compute \\(P(X\\le 1/2\\mid Y=1/2)\\).",
+      "hints": [
+        "Integrate \\(f(x,y)\\) in \\(x\\) from 0 to 1 to obtain \\(f_Y(y)\\), then divide.",
+        "Substitute \\(y=1/2\\) before integrating. The conditional density on \\(0<x<1\\) becomes \\(2(x+1)/3\\)."
+      ],
+      "answer": "\\(f_Y(y)=\\int_0^1 (2/3)(x+2y)\\,dx=(2/3)(1/2+2y)=(1+4y)/3\\) for \\(0<y<1\\). Hence \\(f_{X\\mid Y}(x\\mid y)=2(x+2y)/(1+4y)\\) for \\(0<x<1\\). This integrates to 1 in \\(x\\): \\(\\int_0^1 2(x+2y)/(1+4y)\\,dx=2(1/2+2y)/(1+4y)=1\\). At \\(y=1/2\\), \\(f_{X\\mid Y}(x\\mid 1/2)=2(x+1)/3\\), so \\(P(X\\le 1/2\\mid Y=1/2)=\\int_0^{1/2} 2(x+1)/3\\,dx=(2/3)\\big[x^2/2+x\\big]_0^{1/2}=(2/3)(1/8+1/2)=(2/3)(5/8)=5/12\\)."
+    },
+    "caution": "For discrete variables, \\(p_{X\\mid Y}(x\\mid y)\\) is undefined when \\(p_Y(y)=0\\); those columns are simply not observed. For continuous variables the conditioning event \\(\\{Y=y\\}\\) itself has probability zero, so the conditional probability is an integral of \\(f(x,y)/f_Y(y)\\), not a ratio of two zeros. A separate slip is to invert the condition: the law of \\(X\\) given \\(X+Y=n\\) is not the law of \\(X+Y\\) given \\(X\\).",
+    "bridge": "The extreme order statistics of an iid sample are functions of every coordinate at once. Their cdfs come from applying independence one variable at a time.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 6 (conditional distributions)."
+  },
+  {
+    "id": "J05",
+    "title": "Order statistics",
+    "cluster": "Joint distributions",
+    "question": "How are the smallest and largest values in an iid sample distributed?",
+    "prerequisites": [
+      "J02",
+      "R03"
+    ],
+    "summary": "For iid random variables the cdf of the maximum is the common cdf raised to the \\(n\\)th power, and the cdf of the minimum is one minus the \\(n\\)th power of the common survival function. The minimum of independent exponentials is exponential with rate equal to the sum of the rates. The joint density of the minimum and the maximum is explicit, and for \\(n\\) independent uniforms on \\([0,1]\\) the expected range is \\((n-1)/(n+1)\\).",
+    "intuition": "The maximum is at most \\(u\\) only when every sample point is at most \\(u\\), and independence turns that into a product. The minimum has failed to exceed \\(u\\) as soon as any one sample point has done so.",
+    "definition": [
+      "Let \\(X_1,\\dots,X_n\\) be random variables. Their minimum and maximum are \\(V=\\min\\{X_1,\\dots,X_n\\}\\) and \\(U=\\max\\{X_1,\\dots,X_n\\}\\). The range is \\(U-V\\). These are the extreme order statistics. If the \\(X_i\\) are iid with cdf \\(F\\), one says that \\(U\\) and \\(V\\) are the maximum and minimum of an iid sample of size \\(n\\) from \\(F\\).",
+      "An exponential random variable with rate \\(\\lambda>0\\) has density \\(\\lambda e^{-\\lambda x}\\) and survival function \\(P(X>x)=e^{-\\lambda x}\\) for \\(x>0\\). Its mean is \\(1/\\lambda\\)."
+    ],
+    "theorem": "Let \\(X_1,\\dots,X_n\\) be iid with cdf \\(F\\) and, when a density is named, with density \\(f\\). Then \\(P(U\\le u)=F(u)^n\\) and \\(P(V\\le v)=1-(1-F(v))^n\\). If \\(F\\) has density \\(f\\), then \\(f_U(u)=n f(u)F(u)^{n-1}\\) and \\(f_V(v)=n f(v)\\big(1-F(v)\\big)^{n-1}\\). If instead \\(X_i\\sim\\mathrm{Exp}(\\lambda_i)\\) are independent, not necessarily with equal rates, then \\(\\min_i X_i\\sim\\mathrm{Exp}(\\lambda_1+\\cdots+\\lambda_n)\\). For \\(n\\ge 2\\) iid continuous variables with density \\(f\\), the joint density of \\((V,U)\\) is \\[f_{V,U}(x,y)=n(n-1)f(x)f(y)\\big(F(y)-F(x)\\big)^{n-2},\\qquad x<y,\\] and equals 0 for \\(x\\ge y\\). If the sample is iid uniform on \\([0,1]\\), then \\(E[U-V]=(n-1)/(n+1)\\).",
+    "hypotheses": [
+      "The power formulas for the cdf of \\(U\\) and of \\(V\\) use independence and a common cdf. They do not by themselves require a density. The density formulas for \\(U\\), \\(V\\) and the pair \\((V,U)\\) require a common density, and the joint formula is stated for \\(n\\ge 2\\).",
+      "The exponential minimum uses independence so that the joint survival function factors, and it uses the exponential tail \\(e^{-\\lambda_i t}\\) of each margin. The rates are added even when they differ. Identical rates \\(\\lambda\\) are the special case in which the minimum is exponential with rate \\(n\\lambda\\).",
+      "The range expectation \\((n-1)/(n+1)\\) is for iid uniforms on \\([0,1]\\). A different parent distribution produces a different expected range. Linearity \\(E[U-V]=E[U]-E[V]\\) does not require \\(U\\) and \\(V\\) to be independent; they are dependent."
+    ],
+    "proof": [
+      "The maximum satisfies \\(\\{U\\le u\\}=\\{X_1\\le u,\\dots,X_n\\le u\\}\\). Independence and identical distribution give \\(P(U\\le u)=F(u)^n\\). If a density exists, differentiate: the chain rule produces \\(n f(u) F(u)^{n-1}\\).",
+      "The minimum satisfies \\(\\{V>v\\}=\\{X_1>v,\\dots,X_n>v\\}\\), so \\(P(V>v)=(1-F(v))^n\\) and \\(P(V\\le v)=1-(1-F(v))^n\\). Differentiating the cdf, when \\(f\\) exists, produces \\(n f(v)(1-F(v))^{n-1}\\).",
+      "Let \\(X_i\\sim\\mathrm{Exp}(\\lambda_i)\\) be independent and set \\(T=\\min_i X_i\\). For \\(t>0\\), \\(P(T>t)=\\prod_{i=1}^n P(X_i>t)=\\prod_{i=1}^n e^{-\\lambda_i t}=\\exp\\big(-(\\lambda_1+\\cdots+\\lambda_n)t\\big)\\). That is the survival function of \\(\\mathrm{Exp}(\\lambda_1+\\cdots+\\lambda_n)\\). If every rate equals \\(\\lambda\\), the sum of the rates is \\(n\\lambda\\).",
+      "For iid variables with cdf \\(F\\), and for \\(x<y\\), the event \\(\\{V>x,\\, U\\le y\\}\\) occurs exactly when every sample point lies in \\((x,y]\\). Thus \\(P(V>x,\\, U\\le y)=(F(y)-F(x))^n\\). Also \\(P(U\\le y)=F(y)^n\\), and \\(\\{U\\le y\\}\\) splits into the disjoint union of \\(\\{V\\le x,\\, U\\le y\\}\\) and \\(\\{V>x,\\, U\\le y\\}\\). Therefore the joint cdf of \\((V,U)\\) on the region \\(x<y\\) is \\(F(y)^n-(F(y)-F(x))^n\\).",
+      "Differentiate that joint cdf in \\(y\\) and then in \\(x\\). The first term does not depend on \\(x\\). The second contributes a factor \\(-n(F(y)-F(x))^{n-1}f(y)\\) after \\(\\partial/\\partial y\\), and differentiating in \\(x\\) then multiplies by \\(-(n-1)f(x)/(F(y)-F(x))\\) from the chain rule, with the two minus signs cancelling. The result is \\(n(n-1)f(x)f(y)(F(y)-F(x))^{n-2}\\) for \\(x<y\\). For \\(x\\ge y\\) the event \\(\\{V>x,\\, U\\le y\\}\\) is empty because \\(V\\le U\\), so the joint density is 0 there. For uniforms on \\([0,1]\\) this density is \\(n(n-1)(y-x)^{n-2}\\) on \\(0<x<y<1\\). The inner integral in \\(u=y-x\\) equals \\(n(1-x)^{n-1}\\), and \\(\\int_0^1 n(1-x)^{n-1}\\,dx=1\\), so the joint density integrates to 1.",
+      "For iid uniforms on \\([0,1]\\), \\(F(u)=u\\) and \\(f=1\\) on \\([0,1]\\), so \\(f_U(u)=n u^{n-1}\\) and \\(E[U]=\\int_0^1 n u^n\\,du=n/(n+1)\\). Likewise \\(f_V(v)=n(1-v)^{n-1}\\). The substitution \\(t=1-v\\) gives \\(E[V]=\\int_0^1 (1-t)n t^{n-1}\\,dt=n\\int_0^1 t^{n-1}\\,dt-n\\int_0^1 t^n\\,dt=1-n/(n+1)=1/(n+1)\\). Linearity yields \\(E[U-V]=n/(n+1)-1/(n+1)=(n-1)/(n+1)\\). \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "Three servers fail at independent exponential times, with rates 1, 2 and 3. Let \\(T\\) be the time of the first failure. Find the distribution of \\(T\\) and \\(P(T>1/2)\\). If instead all three rates equal 2, and \\(U\\) is the time of the last failure, find \\(P(U\\le 1)\\).",
+      "steps": [
+        "Independence multiplies the survival functions: \\(P(T>t)=e^{-t}e^{-2t}e^{-3t}=e^{-6t}\\) for \\(t>0\\). Thus \\(T\\sim\\mathrm{Exp}(6)\\), with density \\(6e^{-6t}\\).",
+        "\\(P(T>1/2)=e^{-6\\cdot(1/2)}=e^{-3}\\).",
+        "In the identical-rate case each server has cdf \\(F(u)=1-e^{-2u}\\) for \\(u>0\\). The maximum of three iid copies satisfies \\(P(U\\le u)=F(u)^3=(1-e^{-2u})^3\\).",
+        "At \\(u=1\\), \\(P(U\\le 1)=(1-e^{-2})^3\\)."
+      ],
+      "conclusion": "\\(T\\sim\\mathrm{Exp}(6)\\), \\(P(T>1/2)=e^{-3}\\), and in the equal-rate case \\(P(U\\le 1)=(1-e^{-2})^3\\)."
+    },
+    "practice": {
+      "prompt": "Let \\(X_1,\\dots,X_5\\) be iid uniform on \\([0,1]\\), with minimum \\(V\\) and maximum \\(U\\). Give the joint density of \\((V,U)\\) and compute \\(E[U-V]\\).",
+      "hints": [
+        "For iid uniforms, \\(f=1\\) and \\(F(t)=t\\) on \\([0,1]\\), and the joint density of \\((\\min,\\max)\\) is \\(n(n-1)(y-x)^{n-2}\\) on \\(0<x<y<1\\).",
+        "Compute \\(E[U]\\) and \\(E[V]\\) from \\(f_U(u)=5u^4\\) and \\(f_V(v)=5(1-v)^4\\), then subtract. The substitution \\(t=1-v\\) handles the minimum."
+      ],
+      "answer": "With \\(n=5\\), \\(f_{V,U}(x,y)=20(y-x)^3\\) for \\(0<x<y<1\\), and 0 otherwise. \\(E[U]=\\int_0^1 u\\cdot 5u^4\\,du=5\\int_0^1 u^5\\,du=5/6\\). \\(E[V]=\\int_0^1 v\\cdot 5(1-v)^4\\,dv\\). Set \\(t=1-v\\): \\(5\\int_0^1 (1-t)t^4\\,dt=5\\int_0^1 t^4\\,dt-5\\int_0^1 t^5\\,dt=1-5/6=1/6\\). Therefore \\(E[U-V]=5/6-1/6=2/3\\), which agrees with \\((5-1)/(5+1)=2/3\\)."
+    },
+    "caution": "The survival formula \\(P(V>v)=(1-F(v))^n\\) uses a strict inequality and the cdf value \\(F(v)=P(X_i\\le v)\\). Replacing it by \\(F(v)^n\\) computes the cdf of the maximum, not the minimum. A second boundary is dependence: the identity \\(P(\\min_i X_i>t)=\\prod_i P(X_i>t)\\) requires independence. If \\(X_2=X_1\\) with \\(X_1\\) exponential of rate \\(\\lambda\\), the minimum equals \\(X_1\\) and still has rate \\(\\lambda\\), whereas independence would have given rate \\(2\\lambda\\).",
+    "bridge": "These exact laws for a finite iid sample are the finite-\\(n\\) input to approximation theorems about extremes, while the convolution laws of the previous lessons remain the tool for sums.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 6 (order statistics)."
+  }
+]

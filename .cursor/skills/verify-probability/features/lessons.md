@@ -16,6 +16,7 @@ Chapters currently published (kept in sync by `check:drift`):
 - Conditional probability
 - Discrete random variables
 - Continuous random variables
+- Joint distributions
 
 ## How to get to it (user POV)
 
