@@ -21,6 +21,9 @@
   {"feature": "routing", "id": "mobile-drawer-closed", "url": "/", "viewports": ["mobile"], "actions": [{"click": {"role": "button", "name": "Open lessons"}}, {"press": "Escape"}]},
   {"feature": "labs", "id": "birthday-default", "url": "/lessons/c04-counting-in-action-birthdays-and-matchings#lab", "expect": ["P(at least one shared birthday)"]},
   {"feature": "labs", "id": "birthday-moved", "url": "/lessons/c04-counting-in-action-birthdays-and-matchings#lab", "actions": [{"range": {"name": "people", "value": 40}}], "expect": ["P(at least one shared birthday)"]},
+  {"feature": "progress", "id": "studied", "url": "/lessons/f01-sample-spaces-and-events", "actions": [{"click": {"role": "button", "name": "Mark this lesson as studied"}}], "expect": ["✓ Studied"]},
+  {"feature": "progress", "id": "self-check", "url": "/lessons/f03-equally-likely-outcomes", "actions": [{"click": {"role": "button", "name": "Show answer"}}, {"click": {"role": "button", "name": "✓ I got it"}}], "expect": ["Saved. Nice work."]},
+  {"feature": "progress", "id": "home-continue", "url": "/lessons/f01-sample-spaces-and-events", "actions": [{"click": {"role": "button", "name": "Mark this lesson as studied"}}, {"click": {"role": "button", "name": "Learn"}}], "expectPath": "/", "expect": ["Continue with F02", "1 of 3 studied"]},
   {"feature": "labs", "id": "bayes-default", "url": "/lessons/k03-bayes-rule#lab", "expect": ["P(D | +)"]},
   {"feature": "labs", "id": "bayes-moved", "url": "/lessons/k03-bayes-rule#lab", "actions": [{"range": {"name": "prior", "value": 0.2}}], "expect": ["P(D | +)"]}
 ]
