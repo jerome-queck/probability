@@ -256,6 +256,8 @@ function useProgress() {
 function SelfCheck({ id }: { id: string }) {
   const { practice, unsaved } = useProgress();
   const verdict = practice[id];
+  // Only announce after a choice made here, not when the answer opens onto an old one.
+  const [touched, setTouched] = useState(false);
   return (
     <fieldset className="self-check">
       <legend className="self-check-label">How did it go?</legend>
@@ -263,7 +265,10 @@ function SelfCheck({ id }: { id: string }) {
         type="button"
         className="chip"
         aria-pressed={verdict === 'got-it'}
-        onClick={() => progressStore.setVerdict(id, 'got-it')}
+        onClick={() => {
+          setTouched(true);
+          progressStore.setVerdict(id, 'got-it');
+        }}
       >
         ✓ I got it
       </button>
@@ -271,25 +276,37 @@ function SelfCheck({ id }: { id: string }) {
         type="button"
         className="chip"
         aria-pressed={verdict === 'review'}
-        onClick={() => progressStore.setVerdict(id, 'review')}
+        onClick={() => {
+          setTouched(true);
+          progressStore.setVerdict(id, 'review');
+        }}
       >
         ↺ Review again
       </button>
-      <span className="self-check-saved" aria-live="polite">
-        {!verdict
+      <span
+        className={`self-check-saved ${unsaved ? 'unsaved' : ''}`}
+        aria-live="polite"
+      >
+        {!touched
           ? ''
           : unsaved
-            ? 'Not saved: this browser is blocking storage, so it lasts this visit only.'
+            ? notSaved
             : verdict === 'got-it'
               ? 'Saved. Nice work.'
-              : 'Saved. Problems to review are listed first on the Practice page.'}
+              : verdict === 'review'
+                ? 'Saved. Problems to review are listed first on the Practice page.'
+                : 'Cleared.'}
       </span>
     </fieldset>
   );
 }
 
+const notSaved =
+  'Not saved: this browser is blocking storage, so it lasts this visit only.';
+
 function StudiedToggle({ id }: { id: string }) {
-  const studied = useProgress().studied.includes(id);
+  const { studied: list, unsaved } = useProgress();
+  const studied = list.includes(id);
   return (
     <div className={`studied-toggle ${studied ? 'done' : ''}`}>
       <button
@@ -299,10 +316,12 @@ function StudiedToggle({ id }: { id: string }) {
       >
         {studied ? '✓ Studied' : 'Mark this lesson as studied'}
       </button>
-      <span>
-        {studied
-          ? 'Shown with a tick in the chapter list. Press again to undo.'
-          : 'Progress stays in this browser.'}
+      <span className={unsaved ? 'unsaved' : undefined}>
+        {unsaved
+          ? notSaved
+          : studied
+            ? 'Shown with a tick in the chapter list. Press again to undo.'
+            : 'Progress stays in this browser.'}
       </span>
     </div>
   );

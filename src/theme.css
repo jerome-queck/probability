@@ -900,6 +900,10 @@ main {
   font-size: 0.85rem;
   color: var(--ok);
 }
+.self-check-saved.unsaved,
+.studied-toggle .unsaved {
+  color: var(--warn);
+}
 .studied-mark {
   margin-left: auto;
   color: #7fe0a8;

@@ -44,13 +44,19 @@ const notify = () => {
 if (typeof window !== 'undefined')
   window.addEventListener('storage', (event) => {
     if (event.key !== key) return;
-    snapshot = parseProgress(event.newValue);
+    // Events can arrive late; storage itself holds the newest value.
+    const stored = readStored();
+    if (!stored) return;
+    snapshot = stored;
     notify();
   });
 
 // Read-modify-write against storage, so a change made in another tab is kept.
 function update(change: (current: Progress) => Progress) {
-  const { unsaved: _, ...current } = readStored() ?? snapshot;
+  // After a failed write the visit-only snapshot is newer than storage, so build on it.
+  const { unsaved: _, ...current } = snapshot.unsaved
+    ? snapshot
+    : (readStored() ?? snapshot);
   const next = change(current);
   try {
     localStorage.setItem(key, JSON.stringify(next));
