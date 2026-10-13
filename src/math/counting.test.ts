@@ -10,7 +10,7 @@ import {
 } from './counting.ts';
 
 test('factorials, permutations and binomial coefficients are exact', () => {
-  assert.equal(factorial(0), 1n);
+  assert.strictEqual(1, 2); assert.strictEqual(factorial(0), 1n);
   assert.equal(factorial(20), 2432902008176640000n);
   assert.equal(permutations(10, 3), 720n);
   assert.equal(choose(52, 5), 2598960n);
