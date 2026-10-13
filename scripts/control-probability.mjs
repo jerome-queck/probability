@@ -235,6 +235,15 @@ async function renderingProblems(page) {
           `clipped display math: ${el.scrollWidth}px formula in a ${el.clientWidth}px box (“${el.textContent.slice(0, 40)}”)`,
         );
     }
+    // A wrapped inline formula must not leave a scrap (one symbol and its period) alone
+    // on the next line.
+    for (const el of document.querySelectorAll('.math-inline .katex-html')) {
+      const rects = [...el.getClientRects()].filter((r) => r.width > 0);
+      if (rects.length > 1 && rects[rects.length - 1].width < 24)
+        problems.push(
+          `orphaned formula fragment: “${el.textContent.slice(-20)}” wraps alone onto a new line`,
+        );
+    }
     if (document.querySelector('.math-error'))
       problems.push('KaTeX reported invalid mathematics');
     const families = new Set();

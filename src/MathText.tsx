@@ -36,7 +36,14 @@ export function MathText({ text }: { text: string }) {
     parts.push(
       <span
         key={`m${match.index}`}
-        className={displayMode ? 'math-block' : 'math-inline'}
+        className={
+          displayMode
+            ? 'math-block'
+            : // Short formulas never break; long ones may break after a relation, as TeX does.
+              latex.length <= 48
+              ? 'math-inline math-nowrap'
+              : 'math-inline'
+        }
         // biome-ignore lint/security/noDangerouslySetInnerHtml: KaTeX runs with trust disabled; error text is escaped.
         dangerouslySetInnerHTML={{ __html: html }}
       />,
