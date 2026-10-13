@@ -1,0 +1,31 @@
+name: check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # check:forbidden scans the whole history
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      # The one check command, identical to the local one (AGENTS.md).
+      - run: npm run check
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-evidence
+          path: artifacts/smoke
+          if-no-files-found: ignore
