@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { lessons } from './content/lessons';
 import { lessonMatches } from './content/search';
+import { progressStore } from './progress';
 import { lessonPath } from './routes';
 import { studyStore } from './state';
 
@@ -51,6 +52,10 @@ export function Sidebar({
     state.view === 'lesson'
       ? lessons.find((lesson) => lesson.id === state.lessonId)
       : undefined;
+  const progress = useSyncExternalStore(
+    progressStore.subscribe,
+    progressStore.getSnapshot,
+  );
   const [query, setQuery] = useState('');
   const [expanded, setExpanded] = useState<string[]>(savedChapters);
   // Opening a lesson expands its chapter once; after that the reader can collapse it.
@@ -175,7 +180,11 @@ export function Sidebar({
                   onClick={() => toggle(cluster)}
                 >
                   <span>{cluster}</span>
-                  <span className="chapter-count">{visible.length}</span>
+                  <span className="chapter-count">
+                    {normalized
+                      ? visible.length
+                      : `${visible.filter((l) => progress.studied.includes(l.id)).length}/${visible.length}`}
+                  </span>
                   <span className="chapter-chevron" aria-hidden="true">
                     ⌄
                   </span>
@@ -207,6 +216,12 @@ export function Sidebar({
                   >
                     <span>{lesson.id}</span>
                     <Highlight text={lesson.title} query={normalized} />
+                    {progress.studied.includes(lesson.id) && (
+                      <span className="studied-mark">
+                        <span aria-hidden="true">✓</span>
+                        <span className="visually-hidden"> (studied)</span>
+                      </span>
+                    )}
                   </a>
                 ))}
               </div>

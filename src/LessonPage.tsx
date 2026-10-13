@@ -1,7 +1,8 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useState, useSyncExternalStore } from 'react';
 import { lessons } from './content/lessons';
 import type { Lesson } from './content/types';
 import { MathText } from './MathText';
+import { progressStore } from './progress';
 
 const Labs = lazy(() => import('./Labs'));
 
@@ -144,6 +145,7 @@ export function LessonPage({
             </p>
             <p>Explanations, proofs and examples are written for this site.</p>
           </footer>
+          <StudiedToggle id={lesson.id} />
           <nav className="lesson-pagination" aria-label="Lesson order">
             {previous && (
               <button
@@ -237,6 +239,90 @@ export function Practice({
           <MathText text={lesson.practice.answer} />
         </p>
       )}
+      {answer && <SelfCheck id={lesson.id} />}
     </section>
+  );
+}
+
+function useProgress() {
+  return useSyncExternalStore(
+    progressStore.subscribe,
+    progressStore.getSnapshot,
+  );
+}
+
+// After reading the answer the reader records how it went; "review again" problems are
+// listed first on the Practice page.
+function SelfCheck({ id }: { id: string }) {
+  const { practice, unsaved } = useProgress();
+  const verdict = practice[id];
+  // Only announce after a choice made here, not when the answer opens onto an old one.
+  const [touched, setTouched] = useState(false);
+  return (
+    <fieldset className="self-check">
+      <legend className="self-check-label">How did it go?</legend>
+      <button
+        type="button"
+        className="chip"
+        aria-pressed={verdict === 'got-it'}
+        onClick={() => {
+          setTouched(true);
+          progressStore.setVerdict(id, 'got-it');
+        }}
+      >
+        ✓ I got it
+      </button>
+      <button
+        type="button"
+        className="chip"
+        aria-pressed={verdict === 'review'}
+        onClick={() => {
+          setTouched(true);
+          progressStore.setVerdict(id, 'review');
+        }}
+      >
+        ↺ Review again
+      </button>
+      <span
+        className={`self-check-saved ${unsaved ? 'unsaved' : ''}`}
+        aria-live="polite"
+      >
+        {unsaved
+          ? notSaved
+          : !touched
+            ? ''
+            : verdict === 'got-it'
+              ? 'Saved. Nice work.'
+              : verdict === 'review'
+                ? 'Saved. Problems to review are listed first on the Practice page.'
+                : 'Cleared.'}
+      </span>
+    </fieldset>
+  );
+}
+
+const notSaved =
+  'Not saved: this browser is blocking storage, so it lasts this visit only.';
+
+function StudiedToggle({ id }: { id: string }) {
+  const { studied: list, unsaved } = useProgress();
+  const studied = list.includes(id);
+  return (
+    <div className={`studied-toggle ${studied ? 'done' : ''}`}>
+      <button
+        type="button"
+        aria-pressed={studied}
+        onClick={() => progressStore.toggleStudied(id)}
+      >
+        {studied ? '✓ Studied' : 'Mark this lesson as studied'}
+      </button>
+      <span className={unsaved ? 'unsaved' : undefined}>
+        {unsaved
+          ? notSaved
+          : studied
+            ? 'Shown with a tick in the chapter list. Press again to undo.'
+            : 'Progress stays in this browser.'}
+      </span>
+    </div>
   );
 }
