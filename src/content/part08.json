@@ -1,0 +1,215 @@
+[
+  {
+    "id": "L01",
+    "title": "Markov's and Chebyshev's inequalities",
+    "cluster": "Limit theorems",
+    "question": "How large can a tail probability be when only the mean, or only the mean and the variance, is known?",
+    "prerequisites": [
+      "E02",
+      "R02"
+    ],
+    "summary": "Markov's inequality converts a finite mean into a tail bound for a nonnegative random variable. Chebyshev's inequality converts a finite variance into a bound on the probability of straying from the mean, and zero variance forces the variable to be constant with probability 1.",
+    "intuition": "A fixed mean can come from a modest value that always occurs, or from a rare enormous one. Markov charges that rare value the largest probability the mean allows, and Chebyshev does the same job for squared distance from the mean.",
+    "definition": [
+      "Markov's inequality. Let \\(X\\) satisfy \\(X\\ge 0\\) almost surely, let \\(E[X]\\) be finite, and let \\(a>0\\). Then \\(P(X\\ge a)\\le E[X]/a\\).",
+      "Chebyshev's inequality. Let \\(\\mu=E[X]\\) and \\(\\sigma^2=\\operatorname{Var}(X)\\) be finite, and let \\(k>0\\). Then \\(P(|X-\\mu|\\ge k)\\le \\sigma^2/k^2\\). If \\(\\sigma>0\\) and \\(c>0\\), the choice \\(k=c\\sigma\\) rewrites the same bound in standard-deviation units: \\(P(|X-\\mu|\\ge c\\sigma)\\le 1/c^2\\).",
+      "Both bounds use only moments, so they hold for every distribution with those moments. For one particular distribution the numerical value is often much larger than the true probability.",
+      "Markov's bound is sharp. If \\(P(X=a)=p\\) and \\(P(X=0)=1-p\\) for some \\(a>0\\), then \\(E[X]=ap\\) and \\(P(X\\ge a)=p\\), so the two sides are equal. Chebyshev's bound is sharp for some laws as well. Let \\(W\\) equal \\(1\\) with probability \\(1/16\\), equal \\(9\\) with probability \\(1/16\\), and equal \\(5\\) with probability \\(7/8\\). Then \\(E[W]=1\\cdot 1/16+9\\cdot 1/16+5\\cdot 7/8=10/16+35/8=5/8+35/8=5\\), and \\(\\operatorname{Var}(W)=(-4)^2\\cdot 1/16+4^2\\cdot 1/16=1+1=2\\). At threshold \\(k=4\\), \\(P(|W-5|\\ge 4)=1/8\\) and \\(\\sigma^2/k^2=2/16=1/8\\)."
+    ],
+    "theorem": "Let \\(X\\) be a random variable. (1) If \\(X\\ge 0\\) almost surely, \\(a>0\\) and \\(E[X]<\\infty\\), then \\[P(X\\ge a)\\le \\frac{E[X]}{a}.\\] (2) If \\(\\mu=E[X]\\) and \\(\\sigma^2=\\operatorname{Var}(X)\\) are finite and \\(k>0\\), then \\[P(|X-\\mu|\\ge k)\\le \\frac{\\sigma^2}{k^2}.\\] If \\(\\sigma>0\\) and \\(c>0\\), then \\(P(|X-\\mu|\\ge c\\sigma)\\le 1/c^2\\). (3) If \\(\\operatorname{Var}(X)=0\\), then \\(P(X=\\mu)=1\\).",
+    "hypotheses": [
+      "Markov's inequality needs \\(X\\ge 0\\) almost surely, a finite mean, and a threshold \\(a>0\\). A random variable that can be negative is outside its scope.",
+      "Chebyshev's inequality needs a finite mean, a finite variance, and a threshold \\(k>0\\). The variable may be discrete or continuous and may take negative values.",
+      "The zero-variance conclusion applies Chebyshev at the thresholds \\(1/n\\) and then uses countable subadditivity on the union of those events."
+    ],
+    "proof": [
+      "Markov. Nonnegativity gives \\(X/a\\ge 0\\). On the event \\(\\{X\\ge a\\}\\) one has \\(X/a\\ge 1\\), and on the complementary event the indicator of \\(\\{X\\ge a\\}\\) is \\(0\\), which is at most \\(X/a\\). Therefore \\(1_{\\{X\\ge a\\}}\\le X/a\\). Take expectations. The left side is \\(P(X\\ge a)\\) and the right side is \\(E[X]/a\\).",
+      "Chebyshev. The random variable \\((X-\\mu)^2\\) is nonnegative and has expectation \\(\\sigma^2\\). The event \\(|X-\\mu|\\ge k\\) is exactly the event \\((X-\\mu)^2\\ge k^2\\). Markov's inequality at threshold \\(k^2\\) yields \\[P(|X-\\mu|\\ge k)=P\\bigl((X-\\mu)^2\\ge k^2\\bigr)\\le \\frac{E[(X-\\mu)^2]}{k^2}=\\frac{\\sigma^2}{k^2}.\\] If \\(\\sigma>0\\) and \\(k=c\\sigma\\), the right side is \\(\\sigma^2/(c^2\\sigma^2)=1/c^2\\).",
+      "Zero variance. Suppose \\(\\sigma^2=0\\). For every integer \\(n\\ge 1\\), Chebyshev's inequality gives \\(P(|X-\\mu|\\ge 1/n)\\le 0\\), so that probability equals \\(0\\). If \\(|X-\\mu|>0\\), then \\(|X-\\mu|\\ge 1/n\\) for every integer \\(n>1/|X-\\mu|\\). Hence \\(\\{|X-\\mu|>0\\}=\\bigcup_{n\\ge 1}\\{|X-\\mu|\\ge 1/n\\}\\). Countable subadditivity, which follows from the axioms, gives \\(P(|X-\\mu|>0)\\le \\sum_{n\\ge 1}0=0\\). Therefore \\(P(X=\\mu)=1\\). \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "Overnight rainfall \\(R\\), in centimetres, satisfies \\(P(R=0)=7/10\\), \\(P(R=2)=1/5\\) and \\(P(R=10)=1/10\\). Compute the mean and variance. Compare Markov's bound with the truth for \\(P(R\\ge 2)\\) and for \\(P(R\\ge 10)\\), and compare Chebyshev's bound with the truth for \\(P(|R-E[R]|\\ge 4)\\). Then let \\(D\\) be the face of a fair six-sided die and compare Chebyshev's bound on \\(P(|D-E[D]|\\ge 3)\\) with the truth.",
+      "steps": [
+        "The probabilities sum to \\(7/10+2/10+1/10=1\\). The mean is \\(E[R]=2\\cdot 1/5+10\\cdot 1/10=2/5+1=7/5\\). The second moment is \\(E[R^2]=4\\cdot 1/5+100\\cdot 1/10=4/5+10=54/5\\). Hence \\(\\operatorname{Var}(R)=54/5-(7/5)^2=270/25-49/25=221/25\\).",
+        "The true probability \\(P(R\\ge 2)\\) equals \\(1/5+1/10=3/10\\). Markov's bound is \\((7/5)/2=7/10\\), more than twice the truth. The true probability \\(P(R\\ge 10)\\) equals \\(1/10\\). Markov's bound is \\((7/5)/10=7/50\\). Here \\(7/50>1/10\\), so the bound is valid and only slightly loose: the atom at \\(2\\), strictly between \\(0\\) and \\(10\\), is what prevents equality.",
+        "The distances from \\(7/5\\) are \\(|0-7/5|=7/5\\), \\(|2-7/5|=3/5\\) and \\(|10-7/5|=43/5\\). Only \\(43/5\\) is at least \\(4\\), so \\(P(|R-7/5|\\ge 4)=1/10\\). Chebyshev's bound is \\((221/25)/16=221/400\\). Dividing the bound by the truth gives \\((221/400)/(1/10)=221/40\\), and \\(221/40>5\\), so the bound is more than five times the true probability.",
+        "For the die, \\(E[D]=7/2\\) and \\(E[D^2]=(1+4+9+16+25+36)/6=91/6\\), so \\(\\operatorname{Var}(D)=91/6-49/4=(182-147)/12=35/12\\). Every face is at most \\(5/2\\) away from \\(7/2\\), and \\(5/2<3\\), so \\(P(|D-7/2|\\ge 3)=0\\). Chebyshev's inequality only says that this probability is at most \\((35/12)/9=35/108\\)."
+      ],
+      "conclusion": "Markov gives \\(7/10\\) against a truth of \\(3/10\\), and \\(7/50\\) against a truth of \\(1/10\\). Chebyshev gives \\(221/400\\) against a truth of \\(1/10\\) for the rainfall, and \\(35/108\\) against a truth of \\(0\\) for the die. The inequalities are correct, and for these two laws they are loose."
+    },
+    "practice": {
+      "prompt": "A nonnegative measurement \\(X\\) has mean \\(6\\) and variance \\(8\\). Use Markov to bound \\(P(X\\ge 15)\\) and Chebyshev to bound \\(P(|X-6|\\ge 4)\\). Then bound the same upper tail \\(P(X\\ge 15)\\) by Chebyshev, and decide which of the two tail bounds is smaller.",
+      "hints": [
+        "Markov applies directly to \\(P(X\\ge 15)\\) because \\(X\\ge 0\\).",
+        "For Chebyshev on that same tail, centre first: \\(15-6=9\\), so the threshold is \\(9\\)."
+      ],
+      "answer": "Markov's inequality gives \\(P(X\\ge 15)\\le 6/15=2/5\\). Chebyshev's inequality at threshold \\(4\\) gives \\(P(|X-6|\\ge 4)\\le 8/16=1/2\\). Since \\(X\\ge 0\\), the event \\(X\\ge 15\\) coincides with \\(|X-6|\\ge 9\\). Chebyshev at threshold \\(9\\) therefore yields \\(P(X\\ge 15)\\le 8/81\\). This is smaller than \\(2/5\\), because \\(8\\cdot 5=40\\), \\(2\\cdot 81=162\\) and \\(40<162\\)."
+    },
+    "caution": "Markov's inequality does not apply to a signed random variable: a mean near zero can sit on top of a large positive tail if negative values pull the mean down. In Chebyshev's formula the threshold \\(k\\) is a distance in the units of \\(X\\). For a threshold of \\(c\\) standard deviations the bound is \\(P(|X-\\mu|\\ge c\\sigma)\\le 1/c^2\\). Plugging the count \\(c\\) in as if it were \\(k\\) and computing \\(\\sigma^2/c^2\\) gives a wrong number: too small when \\(\\sigma<1\\) (it can even fall below the true probability) and too large when \\(\\sigma>1\\). A positive Chebyshev number is also compatible with a true probability of \\(0\\), as the die shows. Separately, the universal bounds cannot be tightened, because the two-point law and the three-point law \\(W\\) attain equality.",
+    "bridge": "The variance of a sample average shrinks like \\(1/n\\). Fed into Chebyshev's inequality, that shrinkage drives the tail probability to zero and produces the weak law of large numbers.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 8 (Markov's and Chebyshev's inequalities)."
+  },
+  {
+    "id": "L02",
+    "title": "The weak law of large numbers",
+    "cluster": "Limit theorems",
+    "question": "In what sense does the average of more and more independent observations settle at the mean?",
+    "prerequisites": [
+      "L01"
+    ],
+    "summary": "If \\(X_1,X_2,\\dots\\) are iid with finite mean \\(\\mu\\), the sample average converges to \\(\\mu\\) in probability. When the variance is finite, Chebyshev's inequality proves it, because the variance of the average is \\(\\sigma^2/n\\).",
+    "intuition": "Each new observation moves the average by a smaller and smaller amount. A large deviation from the mean remains possible, but its probability drains away as the sample grows.",
+    "definition": [
+      "Convergence in probability. Random variables \\(Y_n\\) converge in probability to a constant \\(c\\) when, for every \\(\\varepsilon>0\\), \\(P(|Y_n-c|\\ge\\varepsilon)\\to 0\\) as \\(n\\to\\infty\\). The same phrase with a random limit \\(Y\\) means \\(P(|Y_n-Y|\\ge\\varepsilon)\\to 0\\).",
+      "Sample average. For observations \\(X_1,\\dots,X_n\\), write \\(S_n=X_1+\\cdots+X_n\\) and \\(\\bar X_n=S_n/n\\). The weak law says that \\(\\bar X_n\\) converges in probability to \\(\\mu\\). The threshold \\(\\varepsilon>0\\) is fixed first; only then does \\(n\\) grow.",
+      "Coin tossing. Toss a fair coin independently, and let \\(X_i=1\\) when toss \\(i\\) is heads and \\(X_i=0\\) when it is tails. Then \\(\\bar X_n\\) is the proportion of heads in \\(n\\) tosses, \\(E[X_i]=1/2\\) and \\(\\operatorname{Var}(X_i)=1/4\\). The weak law says that for every fixed margin \\(\\varepsilon>0\\), the probability that the proportion of heads misses \\(1/2\\) by \\(\\varepsilon\\) or more tends to \\(0\\). In that sense the long-run proportion of heads approaches \\(1/2\\).",
+      "What the law does not say. It does not change the next toss. After any run of tails, a fair coin still has conditional probability \\(1/2\\) of heads on the following toss: the tosses are independent. The proportion moves toward \\(1/2\\) because later tosses dilute the early ones. Reading a deficit of heads as a debt the coin must repay is the gambler's fallacy. The weak law also speaks about probabilities at each \\(n\\), rather than about one infinite sequence being eventually trapped near \\(\\mu\\). That pathwise statement is the strong law: if the \\(X_i\\) are independent and identically distributed with finite mean \\(\\mu\\), then \\(P(\\lim_{n\\to\\infty}\\bar X_n=\\mu)=1\\)."
+    ],
+    "theorem": "Weak law of large numbers. Let \\(X_1,X_2,\\dots\\) be iid with finite mean \\(E[X_i]=\\mu\\). Then for every \\(\\varepsilon>0\\), \\[P(|\\bar X_n-\\mu|\\ge\\varepsilon)\\to 0\\quad\\text{as }n\\to\\infty,\\] where \\(\\bar X_n=(X_1+\\cdots+X_n)/n\\). Equivalently, \\(\\bar X_n\\) converges to \\(\\mu\\) in probability. The proof below assumes in addition that \\(\\sigma^2=\\operatorname{Var}(X_i)\\) is finite and applies Chebyshev's inequality. The finite-mean theorem remains true without a finite variance; removing that assumption uses a truncation argument that is not proved here.",
+    "hypotheses": [
+      "The observations are independent and identically distributed, with a common finite mean. The proof also uses a common finite variance.",
+      "The margin \\(\\varepsilon>0\\) stays fixed while \\(n\\to\\infty\\). The argument does not by itself control margins that shrink with \\(n\\).",
+      "Chebyshev's inequality is applied to \\(\\bar X_n\\). The variance formula \\(\\operatorname{Var}(\\bar X_n)=\\sigma^2/n\\) uses independence through \\(\\operatorname{Cov}(X_i,X_j)=0\\) for \\(i\\ne j\\)."
+    ],
+    "proof": [
+      "Assume \\(\\sigma^2=\\operatorname{Var}(X_1)<\\infty\\). Linearity of expectation gives \\(E[\\bar X_n]=\\mu\\) whether or not the variables are independent.",
+      "Independence implies that distinct observations are uncorrelated, so \\(\\operatorname{Var}(S_n)=\\operatorname{Var}(X_1)+\\cdots+\\operatorname{Var}(X_n)=n\\sigma^2\\). Scaling by \\(1/n\\) divides a variance by \\(n^2\\), and therefore \\(\\operatorname{Var}(\\bar X_n)=n\\sigma^2/n^2=\\sigma^2/n\\).",
+      "Chebyshev's inequality at threshold \\(\\varepsilon>0\\) gives \\[P(|\\bar X_n-\\mu|\\ge\\varepsilon)\\le \\frac{\\operatorname{Var}(\\bar X_n)}{\\varepsilon^2}=\\frac{\\sigma^2}{n\\varepsilon^2}.\\]",
+      "The upper bound tends to \\(0\\) as \\(n\\to\\infty\\). A probability is at least \\(0\\), so it is squeezed to \\(0\\). This is convergence in probability of \\(\\bar X_n\\) to \\(\\mu\\). \\(\\square\\)",
+      "If one assumes only \\(E|X_1|<\\infty\\), the variance of \\(X_1\\) may be infinite and the display above is unavailable. The standard route is to truncate \\(X_i\\) at a high level, apply the finite-variance case to the truncated variables, and show that the truncation error has small probability. That argument is omitted."
+    ],
+    "example": {
+      "prompt": "Items are defective independently with unknown probability \\(p\\). For a sample of \\(500\\), use Chebyshev to bound the probability that the sample proportion misses \\(p\\) by \\(0.05\\) or more. Specialise to a fair coin. Then suppose the first \\(8\\) tosses of a fair coin are tails: find the conditional probability that toss \\(9\\) is heads, and the conditional expected proportion of heads in \\(108\\) tosses.",
+      "steps": [
+        "Let \\(X_i\\) be the indicator that item \\(i\\) is defective. Then \\(E[X_i]=p\\) and \\(\\operatorname{Var}(X_i)=p(1-p)\\). The quadratic \\(p(1-p)\\) on \\([0,1]\\) has maximum \\(1/4\\), attained at \\(p=1/2\\). Hence \\(\\operatorname{Var}(\\bar X_n)\\le 1/(4n)\\).",
+        "For \\(n=500\\) and \\(\\varepsilon=0.05\\), one has \\(\\varepsilon^2=1/400\\) and \\(1/(4\\cdot 500)=1/2000\\). Chebyshev's inequality yields \\[P(|\\bar X_{500}-p|\\ge 0.05)\\le \\frac{1/2000}{1/400}=\\frac{400}{2000}=\\frac{1}{5}.\\] The same estimate for general \\(n\\) is at most \\(1/(4n\\varepsilon^2)\\). With this \\(\\varepsilon\\) that quantity equals \\(100/n\\), which tends to \\(0\\).",
+        "A fair coin has \\(p=1/2\\), so the variance equals \\(1/4\\) rather than merely sitting under it, and the same numerical bound applies: the proportion of heads in \\(500\\) tosses misses \\(1/2\\) by \\(0.05\\) or more with probability at most \\(1/5\\). As the number of tosses grows, that bound tends to \\(0\\).",
+        "Let the first \\(8\\) tosses be tails. Independence keeps the conditional law of toss \\(9\\) equal to the unconditional law, so the conditional probability of heads is \\(1/2\\). In \\(108\\) tosses the conditional expected number of heads is \\(100\\cdot 1/2=50\\), and the conditional expected proportion is \\(50/108=25/54\\)."
+      ],
+      "conclusion": "Whatever \\(p\\) is, a sample of \\(500\\) misses \\(p\\) by five percentage points or more with probability at most \\(1/5\\), and the Chebyshev bound \\(100/n\\) tends to \\(0\\). After eight tails the next toss still has probability \\(1/2\\) of heads. The expected proportion in \\(108\\) tosses is \\(25/54\\), closer to \\(1/2\\) than the current proportion \\(0\\), by dilution from fair future tosses."
+    },
+    "practice": {
+      "prompt": "Let \\(X_1,X_2,\\dots\\) be iid with mean \\(8\\) and variance \\(9\\). Find the smallest integer \\(n\\) such that Chebyshev's inequality guarantees \\(P(|\\bar X_n-8|\\ge 1/2)\\le 1/25\\).",
+      "hints": [
+        "The variance of the average is \\(9/n\\), so the Chebyshev bound is \\((9/n)/(1/4)=36/n\\).",
+        "Solve \\(36/n\\le 1/25\\)."
+      ],
+      "answer": "Chebyshev's inequality gives \\(P(|\\bar X_n-8|\\ge 1/2)\\le (9/n)/(1/2)^2=(9/n)/(1/4)=36/n\\). The inequality \\(36/n\\le 1/25\\) rearranges to \\(n\\ge 36\\cdot 25=900\\). At \\(n=900\\) the bound equals \\(36/900=1/25\\), so the smallest such integer is \\(900\\)."
+    },
+    "caution": "A streak of tails is not evidence that heads are due. The weak law controls the proportion in a large sample; it leaves the conditional probability of the next independent toss unchanged. Convergence in probability also allows a shrinking collection of unlucky samples whose averages stay far from the mean, and the averages need not approach the mean monotonically along the way. Finally, the Chebyshev proof needs a finite variance: the bound \\(\\sigma^2/(n\\varepsilon^2)\\) is not available when the variance is infinite, even though the weak law itself still holds under a finite mean.",
+    "bridge": "The weak law puts the average near the mean and is silent about the shape of the error. Moment generating functions identify that shape in the central limit theorem.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 8 (the weak law of large numbers).",
+    "lab": "law-of-large-numbers"
+  },
+  {
+    "id": "L03",
+    "title": "Moment generating functions",
+    "cluster": "Limit theorems",
+    "question": "How can one function encode the moments of a random variable and name the distribution of an independent sum?",
+    "prerequisites": [
+      "E01",
+      "R04"
+    ],
+    "summary": "The moment generating function \\(M(t)=E[e^{tX}]\\) packages the moments as derivatives at \\(0\\), when it exists on a neighbourhood of \\(0\\), and it determines the distribution. Independence turns the moment generating function of a sum into a product, which identifies sums of independent Poisson random variables and sums of independent normal random variables.",
+    "intuition": "The exponential series \\(e^{tX}=\\sum_{n\\ge 0}(tX)^n/n!\\) mixes every power of \\(X\\). Taking expectations turns those powers into moments, and independence turns the expectation of a product into a product of expectations.",
+    "definition": [
+      "The moment generating function of \\(X\\) is \\(M_X(t)=E[e^{tX}]\\), defined for those real \\(t\\) at which the expectation is finite. In the discrete case this is \\(\\sum_x e^{tx}P(X=x)\\). In the continuous case, with density \\(f\\), it is \\(\\int_{-\\infty}^{\\infty} e^{tx}f(x)\\,dx\\). Always \\(M_X(0)=1\\), because \\(e^{0}=1\\).",
+      "Neighbourhood hypothesis. Suppose \\(M_X(t)\\) is finite for every \\(t\\) in some open interval containing \\(0\\). Then every moment \\(E[X^n]\\) is finite, and \\(M_X^{(n)}(0)=E[X^n]\\) for each integer \\(n\\ge 0\\). In particular \\(E[X]=M_X'(0)\\) and \\(\\operatorname{Var}(X)=M_X''(0)-(M_X'(0))^2\\). Existence at the single point \\(t=0\\) does not give this conclusion.",
+      "Uniqueness. If \\(M_X(t)=M_Y(t)\\) for every \\(t\\) in some open interval containing \\(0\\), then \\(X\\) and \\(Y\\) have the same distribution. This is stated here without proof. It is the step that lets a closed form be read as a named distribution.",
+      "Joint moment generating function. For a pair \\((X,Y)\\), define \\(M_{X,Y}(s,t)=E[e^{sX+tY}]\\) wherever the expectation is finite. When this function is finite on an open neighbourhood of the origin, it determines the joint distribution. On such a neighbourhood, \\(X\\) and \\(Y\\) are independent if and only if \\(M_{X,Y}(s,t)=M_X(s)M_Y(t)\\).",
+      "A limitation. The expectation \\(E[e^{tX}]\\) may be infinite for every \\(t\\ne 0\\). Heavy tails are a typical cause. Let \\(P(X=n)=c/n^3\\) for integers \\(n\\ge 1\\), where \\(c=\\bigl(\\sum_{n\\ge 1}n^{-3}\\bigr)^{-1}\\). Then \\(E[X]=c\\sum_{n\\ge 1}n^{-2}<\\infty\\), so the mean exists. For every \\(t>0\\), however, \\(e^{tn}/n^3\\to\\infty\\), so the terms of \\(E[e^{tX}]\\) refuse to tend to \\(0\\) and \\(M_X(t)=\\infty\\). The function is finite for \\(t\\le 0\\), but no open interval about \\(0\\) lies inside the domain. Finite moments of every order are still not enough to force a moment generating function: the lognormal distribution has \\(E[X^n]<\\infty\\) for every \\(n\\), while \\(E[e^{tX}]=\\infty\\) for every \\(t>0\\). Distinct distributions can also share every moment. Without a moment generating function on a neighbourhood of \\(0\\), a list of moments need not identify the distribution."
+    ],
+    "theorem": "Suppose \\(M_X\\) exists on an open interval containing \\(0\\). Then \\(M_X^{(n)}(0)=E[X^n]\\) for every \\(n\\ge 0\\), and \\(M_X\\) determines the distribution of \\(X\\). For constants \\(a\\) and \\(b\\), on the corresponding interval, \\[M_{aX+b}(t)=e^{bt}M_X(at).\\] If \\(X\\) and \\(Y\\) are independent, then \\(M_{X+Y}(t)=M_X(t)M_Y(t)\\) wherever both factors are finite; for independent \\(X_1,\\dots,X_n\\) the moment generating function of the sum is the product of the marginal moment generating functions. The named families evaluate as follows. If \\(X\\sim\\operatorname{Bin}(n,p)\\), then \\(M_X(t)=(1-p+pe^t)^n\\) for every real \\(t\\). If \\(X\\sim\\operatorname{Poisson}(\\lambda)\\) with \\(\\lambda>0\\), then \\(M_X(t)=\\exp\\bigl(\\lambda(e^t-1)\\bigr)\\) for every real \\(t\\). If \\(X\\) is exponential with rate \\(\\lambda>0\\), density \\(\\lambda e^{-\\lambda x}\\) for \\(x>0\\), then \\(M_X(t)=\\lambda/(\\lambda-t)\\) for \\(t<\\lambda\\), and the expectation is infinite for \\(t\\ge\\lambda\\). If \\(Z\\sim N(0,1)\\), then \\(M_Z(t)=\\exp(t^2/2)\\) for every real \\(t\\). If \\(X\\sim N(\\mu,\\sigma^2)\\), then \\(M_X(t)=\\exp(\\mu t+\\sigma^2 t^2/2)\\). Consequently, independent Poisson random variables sum to a Poisson random variable whose mean is the sum of the means, and independent normal random variables sum to a normal random variable whose mean is the sum of the means and whose variance is the sum of the variances.",
+    "hypotheses": [
+      "The derivative rule and uniqueness need \\(M(t)\\) finite on some open interval that contains \\(0\\), not merely at \\(0\\).",
+      "The product formula needs independence, and it holds at those \\(t\\) where each factor \\(E[e^{tX_i}]\\) is finite. Nonnegativity of \\(e^{tX_i}\\) supplies the product rule for expectations.",
+      "The exponential formula \\(\\lambda/(\\lambda-t)\\) is restricted to \\(t<\\lambda\\). The normal and Poisson formulas are available for every real \\(t\\), and the binomial formula is a finite sum, so it is available for every real \\(t\\)."
+    ],
+    "proof": [
+      "Moments. Existence of \\(M_X\\) on a neighbourhood of \\(0\\) justifies the exponential series under the expectation for all sufficiently small \\(|t|\\): \\[M_X(t)=\\sum_{n=0}^{\\infty}E[X^n]\\,\\frac{t^n}{n!}.\\] The interchange of sum and expectation is the analytic step in this expansion. A power series may be differentiated term by term inside its open interval of convergence. Differentiating \\(n\\) times and then setting \\(t=0\\) leaves \\(M_X^{(n)}(0)=E[X^n]\\).",
+      "Affine rule. \\(M_{aX+b}(t)=E[e^{t(aX+b)}]=E[e^{bt}e^{(at)X}]=e^{bt}M_X(at)\\), on the set of \\(t\\) for which \\(at\\) lies in the domain of \\(M_X\\).",
+      "Binomial. For \\(X\\sim\\operatorname{Bin}(n,p)\\) and \\(q=1-p\\), \\[M(t)=\\sum_{k=0}^{n}e^{tk}\\binom{n}{k}p^k q^{n-k}=\\sum_{k=0}^{n}\\binom{n}{k}(pe^t)^k q^{n-k}=(q+pe^t)^n,\\] by the binomial theorem. The sum is finite, so it converges for every real \\(t\\). Differentiating, \\(M'(t)=n(q+pe^t)^{n-1}pe^t\\), so \\(M'(0)=np\\). A second differentiation gives \\(M''(t)=n(n-1)(q+pe^t)^{n-2}(pe^t)^2+n(q+pe^t)^{n-1}pe^t\\), so \\(M''(0)=n(n-1)p^2+np\\). Therefore \\[\\operatorname{Var}(X)=n(n-1)p^2+np-n^2p^2=np-np^2=np(1-p).\\]",
+      "Poisson. For \\(X\\sim\\operatorname{Poisson}(\\lambda)\\), \\[M(t)=\\sum_{k=0}^{\\infty}e^{tk}e^{-\\lambda}\\frac{\\lambda^k}{k!}=e^{-\\lambda}\\sum_{k=0}^{\\infty}\\frac{(\\lambda e^t)^k}{k!}=e^{-\\lambda}\\exp(\\lambda e^t)=\\exp\\bigl(\\lambda(e^t-1)\\bigr).\\] The series converges for every real \\(t\\). The chain rule gives \\(M'(t)=\\lambda e^t M(t)\\), hence \\(M'(0)=\\lambda\\). Differentiating again with the product rule, \\(M''(t)=\\lambda e^t M(t)+\\lambda^2 e^{2t}M(t)\\), so \\(M''(0)=\\lambda+\\lambda^2\\) and \\(\\operatorname{Var}(X)=\\lambda\\).",
+      "Exponential. With rate \\(\\lambda>0\\), \\(M(t)=\\int_0^{\\infty}e^{tx}\\lambda e^{-\\lambda x}\\,dx=\\lambda\\int_0^{\\infty}e^{-(\\lambda-t)x}\\,dx\\). For \\(t<\\lambda\\) the integral equals \\(1/(\\lambda-t)\\), so \\(M(t)=\\lambda/(\\lambda-t)\\). For \\(t\\ge\\lambda\\) the integrand does not decay and the integral diverges.",
+      "Standard normal. For \\(Z\\sim N(0,1)\\), \\[M_Z(t)=\\int_{-\\infty}^{\\infty}e^{tx}\\frac{1}{\\sqrt{2\\pi}}e^{-x^2/2}\\,dx.\\] Complete the square: \\(tx-x^2/2=-(x-t)^2/2+t^2/2\\). Therefore \\[M_Z(t)=e^{t^2/2}\\int_{-\\infty}^{\\infty}\\frac{1}{\\sqrt{2\\pi}}e^{-(x-t)^2/2}\\,dx=e^{t^2/2},\\] because the remaining integral is the total mass of the \\(N(t,1)\\) density. The integral converges for every real \\(t\\). Differentiating, \\(M_Z'(t)=te^{t^2/2}\\) and \\(M_Z''(t)=e^{t^2/2}+t^2 e^{t^2/2}\\), so \\(M_Z'(0)=0\\), \\(M_Z''(0)=1\\) and \\(\\operatorname{Var}(Z)=1\\).",
+      "General normal. If \\(\\sigma=0\\), then \\(X=\\mu\\) and \\(M_X(t)=e^{\\mu t}\\), which matches \\(\\exp(\\mu t+\\sigma^2 t^2/2)\\). If \\(\\sigma>0\\) and \\(X\\sim N(\\mu,\\sigma^2)\\), write \\(X=\\mu+\\sigma Z\\) with \\(Z\\sim N(0,1)\\). The affine rule gives \\(M_X(t)=e^{\\mu t}M_Z(\\sigma t)=\\exp(\\mu t+\\sigma^2 t^2/2)\\). Set \\(\\eta(t)=\\mu t+\\sigma^2 t^2/2\\), so \\(M_X=e^{\\eta}\\), \\(\\eta'=\\mu+\\sigma^2 t\\) and \\(\\eta''=\\sigma^2\\). Then \\(M_X'=\\eta' e^{\\eta}\\) and \\(M_X''=\\eta'' e^{\\eta}+(\\eta')^2 e^{\\eta}\\). Evaluating at \\(0\\) gives \\(E[X]=\\mu\\) and \\(E[X^2]=\\sigma^2+\\mu^2\\), so \\(\\operatorname{Var}(X)=\\sigma^2\\).",
+      "Product formula. Let \\(X\\) and \\(Y\\) be independent, and suppose \\(M_X(t)\\) and \\(M_Y(t)\\) are both finite. Then \\(e^{tX}\\) and \\(e^{tY}\\) are nonnegative functions of \\(X\\) and of \\(Y\\) respectively, so independence factors the expectation: \\(E[e^{tX}e^{tY}]=E[e^{tX}]E[e^{tY}]\\). Therefore \\(M_{X+Y}(t)=M_X(t)M_Y(t)\\). Iterating gives the product formula for any finite independent sum, on the common set where every factor is finite.",
+      "Poisson sums. If \\(X_i\\sim\\operatorname{Poisson}(\\lambda_i)\\) are independent and \\(\\lambda_i>0\\), the product of the moment generating functions is \\(\\exp\\bigl((\\sum_i\\lambda_i)(e^t-1)\\bigr)\\). This is the moment generating function of \\(\\operatorname{Poisson}(\\sum_i\\lambda_i)\\). Uniqueness identifies the law of the sum.",
+      "Normal sums. If \\(X_i\\sim N(\\mu_i,\\sigma_i^2)\\) are independent, the product of the moment generating functions is \\(\\exp\\bigl((\\sum_i\\mu_i)t+(\\sum_i\\sigma_i^2)t^2/2\\bigr)\\). This is the moment generating function of \\(N(\\sum_i\\mu_i,\\sum_i\\sigma_i^2)\\). Uniqueness again identifies the law. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "Eastbound trucks in an hour follow a Poisson distribution with mean \\(3\\), and westbound trucks follow a Poisson distribution with mean \\(5\\), independently. Identify the distribution of the total \\(X+Y\\), and compute \\(P(X+Y=0)\\) and \\(P(X+Y=2)\\). Also find \\(M_{2X+1}(t)\\) and \\(E[2X+1]\\).",
+      "steps": [
+        "The marginal formulas are \\(M_X(t)=\\exp\\bigl(3(e^t-1)\\bigr)\\) and \\(M_Y(t)=\\exp\\bigl(5(e^t-1)\\bigr)\\). Independence multiplies them: \\(M_{X+Y}(t)=\\exp\\bigl(8(e^t-1)\\bigr)\\). This is the moment generating function of a Poisson random variable with mean \\(8\\). Uniqueness yields \\(X+Y\\sim\\operatorname{Poisson}(8)\\).",
+        "The Poisson probabilities are \\(P(X+Y=0)=e^{-8}\\cdot 8^0/0!=e^{-8}\\) and \\(P(X+Y=2)=e^{-8}\\cdot 8^2/2!=e^{-8}\\cdot 64/2=32e^{-8}\\).",
+        "The affine rule with coefficient \\(2\\) and constant \\(1\\) gives \\(M_{2X+1}(t)=e^{t}M_X(2t)=\\exp\\bigl(t+3(e^{2t}-1)\\bigr)\\). Write this as \\(e^{\\phi(t)}\\) with \\(\\phi(t)=t+3(e^{2t}-1)\\). Then \\(\\phi'(t)=1+6e^{2t}\\) and the derivative of \\(e^{\\phi}\\) at \\(0\\) equals \\(\\phi'(0)=1+6=7\\). The same number is \\(E[2X+1]=2\\cdot 3+1=7\\)."
+      ],
+      "conclusion": "The total is Poisson with mean \\(8\\), \\(P(X+Y=0)=e^{-8}\\), \\(P(X+Y=2)=32e^{-8}\\), and \\(E[2X+1]=7\\)."
+    },
+    "practice": {
+      "prompt": "Let \\(W\\) be exponential with rate \\(4\\). Find \\(M_W(t)\\) for \\(t<4\\), then compute \\(E[W]\\) and \\(\\operatorname{Var}(W)\\) from derivatives. Separately, let \\(X\\) be normal with mean \\(1\\) and variance \\(4\\), and let \\(Y\\) be normal with mean \\(-3\\) and variance \\(9\\), independent of \\(X\\). Find the moment generating function of \\(X+Y\\) and name its distribution.",
+      "hints": [
+        "Differentiate \\(\\lambda/(\\lambda-t)\\) twice and evaluate at \\(0\\), with \\(\\lambda=4\\).",
+        "Multiply \\(\\exp(t+4\\cdot t^2/2)\\) by \\(\\exp(-3t+9\\cdot t^2/2)\\) and match \\(\\exp(\\mu t+\\sigma^2 t^2/2)\\)."
+      ],
+      "answer": "\\(M_W(t)=4/(4-t)\\) for \\(t<4\\). Then \\(M_W'(t)=4/(4-t)^2\\) and \\(M_W''(t)=8/(4-t)^3\\), so \\(E[W]=4/16=1/4\\) and \\(E[W^2]=8/64=1/8\\). Hence \\(\\operatorname{Var}(W)=1/8-(1/4)^2=1/8-1/16=1/16\\), which equals \\(1/\\lambda^2\\). For the normals, \\(M_{X+Y}(t)=\\exp(t+2t^2)\\exp(-3t+9t^2/2)=\\exp(-2t+13t^2/2)\\). This is the moment generating function of the normal distribution with mean \\(-2\\) and variance \\(13\\), since \\(1+(-3)=-2\\) and \\(4+9=13\\)."
+    },
+    "caution": "Finiteness of \\(M(0)\\) is automatic and carries no moment information. The closed form \\(\\lambda/(\\lambda-t)\\) must not be used at \\(t\\ge\\lambda\\): the integral diverges there, and for \\(t>\\lambda\\) the algebraic expression is negative, which no moment generating function can be. In the affine formula the constant \\(b\\) produces the factor \\(e^{bt}\\), while the coefficient \\(a\\) scales the argument of \\(M_X\\). Swapping them names the wrong distribution. A distribution whose moment generating function fails to exist on a neighbourhood of \\(0\\) can still possess a mean, and even every moment, without those moments picking out a single law.",
+    "bridge": "The central limit theorem is the statement that the moment generating function of a standardized sum approaches \\(e^{t^2/2}\\), the standard normal moment generating function.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 7 (moment generating functions)."
+  },
+  {
+    "id": "L04",
+    "title": "The central limit theorem",
+    "cluster": "Limit theorems",
+    "question": "Why does a standardized sum of many independent contributions become approximately normal?",
+    "prerequisites": [
+      "L02",
+      "L03",
+      "R05"
+    ],
+    "summary": "For iid random variables with mean \\(\\mu\\) and variance \\(\\sigma^2\\), the distribution function of \\((S_n-n\\mu)/(\\sigma\\sqrt{n})\\) converges to the standard normal distribution function \\(\\Phi\\). The argument below assumes a moment generating function near \\(0\\) and uses the continuity theorem; in practice the limit is an approximation whose error depends on skewness.",
+    "intuition": "A sum is a crowd of small independent nudges. After centering and scaling, the moment generating function of that crowd retains the mean and the variance and forgets every other detail of the summands.",
+    "definition": [
+      "Standardized sum. Let \\(X_1,X_2,\\dots\\) be iid with mean \\(\\mu\\) and variance \\(\\sigma^2>0\\), and write \\(S_n=X_1+\\cdots+X_n\\). The standardized sum is \\[Z_n=\\frac{S_n-n\\mu}{\\sigma\\sqrt{n}}=\\frac{\\sqrt{n}(\\bar X_n-\\mu)}{\\sigma}.\\] The same random variable describes both the sum and the sample average. Write \\(\\Phi(a)=P(Z\\le a)\\) for \\(Z\\sim N(0,1)\\). The standard normal moment generating function is \\(e^{t^2/2}\\), and \\(\\Phi\\) is continuous at every real number, with \\(\\Phi(-a)=1-\\Phi(a)\\).",
+      "Continuity theorem. Let \\(F_n\\) be distribution functions with moment generating functions \\(M_n\\), and let \\(F\\) be a distribution function with moment generating function \\(M\\). If \\(M_n(t)\\to M(t)\\) for every \\(t\\) in some open interval containing \\(0\\), then \\(F_n(x)\\to F(x)\\) at every continuity point \\(x\\) of \\(F\\). This theorem is assumed in the proof of the central limit theorem.",
+      "Normal approximation to the binomial. A \\(\\operatorname{Bin}(n,p)\\) random variable is the sum of \\(n\\) iid Bernoulli(\\(p\\)) random variables, with mean \\(np\\) and variance \\(np(1-p)\\). The central limit theorem in this case is the De Moivre–Laplace theorem: \\((X-np)/\\sqrt{np(1-p)}\\) is approximately standard normal when \\(n\\) is large. Because \\(X\\) is integer-valued, the continuity correction recentres the endpoint by half a unit, \\[P(X\\le m)\\approx\\Phi\\biggl(\\frac{m+1/2-np}{\\sqrt{np(1-p)}}\\biggr).\\] A working rule of thumb is to use the approximation when \\(np(1-p)\\ge 10\\).",
+      "Scope and error. The limit needs iid sampling and a finite positive variance only. Existence of a moment generating function is an extra assumption used by the proof below, not a hypothesis of the theorem. For a finite sample the limit is used as an approximation. The error depends on skewness. In the Edgeworth expansion the first correction beyond \\(\\Phi\\) is proportional to the skewness \\(\\gamma=E[(X_1-\\mu)^3]/\\sigma^3\\), divided by \\(\\sqrt{n}\\). A symmetric summand has \\(\\gamma=0\\), so that term drops out. The Berry–Esseen theorem bounds the largest gap between \\(P(Z_n\\le a)\\) and \\(\\Phi(a)\\) by a universal constant times \\(E[|X_1-\\mu|^3]/(\\sigma^3\\sqrt{n})\\). An exponential summand has skewness \\(2\\), so its leading correction is of exact order \\(1/\\sqrt{n}\\)."
+    ],
+    "theorem": "Central limit theorem. Let \\(X_1,X_2,\\dots\\) be iid with mean \\(\\mu\\) and variance \\(\\sigma^2\\in(0,\\infty)\\), and let \\(S_n=X_1+\\cdots+X_n\\). Then for every real \\(a\\), \\[P\\biggl(\\frac{S_n-n\\mu}{\\sigma\\sqrt{n}}\\le a\\biggr)\\to\\Phi(a)\\quad\\text{as }n\\to\\infty.\\] The proof below adds the assumption that the moment generating function of \\(X_1\\) exists on an open interval containing \\(0\\), and it assumes the continuity theorem. The limit remains true under finite variance alone.",
+    "hypotheses": [
+      "The summands are independent and identically distributed, with finite mean \\(\\mu\\) and finite variance \\(\\sigma^2>0\\).",
+      "Every real \\(a\\) is allowed, because \\(\\Phi\\) is continuous everywhere, so the continuity theorem applies at every \\(a\\).",
+      "This proof also requires the moment generating function of \\(X_1\\) on a neighbourhood of \\(0\\). The continuity theorem is taken as known. The binomial approximation is the same theorem for Bernoulli summands; the rule \\(np(1-p)\\ge 10\\) is practical guidance, not a hypothesis of the limit."
+    ],
+    "proof": [
+      "The continuity theorem is assumed: convergence of moment generating functions on a neighbourhood of \\(0\\) implies convergence of distribution functions at continuity points of the limit. The limit moment generating function \\(e^{t^2/2}\\) belongs to \\(N(0,1)\\), whose distribution function \\(\\Phi\\) is continuous everywhere.",
+      "Standardize. Set \\(Y_i=(X_i-\\mu)/\\sigma\\). The \\(Y_i\\) are iid with mean \\(0\\) and variance \\(1\\), and \\(Z_n=(Y_1+\\cdots+Y_n)/\\sqrt{n}\\). If \\(M_X\\) exists near \\(0\\), the affine rule gives the moment generating function of \\(Y_1\\) as \\(M(t)=e^{-\\mu t/\\sigma}M_X(t/\\sigma)\\), which exists for all sufficiently small \\(t\\). It is enough to prove \\(P(Z_n\\le a)\\to\\Phi(a)\\).",
+      "Moment generating function of \\(Z_n\\). Independence multiplies moment generating functions, and scaling a sum by \\(1/\\sqrt{n}\\) scales the argument. For each fixed \\(t\\), and for all large \\(n\\), \\[M_{Z_n}(t)=\\bigl(M(t/\\sqrt{n})\\bigr)^n,\\qquad \\log M_{Z_n}(t)=n\\log M(t/\\sqrt{n}).\\]",
+      "Expand the logarithm. Because \\(M\\) exists near \\(0\\), it is twice differentiable at \\(0\\), with \\(M(0)=1\\), \\(M'(0)=E[Y_1]=0\\) and \\(M''(0)=E[Y_1^2]=1\\). Taylor expansion therefore gives \\(M(u)=1+u^2/2+r(u)\\), where the remainder satisfies \\(r(u)/u^2\\to 0\\) as \\(u\\to 0\\). Abbreviate that remainder by \\(o(u^2)\\). Since \\(M(u)\\to 1\\), one has \\(M(u)>0\\) for small \\(u\\), and \\[\\log M(u)=\\log\\bigl(1+u^2/2+o(u^2)\\bigr).\\] Set \\(\\delta(u)=u^2/2+o(u^2)\\), so \\(\\delta(u)\\to 0\\) and \\(\\delta(u)/u^2\\to 1/2\\). The expansion \\(\\log(1+\\delta)=\\delta+o(\\delta)\\) as \\(\\delta\\to 0\\) then yields \\(\\log M(u)=u^2/2+o(u^2)\\), because both \\(r(u)\\) and \\(o(\\delta(u))\\) are \\(o(u^2)\\).",
+      "Pass to the limit. Substitute \\(u=t/\\sqrt{n}\\) with \\(t\\) fixed: \\[\\log M(t/\\sqrt{n})=\\frac{t^2}{2n}+o(n^{-1}).\\] Multiply by \\(n\\): \\[\\log M_{Z_n}(t)=n\\log M(t/\\sqrt{n})=\\frac{t^2}{2}+o(1)\\to\\frac{t^2}{2}.\\] Exponentiating gives \\(M_{Z_n}(t)\\to e^{t^2/2}\\).",
+      "Invoke the continuity theorem. The pointwise limit is the moment generating function of the standard normal distribution, so \\(P(Z_n\\le a)\\to\\Phi(a)\\) for every real \\(a\\). The expansion of \\(\\log M(t/\\sqrt{n})\\) is the step proved here; the passage from moment generating functions to distribution functions is the step assumed through the continuity theorem. Proofs that avoid moment generating functions establish the same limit whenever the variance is finite and positive. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "The durations of \\(36\\) deliveries are iid with mean \\(10\\) minutes and variance \\(9\\). Let \\(S\\) be the total duration. Using the central limit theorem and the table values \\(\\Phi(1)=0.8413\\) and \\(\\Phi(1.5)=0.9332\\), approximate \\(P(S\\le 387)\\) and \\(P(342\\le S\\le 378)\\).",
+      "steps": [
+        "The mean of the total is \\(E[S]=36\\cdot 10=360\\). The variance of the total is \\(36\\cdot 9=324\\), so the standard deviation of \\(S\\) is \\(\\sqrt{324}=18\\). Equivalently, \\(\\sigma\\sqrt{n}=3\\cdot 6=18\\).",
+        "Standardize the first endpoint: \\((387-360)/18=27/18=3/2=1.5\\). Thus \\(P(S\\le 387)=P(Z_{36}\\le 1.5)\\approx\\Phi(1.5)=0.9332\\). The complementary probability is \\(1-0.9332=0.0668\\).",
+        "The second event is an interval of one standard deviation about the mean: \\((342-360)/18=-18/18=-1\\) and \\((378-360)/18=1\\). Hence \\(P(342\\le S\\le 378)=P(-1\\le Z_{36}\\le 1)\\approx\\Phi(1)-\\Phi(-1)=2\\cdot 0.8413-1=0.6826\\)."
+      ],
+      "conclusion": "The normal approximation gives \\(P(S\\le 387)\\approx 0.9332\\) and \\(P(342\\le S\\le 378)\\approx 0.6826\\). These are approximations at \\(n=36\\), and the gap depends on the skewness of a single duration."
+    },
+    "practice": {
+      "prompt": "Each of \\(400\\) modules fails a stress test independently with probability \\(1/10\\). Let \\(X\\) be the number of failures. Using the normal approximation with the continuity correction, and the table value \\(\\Phi(1.25)=0.8944\\), approximate \\(P(X\\le 47)\\).",
+      "hints": [
+        "Compute \\(np\\) and \\(np(1-p)\\). Check the rule of thumb \\(np(1-p)\\ge 10\\).",
+        "Replace the integer endpoint \\(47\\) by \\(47.5\\) before dividing by the standard deviation of \\(X\\)."
+      ],
+      "answer": "Here \\(X\\sim\\operatorname{Bin}(400,1/10)\\), so \\(E[X]=400\\cdot 1/10=40\\) and \\(\\operatorname{Var}(X)=400\\cdot(1/10)\\cdot(9/10)=36\\). The standard deviation is \\(6\\), and \\(np(1-p)=36\\ge 10\\). The continuity correction gives \\[P(X\\le 47)\\approx\\Phi\\biggl(\\frac{47.5-40}{6}\\biggr)=\\Phi(7.5/6)=\\Phi(1.25)=0.8944.\\] Equivalently, \\(P(X\\ge 48)\\approx 1-0.8944=0.1056\\). Without the correction the endpoint would standardize to \\((47-40)/6=7/6\\), and \\(5/4-7/6=1/12\\), so the half-unit shift moves the standardized value by \\(1/12\\)."
+    },
+    "caution": "The denominator \\(\\sigma\\sqrt{n}\\) is the standard deviation of the sum \\(S_n\\). The sample average \\(\\bar X_n\\) has standard deviation \\(\\sigma/\\sqrt{n}\\) instead. Dividing a sum by \\(\\sigma/\\sqrt{n}\\), or an average by \\(\\sigma\\sqrt{n}\\), is off by a factor of \\(n\\). For a lattice distribution such as the binomial, skipping the continuity correction shifts every endpoint by half a unit. A small sample from a skewed distribution can still be far from \\(\\Phi\\): the leading error is of order \\(|\\gamma|/\\sqrt{n}\\), so several digits of a normal table are not a claim of exactness.",
+    "bridge": "Markov and Chebyshev control tails with moments alone, the weak law sends averages to the mean in probability, moment generating functions turn independent sums into products, and the central limit theorem describes the scale and shape of what remains.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 8 (the central limit theorem).",
+    "lab": "central-limit"
+  }
+]
