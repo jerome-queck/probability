@@ -1,6 +1,7 @@
 import katex from 'katex';
 import { Fragment } from 'react';
 import 'katex/dist/katex.min.css';
+import { keepShortTail } from './mathBreaks';
 
 // Punctuation right after a formula is kept with it, so a period never wraps alone.
 const pattern = /\\\[([\s\S]*?)\\\]([.,;:]?)|\\\(([\s\S]*?)\\\)([.,;:]?)/g;
@@ -21,7 +22,7 @@ export function MathText({ text }: { text: string }) {
       // Display formulas keep display mode (MathML display="block"); CSS lets a long chain
       // of equalities wrap after a relation on a phone instead of being cut off.
       html = katex.renderToString(
-        `${latex}${trailing ? `\\text{${trailing}}` : ''}`,
+        `${keepShortTail(latex)}${trailing ? `\\text{${trailing}}` : ''}`,
         {
           displayMode,
           throwOnError: true,
@@ -39,7 +40,7 @@ export function MathText({ text }: { text: string }) {
           displayMode
             ? 'math-block'
             : // Short formulas never break; long ones may break after a relation, as TeX does.
-              latex.length <= 48
+              latex.length <= 24
               ? 'math-inline math-nowrap'
               : 'math-inline'
         }

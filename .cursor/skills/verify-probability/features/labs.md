@@ -26,6 +26,9 @@ Open a lesson that has an Experiment link in its section bar.
 
 One state per lab once a lesson uses it: `<lab-id>-default` and `<lab-id>-moved` (desktop, mobile), compared with `baselines/labs/`.
 
+- `birthday-default` (desktop, mobile) — C04 experiment as it loads.
+- `birthday-moved` (desktop, mobile) — `people` set to 40.
+
 ## Gotchas
 
 A lab exists in code before any lesson uses it; it can only be driven once a lesson references it. `check:drift` requires every lab ID in `src/content/types.ts` to have a row here.
