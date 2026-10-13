@@ -5,8 +5,11 @@
 const breakAfter =
   /^(=|<|>|\+|-|\\(?:le|leq|ge|geq|ne|neq|approx|sim|equiv|cdot|times|pm|mp|cup|cap)(?![a-zA-Z]))/;
 
-// Wrap the inside of every bracket pair of at most 30 source characters in braces, so the
+// Wrap the inside of every bracket pair with at most 20 visible characters in braces, so the
 // bracket cannot be torn across lines. \left…\right pairs already never break.
+const visible = (s: string) =>
+  s.replace(/\\[a-zA-Z]+/g, 'x').replace(/[\s{}]/g, '').length;
+
 function groupShortBrackets(latex: string): string {
   const open: number[] = [];
   const pairs: [number, number][] = [];
@@ -19,7 +22,10 @@ function groupShortBrackets(latex: string): string {
     if (c === '(') open.push(i);
     else if (c === ')' && open.length) {
       const from = open.pop() as number;
-      if (i - from - 1 <= 30 && !/\\left\s*$/.test(latex.slice(0, from)))
+      if (
+        visible(latex.slice(from + 1, i)) <= 20 &&
+        !/\\left\s*$/.test(latex.slice(0, from))
+      )
         pairs.push([from, i]);
     }
   }
@@ -44,9 +50,6 @@ function groupShortBrackets(latex: string): string {
   }
   return out;
 }
-
-const visible = (s: string) =>
-  s.replace(/\\[a-zA-Z]+/g, 'x').replace(/[\s{}]/g, '').length;
 
 export function keepShortTail(input: string): string {
   const latex = groupShortBrackets(input);
