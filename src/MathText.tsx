@@ -18,13 +18,12 @@ export function MathText({ text }: { text: string }) {
     const trailing = (displayMode ? match[2] : match[4]) ?? '';
     let html: string;
     try {
-      // Display formulas are typeset in display style but as breakable inline math, so a
-      // long chain of equalities wraps after a relation on a phone instead of being cut
-      // off; on a wide screen it still sits on one centred line.
+      // Display formulas keep display mode (MathML display="block"); CSS lets a long chain
+      // of equalities wrap after a relation on a phone instead of being cut off.
       html = katex.renderToString(
-        `${displayMode ? '\\displaystyle ' : ''}${latex}${trailing ? `\\text{${trailing}}` : ''}`,
+        `${latex}${trailing ? `\\text{${trailing}}` : ''}`,
         {
-          displayMode: false,
+          displayMode,
           throwOnError: true,
           trust: false,
           output: 'htmlAndMathml',

@@ -126,7 +126,9 @@ async function launch() {
     process.kill(-child.pid, 'SIGTERM');
   } catch {}
   rmSync(statePathOf(), { force: true });
-  throw new Error(`server did not answer on ${url}; see ${log}`);
+  throw new Error(
+    `server did not answer on ${url}; the server log is kept as server.log next to the screenshots (smoke) or at ${log} (launch)`,
+  );
 }
 
 function alive(pid) {
