@@ -59,9 +59,9 @@ picks its tier per role and runs each role as a fresh headless session with
 
 | Role | Tier | What it does |
 |---|---|---|
-| verifier | `grok-4.7-xhigh` | independent verifier using `verify-probability`; looks at the screenshots |
-| review | `grok-4.7-xhigh` | `interrogate` lead; its two reviewers run `grok-4.7-high` |
-| math | `grok-4.7-xhigh` | independent math check of lesson content against the sources |
+| verifier | `grok-4.7-high` | independent verifier using `verify-probability`; looks at the screenshots |
+| review | `grok-4.7-high` | `interrogate` lead; its two reviewers run `grok-4.7-high` |
+| math | `grok-4.7-high` | independent math check of lesson content against the sources |
 | chore | `grok-4.7-medium` | mechanical work: merges, baselines, PR bodies |
 
 Before each batch of sessions, check the plan usage (`/usage` in `cursor-agent`) and stop if
@@ -139,7 +139,7 @@ Decision trails go in `.audit/<task>.tsv` (git-ignored; pstack `show-me-your-wor
 with these columns: `ts, phase, decision, why, evidence, result, skills, runner, model, session` —
 `skills` names every pstack or repo skill invoked for that step (for example
 `poteto-mode,verify-probability`), `runner` is `cursor-agent`, `model` is the tier slug that ran
-it (for example `grok-4.7-xhigh`; the tier is the effort) and `session` is the session id that
+it (for example `grok-4.7-high`; the tier is the effort) and `session` is the session id that
 `scripts/agent-run.sh` prints. The PR’s “Skills used” line summarises the same. One-way-door decisions get a short record in `docs/adr/`.
 
 ## Parallel agents
