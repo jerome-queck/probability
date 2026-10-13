@@ -353,7 +353,7 @@ main {
   gap: 18px;
   height: 60px;
   padding: 0 clamp(16px, 4vw, 48px);
-  background: #f4e2e2;
+  background: var(--paper);
   border-bottom: 1px solid var(--line);
 }
 .menu-button {
