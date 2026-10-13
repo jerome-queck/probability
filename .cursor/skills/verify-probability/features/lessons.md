@@ -23,6 +23,18 @@ From the home chapter grid, the sidebar, the reference page, or a direct link.
 - Next → `click --url /lessons/f01-sample-spaces-and-events --role button --name "F02 · The axioms of probability →"` → path `/lessons/f02-the-axioms-of-probability`.
 - Answer → `click --url /lessons/f03-equally-likely-outcomes --role button --name "Show answer"` → page shows “Hide answer”.
 
+## Visual states
+
+Each state is screenshotted at the listed widths, checked for overflow, KaTeX, fonts and contrast, and compared with `baselines/lessons/<state>.<width>.png`.
+
+- `open` (desktop, mobile)
+- `next` (desktop, mobile)
+- `hint-shown` (desktop, mobile)
+- `answer-shown` (desktop, mobile)
+- `sidebar-collapsed` (desktop)
+- `search-results` (desktop)
+- `search-empty` (desktop)
+
 ## Gotchas
 
 Button names include the lesson ID and arrow characters; copy them exactly.

@@ -17,6 +17,15 @@ Type or share a URL; use the top bar.
 - `open --url /lessons/z99-nothing` → heading “Page not found”.
 - `click --url /practice --role button --name "Reference"` → path `/reference`.
 
+## Visual states
+
+Each state is screenshotted at the listed widths, checked for overflow, KaTeX, fonts and contrast, and compared with `baselines/routing/<state>.<width>.png`.
+
+- `not-found` (desktop, mobile)
+- `topbar` (desktop, mobile)
+- `mobile-drawer-open` (mobile)
+- `mobile-drawer-closed` (mobile)
+
 ## Gotchas
 
 The slug after the ID is optional; `/lessons/f01` also opens F01.

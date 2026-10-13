@@ -15,6 +15,13 @@ Top bar → “Practice”, or the “Practise →” button on the home page.
 
 - `open --url /practice` → heading “One problem per lesson”.
 
+## Visual states
+
+Each state is screenshotted at the listed widths, checked for overflow, KaTeX, fonts and contrast, and compared with `baselines/practice/<state>.<width>.png`.
+
+- `load` (desktop, mobile)
+- `answer-shown` (desktop, mobile)
+
 ## Gotchas
 
 Each embedded problem has the id `practice-<lesson id>`.

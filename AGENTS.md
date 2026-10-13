@@ -49,8 +49,11 @@ evidence in the PR.
 
 Agents may use any pstack skill when `poteto-mode` calls for it or when they judge it is
 needed (for example `interrogate` for review, `tdd`, `create-verification-skill`,
-`maintain-verification-skill`, `correct`, `show-me-your-work`). Model and effort per role are
-in `.cursor/pstack.json` (written by `setup-pstack`).
+`maintain-verification-skill`, `correct`, `show-me-your-work`). Model and effort per role come from
+`setup-pstack`: every role runs on `grok-4.7` with a per-role effort, written to
+`.grok/rules/pstack-models.md` (Grok Build loads `.grok/rules/*.md` in every session in this
+repo; the same file is installed at `~/.grok/rules/pstack-models.md` and, for Cursor,
+`~/.cursor/rules/pstack-models.mdc`). Run a role as `grok -m grok-4.7 --effort <effort>`.
 
 ## Public-content rule (hard)
 
@@ -72,10 +75,15 @@ review is not clean does not merge.
 
 A PR auto-merges (squash) only when all hold:
 
-1. Independent verifier verdict **VERIFIED** on the PR head, using the verify skill.
+1. Independent verifier verdict **VERIFIED** on the PR head, using the verify skill — including
+   visual verification: the verifier opened and inspected the screenshots of every state the
+   change touches, at desktop and mobile widths.
 2. Multi-model review (`interrogate` or equivalent) is **clean**: no open *Act on* items.
 3. CI `check` is green on a head that is up to date with `main` (the ruleset requires it).
-4. Evidence is in the PR body (the `evidence` CI job checks the template fields).
+4. Evidence is in the PR body (the `evidence` CI job checks the template fields): verdict and
+   verified head, review record naming the reviewer, skills used with model and effort, and for
+   feature changes a link to the CI run whose `verify-evidence` artifact holds the driver run
+   and screenshots.
 
 A new push resets 1 and 2. Force-pushes, deleting `main`, and weakening a gate need Jerome’s
 OK. Fixing a wrong gate is its own PR.
@@ -99,6 +107,8 @@ OK. Fixing a wrong gate is its own PR.
 | Strict types | `tsconfig.json` (`strict`) via `npm run typecheck` |
 | Lint and format | `biome.json` via `npm run lint` and `npm run format:check` |
 | The real site loads and every mapped feature works | `scripts/control-probability.mjs` (`npm run smoke`) |
+| Every feature state looks right at desktop and mobile widths; no unintended visual change | `scripts/control-probability.mjs` (rendering checks + pixel comparison with `.cursor/skills/verify-probability/baselines`) |
+| Every feature lists visual states that are driven and baselined | `scripts/check-drift.mjs` |
 | Same check locally and in CI | `.github/workflows/check.yml` runs `npm run check` |
 | Evidence and verdicts are in the PR | `.github/workflows/evidence.yml` + `.github/pull_request_template.md` |
 | Merge only on green, up-to-date heads | GitHub ruleset `main-gates` (required checks `check` and `evidence`, strict) |
@@ -113,8 +123,11 @@ End each run with four short parts:
 - **Proof:** the evidence (check output, smoke drives, CI run URLs, review verdicts).
 - **Couldn’t do:** anything skipped or blocked, and why.
 
-Decision trails go in `.audit/<task>.tsv` (git-ignored; ts, phase, decision, why, evidence,
-result). One-way-door decisions get a short record in `docs/adr/`.
+Decision trails go in `.audit/<task>.tsv` (git-ignored; pstack `show-me-your-work` format)
+with these columns: `ts, phase, decision, why, evidence, result, skills, model, effort` —
+`skills` names every pstack or repo skill invoked for that step (for example
+`poteto-mode,verify-probability`), and `model`/`effort` record what ran it (`grok-4.7`, effort
+from `.grok/rules/pstack-models.md`). The PR’s “Skills used” line summarises the same. One-way-door decisions get a short record in `docs/adr/`.
 
 ## Parallel agents
 

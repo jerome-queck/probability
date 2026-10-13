@@ -196,66 +196,283 @@ async function stop() {
   console.log(`stopped pid ${s.pid} (artifacts kept)`);
 }
 
-// Drives every feature in the map once and saves evidence. Used by `npm run check`.
+// Drives every state in the feature map at every viewport, checks rendering (overflow,
+// KaTeX, fonts, contrast), saves screenshots and compares them with the committed
+// baselines. Used by `npm run check`. `--update-baselines` rewrites the baselines.
+export const viewports = {
+  desktop: { width: 1280, height: 800 },
+  mobile: { width: 390, height: 844 },
+};
+const baselineDir = join(root, '.cursor/skills/verify-probability/baselines');
+const maxDiffRatio = Number(process.env.VISUAL_MAX_DIFF ?? 0.002);
+
+async function renderingProblems(page) {
+  return page.evaluate(async () => {
+    await document.fonts.ready;
+    const problems = [];
+    if (document.documentElement.scrollWidth > window.innerWidth + 1)
+      problems.push(
+        `horizontal overflow: page is ${document.documentElement.scrollWidth}px wide in a ${window.innerWidth}px viewport`,
+      );
+    if (document.querySelector('.math-error'))
+      problems.push('KaTeX reported invalid mathematics');
+    const families = new Set();
+    for (const el of document.querySelectorAll('body *')) {
+      if (!el.childNodes.length || el.closest('.katex')) continue;
+      const own = [...el.childNodes].some(
+        (n) => n.nodeType === 3 && n.textContent.trim(),
+      );
+      if (!own || !el.getClientRects().length) continue;
+      const cs = getComputedStyle(el);
+      families.add(
+        `${cs.fontStyle}|${cs.fontWeight}|${cs.fontFamily.split(',')[0].trim().replace(/"/g, '')}`,
+      );
+    }
+    for (const key of families) {
+      const [style, weight, family] = key.split('|');
+      if (
+        ['Inter', 'Source Serif 4'].includes(family) &&
+        !document.fonts.check(`${style} ${weight} 16px "${family}"`)
+      )
+        problems.push(`font not loaded: ${family} ${weight} ${style}`);
+      else if (
+        !['Inter', 'Source Serif 4'].includes(family) &&
+        family !== 'inherit'
+      )
+        problems.push(`text uses an unbundled font: ${family}`);
+    }
+    const used = [...document.fonts]
+      .filter((f) => f.status === 'loaded')
+      .map((f) => f.family.replace(/"/g, ''));
+    if (
+      document.querySelector('.katex') &&
+      !used.some((f) => f.startsWith('KaTeX'))
+    )
+      problems.push('KaTeX fonts did not load');
+    const rgb = (c) => (c.match(/[\d.]+/g) ?? []).map(Number);
+    const lum = ([r, g, b]) => {
+      const f = (raw) => {
+        const v = raw / 255;
+        return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+      };
+      return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+    };
+    const background = (el) => {
+      for (let e = el; e; e = e.parentElement) {
+        const cs = getComputedStyle(e);
+        if (cs.backgroundImage !== 'none') return null;
+        const c = rgb(cs.backgroundColor);
+        if (c.length === 3 || (c.length === 4 && c[3] > 0.9))
+          return c.slice(0, 3);
+      }
+      return [255, 255, 255];
+    };
+    const seen = new Set();
+    for (const el of document.querySelectorAll('main *, aside *')) {
+      if (el.closest('.katex-mathml, svg, [aria-hidden="true"]')) continue;
+      const own = [...el.childNodes].some(
+        (n) => n.nodeType === 3 && n.textContent.trim(),
+      );
+      if (!own) continue;
+      const r = el.getBoundingClientRect();
+      const cs = getComputedStyle(el);
+      if (
+        r.width === 0 ||
+        cs.visibility === 'hidden' ||
+        Number(cs.opacity) < 0.5
+      )
+        continue;
+      const bg = background(el);
+      if (!bg) continue;
+      const fg = rgb(cs.color);
+      if (fg.length === 4 && fg[3] < 0.9) continue;
+      const [a, b] = [lum(fg.slice(0, 3)), lum(bg)].sort((x, y) => y - x);
+      const ratio = (a + 0.05) / (b + 0.05);
+      const size = parseFloat(cs.fontSize);
+      const large =
+        size >= 24 || (size >= 18.66 && Number(cs.fontWeight) >= 700);
+      if (ratio < (large ? 3 : 4.5)) {
+        const key = `${cs.color}/${bg}/${el.textContent.trim().slice(0, 30)}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          problems.push(
+            `low contrast ${ratio.toFixed(2)}:1 for “${el.textContent.trim().slice(0, 40)}”`,
+          );
+        }
+      }
+    }
+    return problems;
+  });
+}
+
+async function act(page, action) {
+  const target = (a) =>
+    a.role
+      ? page.getByRole(a.role, { name: a.name, exact: true }).first()
+      : page.locator(a.selector).first();
+  if (action.click) await target(action.click).click();
+  if (action.hover) await target(action.hover).hover();
+  if (action.focus) {
+    await target(action.focus).focus();
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+  }
+  if (action.press) await page.keyboard.press(action.press);
+  if (action.type) await target(action.type).fill(action.type.text);
+  if (action.range) {
+    const input = page.locator(`input[name="${action.range.name}"]`);
+    await input.fill(String(action.range.value));
+    await input.dispatchEvent('input');
+  }
+  await page.waitForTimeout(120);
+}
+
+async function compare(actualPath, baselinePath, diffPath) {
+  const { PNG } = await import('pngjs');
+  const pixelmatch = (await import('pixelmatch')).default;
+  if (!existsSync(baselinePath))
+    return `no baseline at ${baselinePath.replace(`${root}/`, '')} (run smoke --update-baselines and commit it)`;
+  const a = PNG.sync.read(readFileSync(actualPath));
+  const b = PNG.sync.read(readFileSync(baselinePath));
+  if (a.width !== b.width || a.height !== b.height)
+    return `size changed from ${b.width}x${b.height} to ${a.width}x${a.height}`;
+  const diff = new PNG({ width: a.width, height: a.height });
+  const n = pixelmatch(a.data, b.data, diff.data, a.width, a.height, {
+    threshold: 0.1,
+  });
+  const ratio = n / (a.width * a.height);
+  if (ratio > maxDiffRatio) {
+    writeFileSync(diffPath, PNG.sync.write(diff));
+    return `${(ratio * 100).toFixed(3)}% of pixels differ (limit ${(maxDiffRatio * 100).toFixed(3)}%); diff image ${diffPath.replace(`${root}/`, '')}`;
+  }
+  return null;
+}
+
 async function smoke() {
   const base = mkdtempSync(join(tmpdir(), 'probability-smoke-'));
   dataDir = base;
-  const out = resolve(opt('artifacts', join(root, 'artifacts/smoke')));
+  const update = args.includes('--update-baselines');
+  const only = opt('only');
+  const out = resolve(opt('artifacts', join(root, 'artifacts/visual')));
   const fx = JSON.parse(
     readFileSync(
       join(root, '.cursor/skills/verify-probability/features/smoke.json'),
       'utf8',
     ),
   );
+  const failures = [];
+  let shots = 0;
   await launch();
+  const { chromium } = await import('playwright-core');
+  const executablePath =
+    process.env.CHROME_PATH ??
+    [
+      '/usr/bin/google-chrome',
+      '/usr/bin/google-chrome-stable',
+      '/usr/bin/chromium',
+    ].find(existsSync);
+  const browserApp = await chromium.launch({
+    executablePath,
+    headless: true,
+    args: [
+      '--font-render-hinting=none',
+      '--disable-lcd-text',
+      '--force-color-profile=srgb',
+    ],
+  });
   try {
     await doctor();
     if (process.exitCode) throw new Error('doctor failed');
+    const { url } = readState();
     for (const step of fx) {
-      args.splice(0, args.length, 'smoke', '--url', step.url);
-      const result = await browser(async (page) => {
-        if (step.click)
-          await page
-            .getByRole(step.click.role, { name: step.click.name, exact: true })
-            .first()
-            .click();
-        if (step.range) {
-          const input = page.locator(`input[name="${step.range.name}"]`);
-          await input.fill(String(step.range.value));
-          await input.dispatchEvent('input');
-        }
-        await page.waitForTimeout(150);
-        const h1 = await heading(page);
-        const text = await page.locator('main').innerText();
-        const aria = await page.locator('main').ariaSnapshot();
-        save(join(out, step.feature, `${step.id}.aria.txt`), aria);
-        await page.screenshot({
-          path: join(out, step.feature, `${step.id}.png`),
+      if (only && !`${step.feature}/${step.id}`.includes(only)) continue;
+      for (const vp of step.viewports ?? Object.keys(viewports)) {
+        const page = await browserApp.newPage({
+          viewport: viewports[vp],
+          deviceScaleFactor: 1,
+          reducedMotion: 'reduce',
         });
-        return { h1, text, path: new URL(page.url()).pathname };
-      });
-      if (result.text.includes('Invalid mathematics'))
-        throw new Error(
-          `${step.feature}/${step.id}: KaTeX failed to render on ${result.path}`,
+        const errors = [];
+        page.on('pageerror', (e) => errors.push(e.message));
+        page.on(
+          'console',
+          (m) => m.type() === 'error' && errors.push(m.text()),
         );
-      for (const want of step.expect ?? [])
-        if (!result.text.includes(want) && !result.h1.includes(want))
-          throw new Error(
-            `${step.feature}/${step.id}: expected “${want}” on page ${result.path}`,
+        const label = `${step.feature}/${step.id}@${vp}`;
+        try {
+          await page.goto(url + step.url, { waitUntil: 'networkidle' });
+          await page.addStyleTag({
+            content:
+              '*,*::before,*::after{transition:none!important;animation:none!important;caret-color:transparent!important}html{scroll-behavior:auto!important}',
+          });
+          for (const action of step.actions ?? []) await act(page, action);
+          const h1 = await page.locator('h1').first().innerText();
+          const text = await page.locator('body').innerText();
+          const path = new URL(page.url()).pathname;
+          for (const want of step.expect ?? [])
+            if (!text.includes(want))
+              failures.push(`${label}: expected “${want}” on ${path}`);
+          if (step.expectPath && path !== step.expectPath)
+            failures.push(
+              `${label}: expected path ${step.expectPath}, got ${path}`,
+            );
+          for (const p of await renderingProblems(page))
+            failures.push(`${label}: ${p}`);
+          if (errors.length)
+            failures.push(`${label}: browser errors: ${errors.join(' | ')}`);
+          const shot = join(out, step.feature, `${step.id}.${vp}.png`);
+          mkdirSync(dirname(shot), { recursive: true });
+          await page.evaluate(() =>
+            window.scrollTo({ top: 0, behavior: 'instant' }),
           );
-      if (step.expectPath && result.path !== step.expectPath)
-        throw new Error(
-          `${step.feature}/${step.id}: expected path ${step.expectPath}, got ${result.path}`,
-        );
-      console.log(
-        `PASS ${step.feature}/${step.id} → ${result.path} “${result.h1}”`,
-      );
+          await page.waitForTimeout(50);
+          await page.screenshot({ path: shot, fullPage: true });
+          writeFileSync(
+            shot.replace(/\.png$/, '.aria.txt'),
+            await page.locator('body').ariaSnapshot(),
+          );
+          shots += 1;
+          const baseline = join(
+            baselineDir,
+            step.feature,
+            `${step.id}.${vp}.png`,
+          );
+          if (update) {
+            mkdirSync(dirname(baseline), { recursive: true });
+            writeFileSync(baseline, readFileSync(shot));
+          } else {
+            const problem = await compare(
+              shot,
+              baseline,
+              shot.replace(/\.png$/, '.diff.png'),
+            );
+            if (problem) failures.push(`${label}: visual change — ${problem}`);
+          }
+          console.log(
+            `${failures.some((f) => f.startsWith(label)) ? 'FAIL' : 'PASS'} ${label} → ${path} “${h1.replace(/\n/g, ' ')}”`,
+          );
+        } catch (e) {
+          failures.push(`${label}: ${e.message.split('\n')[0]}`);
+          console.log(`FAIL ${label}`);
+        } finally {
+          await page.close();
+        }
+      }
     }
   } finally {
+    await browserApp.close();
     await stop();
     rmSync(base, { recursive: true, force: true });
   }
-  console.log(`smoke ok — ${fx.length} drives, evidence in ${out}`);
+  if (failures.length) {
+    console.error(failures.map((f) => `smoke: ${f}`).join('\n'));
+    throw new Error(
+      `${failures.length} failure(s); screenshots and diffs in ${out}`,
+    );
+  }
+  console.log(
+    `smoke ok — ${shots} screenshots ${update ? 'written as baselines' : 'match their baselines'}, evidence in ${out}`,
+  );
 }
 
 const run = {
@@ -308,14 +525,16 @@ const run = {
   snapshot --url PATH --path FILE      save the ARIA snapshot of <main>
   screenshot --url PATH --path FILE    save a PNG
   stop                                 stop only the instance this data dir started; artifacts stay
-  smoke                                launch → doctor → drive every feature in features/smoke.json → stop`),
+  smoke [--only F/ID] [--update-baselines]   every visual state at desktop and mobile: drive, check rendering, screenshot, compare with baselines`),
 };
 
 if (!run[cmd]) {
   console.error(`unknown command ${cmd}`);
   process.exit(2);
 }
-await run[cmd]().catch((e) => {
-  console.error(`${cmd}: ${e.message}`);
-  process.exitCode = 1;
-});
+await Promise.resolve()
+  .then(() => run[cmd]())
+  .catch((e) => {
+    console.error(`${cmd}: ${e.message}`);
+    process.exitCode = 1;
+  });

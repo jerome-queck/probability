@@ -22,6 +22,10 @@ Open a lesson that has an Experiment link in its section bar.
 - Move a slider → `set-range --url <lesson path> --name <slider> --value <v>` → prints the updated result line.
 - `smoke.json` drives every lab that is attached to a published lesson.
 
+## Visual states
+
+One state per lab once a lesson uses it: `<lab-id>-default` and `<lab-id>-moved` (desktop, mobile), compared with `baselines/labs/`.
+
 ## Gotchas
 
 A lab exists in code before any lesson uses it; it can only be driven once a lesson references it. `check:drift` requires every lab ID in `src/content/types.ts` to have a row here.

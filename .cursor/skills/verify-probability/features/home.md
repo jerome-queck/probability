@@ -19,6 +19,15 @@ Preconditions: launched instance, doctor OK.
 - Load → `open --url /` → heading contains “Uncertain outcomes”.
 - Start → `click --url / --role button --name "Begin at the beginning"` → path `/lessons/f01-sample-spaces-and-events`.
 
+## Visual states
+
+Each state is screenshotted at the listed widths, checked for overflow, KaTeX, fonts and contrast, and compared with `baselines/home/<state>.<width>.png`.
+
+- `load` (desktop, mobile)
+- `start-hover` (desktop, mobile)
+- `start-focus` (desktop, mobile)
+- `start` (desktop, mobile)
+
 ## Gotchas
 
 The hero heading has a line break, so match a fragment of it.

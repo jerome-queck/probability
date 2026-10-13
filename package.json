@@ -23,6 +23,8 @@
     "check:evidence": "node scripts/check-evidence.mjs"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/source-serif-4": "^5.3.1",
     "katex": "^0.18.10",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
@@ -34,7 +36,9 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@typescript/typescript6": "^6.0.2",
+    "pixelmatch": "^8.0.0",
     "playwright-core": "^1.64.0",
+    "pngjs": "^7.0.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.4"
   }

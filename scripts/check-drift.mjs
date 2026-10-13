@@ -68,20 +68,11 @@ const lessons = readdirSync('src/content')
 const smoke = JSON.parse(read(`${features}/smoke.json`));
 const usedLabs = new Set(lessons.filter((l) => l.lab).map((l) => l.lab));
 for (const lab of usedLabs)
-  if (
-    !smoke.some(
-      (s) =>
-        s.feature === 'labs' &&
-        s.range &&
-        lessons.find(
-          (l) =>
-            l.lab === lab && s.url.startsWith(`/lessons/${l.id.toLowerCase()}`),
-        ),
-    )
-  )
-    errors.push(
-      `lab “${lab}” is used by a lesson but no labs step in smoke.json drives it`,
-    );
+  for (const state of [`${lab}-default`, `${lab}-moved`])
+    if (!smoke.some((s) => s.feature === 'labs' && s.id === state))
+      errors.push(
+        `lab “${lab}” is used by a lesson but smoke.json has no labs/${state} state`,
+      );
 
 // 5. Every feature with something to drive appears in smoke.json, and smoke only names mapped features.
 for (const f of files) {
@@ -95,6 +86,49 @@ for (const s of smoke)
     errors.push(
       `smoke.json step ${s.feature}/${s.id} names an unmapped feature`,
     );
+
+// 5b. Every feature lists visual states; each state is driven and has baselines.
+const viewports = ['desktop', 'mobile'];
+for (const f of files) {
+  const name = f.replace(/\.md$/, '');
+  const text = read(`${features}/${f}`);
+  const section = text.split('## Visual states')[1]?.split('\n## ')[0];
+  if (section === undefined) {
+    errors.push(`${features}/${f} has no “## Visual states” section`);
+    continue;
+  }
+  const listed = [...section.matchAll(/^- `([a-z0-9-]+)`/gm)].map((m) => m[1]);
+  const steps = smoke.filter((s) => s.feature === name);
+  if (listed.length === 0 && !(name === 'labs' && usedLabs.size === 0))
+    errors.push(`${features}/${f} lists no visual states`);
+  for (const id of listed)
+    if (!steps.some((s) => s.id === id))
+      errors.push(
+        `visual state ${name}/${id} is listed but not driven in smoke.json`,
+      );
+  for (const s of steps) {
+    if (!listed.includes(s.id))
+      errors.push(
+        `smoke.json state ${name}/${s.id} is not listed under “Visual states” in ${f}`,
+      );
+    for (const vp of s.viewports ?? viewports)
+      if (!existsSync(`${skill}/baselines/${name}/${s.id}.${vp}.png`))
+        errors.push(
+          `no visual baseline ${skill}/baselines/${name}/${s.id}.${vp}.png (run: node scripts/control-probability.mjs smoke --update-baselines, look at it, commit it)`,
+        );
+  }
+}
+const baselineRoot = `${skill}/baselines`;
+if (existsSync(baselineRoot))
+  for (const feature of readdirSync(baselineRoot))
+    for (const file of readdirSync(`${baselineRoot}/${feature}`)) {
+      const [id, vp] = file.replace(/\.png$/, '').split('.');
+      const step = smoke.find((s) => s.feature === feature && s.id === id);
+      if (!step || !(step.viewports ?? viewports).includes(vp))
+        errors.push(
+          `stale baseline ${baselineRoot}/${feature}/${file}: no matching smoke state`,
+        );
+    }
 
 // 6. Every lesson chapter is listed in lessons.md, and nothing stale is listed.
 const lessonsDoc = read(`${features}/lessons.md`);

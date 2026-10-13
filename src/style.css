@@ -73,14 +73,16 @@ a {
   place-items: center;
   color: #a9ead5;
   font:
-    29px Georgia,
+    29px "Source Serif 4",
+    Georgia,
     serif;
 }
 .brand strong {
   display: block;
   color: #fff;
   font:
-    600 17px Georgia,
+    600 17px "Source Serif 4",
+    Georgia,
     serif;
   letter-spacing: 0.01em;
 }
@@ -181,7 +183,8 @@ a {
 }
 .topbar-name {
   font:
-    600 18px Georgia,
+    600 18px "Source Serif 4",
+    Georgia,
     serif;
   color: #1a2944;
 }
@@ -224,7 +227,8 @@ a {
 }
 .lesson-head h1 {
   font:
-    500 clamp(38px, 4.1vw, 61px) / 1.08 Georgia,
+    500 clamp(38px, 4.1vw, 61px) / 1.08 "Source Serif 4",
+    Georgia,
     "Times New Roman",
     serif;
   letter-spacing: -0.04em;
@@ -233,7 +237,8 @@ a {
 }
 .question {
   font:
-    400 clamp(20px, 2vw, 26px) / 1.4 Georgia,
+    400 clamp(20px, 2vw, 26px) / 1.4 "Source Serif 4",
+    Georgia,
     serif;
   color: #32465a;
   margin: 0 0 14px;
@@ -262,7 +267,8 @@ a {
 .content-section h2,
 .lesson-footer h2 {
   font:
-    500 29px / 1.2 Georgia,
+    500 29px / 1.2 "Source Serif 4",
+    Georgia,
     serif;
   letter-spacing: -0.025em;
   color: #17243b;
@@ -286,7 +292,8 @@ a {
 }
 .theorem p {
   font:
-    18px / 1.65 Georgia,
+    18px / 1.65 "Source Serif 4",
+    Georgia,
     serif;
   margin: 10px 0 0;
 }
@@ -314,7 +321,8 @@ a {
   counter-increment: step;
   content: counter(step, decimal-leading-zero);
   font:
-    700 12px ui-sans-serif,
+    700 12px Inter,
+    ui-sans-serif,
     system-ui;
   color: #318e76;
   padding-top: 5px;
@@ -410,7 +418,8 @@ a {
 }
 .answer-strip strong {
   font:
-    25px Georgia,
+    25px "Source Serif 4",
+    Georgia,
     serif;
 }
 .answer-strip small {
@@ -515,7 +524,8 @@ a {
 }
 .next-lesson strong {
   font:
-    22px Georgia,
+    22px "Source Serif 4",
+    Georgia,
     serif;
 }
 .next-lesson:hover {
@@ -743,7 +753,8 @@ a {
 .hero-instrument > strong {
   display: block;
   font:
-    24px Georgia,
+    24px "Source Serif 4",
+    Georgia,
     serif;
   margin: 18px 0;
   color: #fff;
@@ -1071,7 +1082,8 @@ a {
 }
 .hero-copy h1 {
   font:
-    500 clamp(48px, 5vw, 76px) / 1.04 Georgia,
+    500 clamp(48px, 5vw, 76px) / 1.04 "Source Serif 4",
+    Georgia,
     serif;
   letter-spacing: -0.055em;
   margin: 20px 0 23px;
@@ -1150,7 +1162,8 @@ a {
 }
 .orbit-center {
   font:
-    100px Georgia,
+    100px "Source Serif 4",
+    Georgia,
     serif;
   color: #d4f3e7;
   text-shadow: 0 0 35px #7ed1b044;
@@ -1158,7 +1171,8 @@ a {
 .orbit-label {
   position: absolute;
   font:
-    italic 14px Georgia,
+    italic 14px "Source Serif 4",
+    Georgia,
     serif;
   color: #c0e2d9;
 }
@@ -1194,7 +1208,8 @@ a {
 }
 .overview-stats strong {
   font:
-    34px Georgia,
+    34px "Source Serif 4",
+    Georgia,
     serif;
   color: #1b5c55;
 }
@@ -1214,7 +1229,8 @@ a {
 .section-heading h2,
 .method-band h2 {
   font:
-    500 38px Georgia,
+    500 38px "Source Serif 4",
+    Georgia,
     serif;
   letter-spacing: -0.03em;
   margin: 9px 0;
@@ -1262,7 +1278,8 @@ a {
 }
 .atlas-card strong {
   font:
-    22px / 1.18 Georgia,
+    22px / 1.18 "Source Serif 4",
+    Georgia,
     serif;
   padding-right: 18px;
 }
@@ -1304,7 +1321,8 @@ a {
 }
 .method-diagram b {
   font:
-    20px Georgia,
+    20px "Source Serif 4",
+    Georgia,
     serif;
   color: #213b47;
   margin-left: 20px;
@@ -1315,7 +1333,8 @@ a {
 }
 .overview-heading h1 {
   font:
-    500 clamp(40px, 5vw, 64px) / 1.1 Georgia,
+    500 clamp(40px, 5vw, 64px) / 1.1 "Source Serif 4",
+    Georgia,
     serif;
   letter-spacing: -0.045em;
   margin: 12px 0;
@@ -1352,14 +1371,16 @@ a {
   align-items: baseline;
   gap: 12px;
   font:
-    500 30px Georgia,
+    500 30px "Source Serif 4",
+    Georgia,
     serif;
   border-bottom: 1px solid #dbe5e3;
   padding-bottom: 14px;
 }
 .chapter h2 span {
   font:
-    700 11px ui-sans-serif,
+    700 11px Inter,
+    ui-sans-serif,
     system-ui;
   color: #7d9a97;
 }
@@ -1379,7 +1400,8 @@ a {
 }
 .practice-item h2 {
   font:
-    500 24px Georgia,
+    500 24px "Source Serif 4",
+    Georgia,
     serif;
   margin: 8px 0;
 }
@@ -1425,14 +1447,16 @@ a {
 }
 .reference-list article > span {
   font:
-    700 12px ui-sans-serif,
+    700 12px Inter,
+    ui-sans-serif,
     system-ui;
   color: #27886e;
   padding-top: 5px;
 }
 .reference-list h2 {
   font:
-    500 23px Georgia,
+    500 23px "Source Serif 4",
+    Georgia,
     serif;
   margin: 0 0 8px;
 }
@@ -1456,7 +1480,8 @@ a {
 }
 .course-group h2 span {
   font:
-    600 12px ui-sans-serif,
+    600 12px Inter,
+    ui-sans-serif,
     system-ui;
   color: #718797;
 }
@@ -1670,7 +1695,8 @@ a {
 .cancellation-lab h2 {
   margin: 0.4rem 0 1rem;
   font:
-    600 clamp(1.8rem, 2.8vw, 2.6rem) Georgia,
+    600 clamp(1.8rem, 2.8vw, 2.6rem) "Source Serif 4",
+    Georgia,
     serif;
   color: #fff;
 }
@@ -1814,7 +1840,8 @@ a {
 .home-fiber h2 {
   margin: 0.7rem 0 1.3rem;
   font:
-    600 1.65rem / 1.2 Georgia,
+    600 1.65rem / 1.2 "Source Serif 4",
+    Georgia,
     serif;
 }
 .home-fiber-controls {
@@ -2160,4 +2187,32 @@ a {
 }
 .bar-secondary {
   fill: #73d8bb;
+}
+/* Fixes found by visual verification. */
+.search-empty {
+  color: #1b2940;
+}
+.search-empty button {
+  color: #1f4fa3;
+}
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+}
+.atlas-card ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.atlas-card li + li {
+  margin-top: 6px;
+}
+.reference-list > div,
+.reference-list dd {
+  min-width: 0;
+  max-width: 100%;
+}
+.reference-list dd {
+  margin-left: 0;
 }

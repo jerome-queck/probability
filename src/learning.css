@@ -53,7 +53,8 @@ button {
 .brand strong {
   color: var(--ink);
   font:
-    750 17px system-ui,
+    750 17px Inter,
+    system-ui,
     sans-serif;
   letter-spacing: -0.04em;
 }
@@ -174,7 +175,8 @@ button {
 }
 .lesson-head h1 {
   font:
-    750 clamp(30px, 3.4vw, 47px) / 1.12 system-ui,
+    750 clamp(30px, 3.4vw, 47px) / 1.12 Inter,
+    system-ui,
     sans-serif;
   letter-spacing: -0.055em;
   margin: 10px 0 16px;
@@ -182,7 +184,8 @@ button {
 }
 .question {
   font:
-    23px / 1.45 Georgia,
+    23px / 1.45 "Source Serif 4",
+    Georgia,
     serif;
   color: var(--ink);
 }
@@ -218,7 +221,8 @@ button {
 .content-section h2,
 .lesson-footer h2 {
   font:
-    700 26px / 1.25 system-ui,
+    700 26px / 1.25 Inter,
+    system-ui,
     sans-serif;
   letter-spacing: -0.04em;
   color: var(--ink);
@@ -241,7 +245,8 @@ button {
 }
 .intuition-section p {
   font:
-    23px / 1.5 Georgia,
+    23px / 1.5 "Source Serif 4",
+    Georgia,
     serif;
   margin-top: 10px;
   max-width: 68ch;
@@ -254,7 +259,8 @@ button {
 }
 .theorem p {
   font:
-    19px / 1.8 Georgia,
+    19px / 1.8 "Source Serif 4",
+    Georgia,
     serif;
 }
 .hypotheses h3 {
@@ -349,7 +355,8 @@ button {
 }
 .reasoning-check h3 {
   font:
-    650 17px / 1.65 system-ui,
+    650 17px / 1.65 Inter,
+    system-ui,
     sans-serif;
   margin: 12px 0 18px;
 }
@@ -579,7 +586,8 @@ button {
 }
 .overview-heading h1 {
   font:
-    750 clamp(32px, 4vw, 48px) / 1.12 system-ui,
+    750 clamp(32px, 4vw, 48px) / 1.12 Inter,
+    system-ui,
     sans-serif;
   letter-spacing: -0.05em;
 }
@@ -596,13 +604,14 @@ button {
 }
 .hero-copy h1 {
   font:
-    750 clamp(34px, 4.6vw, 58px) / 1.05 system-ui,
+    750 clamp(34px, 4.6vw, 58px) / 1.05 Inter,
+    system-ui,
     sans-serif;
   letter-spacing: -0.055em;
   color: #fff;
 }
 .hero-copy h1 em {
-  font-family: Georgia, serif;
+  font-family: "Source Serif 4", Georgia, serif;
   color: var(--lime);
   font-weight: 400;
 }
@@ -632,7 +641,8 @@ button {
 .home-fiber h2 {
   color: #fff;
   font:
-    600 22px / 1.45 system-ui,
+    600 22px / 1.45 Inter,
+    system-ui,
     sans-serif;
 }
 .home-fiber .instrument-kicker {
@@ -669,7 +679,8 @@ button {
 .section-heading h2,
 .method-band h2 {
   font:
-    700 28px / 1.2 system-ui,
+    700 28px / 1.2 Inter,
+    system-ui,
     sans-serif;
   letter-spacing: -0.04em;
 }
@@ -712,7 +723,8 @@ button {
 }
 .atlas-card strong {
   font:
-    650 18px / 1.35 system-ui,
+    650 18px / 1.35 Inter,
+    system-ui,
     sans-serif;
   letter-spacing: -0.02em;
 }
@@ -749,7 +761,8 @@ button {
 .overview-stats strong {
   color: var(--ink);
   font:
-    650 28px system-ui,
+    650 28px Inter,
+    system-ui,
     sans-serif;
 }
 .method-band {
@@ -769,13 +782,15 @@ button {
 .reference-list h2,
 .studio-card h2 {
   font:
-    650 21px / 1.35 system-ui,
+    650 21px / 1.35 Inter,
+    system-ui,
     sans-serif;
   letter-spacing: -0.02em;
 }
 .overview-shell .chapter > h2 {
   font:
-    700 24px system-ui,
+    700 24px Inter,
+    system-ui,
     sans-serif;
   letter-spacing: -0.03em;
 }
@@ -856,7 +871,8 @@ button {
 }
 .concept-figure h3 {
   font:
-    650 16px / 1.5 system-ui,
+    650 16px / 1.5 Inter,
+    system-ui,
     sans-serif;
   margin: 0 0 18px;
 }
@@ -865,7 +881,8 @@ button {
   width: 100%;
   color: var(--ink);
   font:
-    15px system-ui,
+    15px Inter,
+    system-ui,
     sans-serif;
 }
 .figure-table {

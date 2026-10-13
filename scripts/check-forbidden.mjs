@@ -20,6 +20,8 @@ for (const path of git('ls-files', '-co', '--exclude-standard')
   } catch {
     continue;
   }
+  // Binary files (screenshots, fonts) hold random byte runs, not text.
+  if (text.includes('\0')) continue;
   hits.push(...findForbidden(text, path));
 }
 
