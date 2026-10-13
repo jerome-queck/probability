@@ -1,7 +1,10 @@
 name: evidence
 
 # pull_request_target runs this workflow and the gate script from the BASE branch, so a PR
-# cannot rewrite the check that judges it. The PR head is never checked out or executed here.
+# cannot edit this job. The PR head is never checked out or executed here.
+# Known gap: the main-gates ruleset requires the bare context names `check` and `evidence`, so a
+# PR that adds another workflow with a job of the same name could satisfy it. Closing that needs a
+# ruleset or review change on the repo (see AGENTS.md, "Known gate gaps").
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, edited]

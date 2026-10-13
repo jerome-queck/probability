@@ -124,7 +124,7 @@ if (touchesFeatures) {
 if (
   !/verify-probability/.test(field('Skills used')) ||
   !/grok-4\.7/.test(field('Skills used')) ||
-  !/grok-4\.7-(low|medium|high)\b/.test(field('Skills used')) ||
+  !/grok-4\.7-(low|medium|high)(?![-\w])/.test(field('Skills used')) ||
   /xhigh/i.test(field('Skills used'))
 )
   errors.push(

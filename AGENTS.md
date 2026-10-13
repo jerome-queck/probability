@@ -147,3 +147,12 @@ it (for example `grok-4.7-high`; the tier is the effort) and `session` is the se
 Each worker uses its own branch or worktree and its own `--data-dir`; the driver picks a free
 port per instance, so instances run side by side. Lessons in different `part*.json` files are
 separate seams; `order.json` is shared, so edit it in one PR at a time.
+
+## Known gate gaps
+
+- The `main-gates` ruleset requires the bare status contexts `check` and `evidence` with no required
+  review, so a PR that adds a workflow with a job of the same name could satisfy them. Fixing it
+  needs a repo setting (for example a required review from Jerome, or requiring the workflow by
+  path through a ruleset `workflows` rule). Jerome decides.
+- The evidence gate checks the linked run's workflow name, path, head SHA, success and a non-empty
+  `verify-evidence` artifact, not that the PR's `check.yml` still runs `npm run check`.
