@@ -66,6 +66,7 @@ p {
 }
 button {
   font: inherit;
+  font-family: var(--sans);
   cursor: pointer;
 }
 :focus-visible {
@@ -940,7 +941,10 @@ main {
 }
 @media (max-width: 520px) {
   .katex-display > .katex {
-    font-size: 0.9em;
+    font-size: 0.86em;
+  }
+  .reference-list > div {
+    padding: 14px 14px;
   }
   .topbar {
     gap: 10px;
