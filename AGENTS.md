@@ -82,7 +82,7 @@ A PR auto-merges (squash) only when all hold:
 3. CI `check` is green on a head that is up to date with `main` (the ruleset requires it).
 4. Evidence is in the PR body (the `evidence` CI job checks the template fields): verdict and
    verified head, review record naming the reviewer, skills used with model and effort, and for
-   feature changes a link to the CI run whose `smoke-evidence` artifact holds the driver run
+   feature changes a link to the CI run whose `verify-evidence` artifact holds the driver run
    and screenshots.
 
 A new push resets 1 and 2. Force-pushes, deleting `main`, and weakening a gate need Jerome’s
@@ -110,7 +110,7 @@ OK. Fixing a wrong gate is its own PR.
 | Every feature state looks right at desktop and mobile widths; no unintended visual change | `scripts/control-probability.mjs` (rendering checks + pixel comparison with `.cursor/skills/verify-probability/baselines`) |
 | Every feature lists visual states that are driven and baselined | `scripts/check-drift.mjs` |
 | Same check locally and in CI | `.github/workflows/check.yml` runs `npm run check` |
-| Evidence and verdicts are in the PR | `.github/workflows/evidence.yml` + `.github/pull_request_template.md` |
+| Evidence and verdicts are in the PR | `.github/workflows/evidence.yml` (pull_request_target: the gate script comes from the base branch, never the PR head) + `.github/pull_request_template.md` |
 | Merge only on green, up-to-date heads | GitHub ruleset `main-gates` (required checks `check` and `evidence`, strict) |
 | Math reviewed independently before merge | `.github/workflows/evidence.yml` (requires a clean math-review line for content PRs) |
 

@@ -21,11 +21,17 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      # Pinned browser so screenshots match the committed baselines run to run.
+      - id: chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: 154.0.8037.92
+      - run: echo "CHROME_PATH=${{ steps.chrome.outputs.chrome-path }}" >> "$GITHUB_ENV"
       # The one check command, identical to the local one (AGENTS.md).
       - run: npm run check
       - if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: smoke-evidence
+          name: verify-evidence
           path: artifacts/smoke
           if-no-files-found: ignore
