@@ -243,7 +243,10 @@ function NormalApproximationLab() {
       </p>
       <Bars
         label="Binomial probabilities (dark) and the normal density at each integer (light)"
-        max={Math.max(exact, normalPdf(mean, mean, Math.sqrt(variance)))}
+        max={Math.max(
+          ...ks.map((i) => binomialPmf(n, p, i)),
+          normalPdf(mean, mean, Math.sqrt(variance)),
+        )}
         series={[
           {
             name: 'binomial',

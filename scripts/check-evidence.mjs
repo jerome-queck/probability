@@ -10,7 +10,8 @@ const gh = (...a) => execFileSync('gh', a, { encoding: 'utf8' });
 const live = JSON.parse(
   gh('pr', 'view', pr, '--json', 'body,headRefOid,files'),
 );
-const body = live.body ?? '';
+// Template placeholders are HTML comments; they never count as evidence.
+const body = (live.body ?? '').replace(/<!--[\s\S]*?-->/g, '');
 const head = process.env.HEAD_SHA || live.headRefOid;
 const files = live.files.map((f) => f.path);
 const errors = [];
@@ -26,7 +27,7 @@ if (!/^VERIFIED\b/.test(field('Verifier verdict')))
 const verifiedHead = field('Verified head');
 if (
   !verifiedHead ||
-  !head.startsWith(verifiedHead.replace(/`/g, '').slice(0, 7)) ||
+  !head.startsWith(verifiedHead.replace(/`/g, '')) ||
   verifiedHead.replace(/`/g, '').length < 7
 )
   errors.push(
@@ -40,7 +41,10 @@ if (field('Evidence').length < 10)
   );
 if (
   files.some((f) => f.startsWith('src/content/')) &&
-  !/^clean\b/i.test(field('Math review'))
+  !(
+    /^clean\b/i.test(field('Math review')) &&
+    /\b(grok|reviewer|session)\b/i.test(field('Math review'))
+  )
 )
   errors.push(
     'content changed: “Math review:” must start with “clean” and name the independent reviewer',

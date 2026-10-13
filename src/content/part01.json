@@ -20,7 +20,8 @@
     "proof": [
       "Take an outcome \\(s\\). It lies in \\(\\big(\\bigcup_i E_i\\big)^c\\) exactly when it lies in none of the \\(E_i\\).",
       "Lying in none of the \\(E_i\\) means lying in every complement \\(E_i^c\\), that is, in \\(\\bigcap_i E_i^c\\). The two sets have the same members, so they are equal.",
-      "Apply the first law to the events \\(E_i^c\\) and take complements of both sides; since \\((E^c)^c=E\\), this gives the second law. \\(\\square\\)"
+      "Apply the first law to the events \\(E_i^c\\) and take complements of both sides; since \\((E^c)^c=E\\), this gives the second law.",
+      "For the distributive law \\((E\\cup F)G=EG\\cup FG\\): an outcome lies on the left exactly when it is in \\(G\\) and in at least one of \\(E\\), \\(F\\), which is exactly when it lies in \\(EG\\) or in \\(FG\\). The dual law \\(EF\\cup G=(E\\cup G)(F\\cup G)\\) follows by applying this one to the complements and using De Morgan. Commutativity and associativity hold because “or” and “and” do not depend on order or grouping. \\(\\square\\)"
     ],
     "example": {
       "prompt": "Two coins are tossed. Let \\(A\\) be “at least one head” and \\(B\\) be “the coins match”. Describe \\(A^c\\), \\(AB\\) and \\((A\\cup B)^c\\).",
@@ -86,7 +87,7 @@
       "answer": "From \\(P(A\\cup B)=P(A)+P(B)-P(AB)\\) and \\(P(AB)\\ge0\\) we get \\(P(A\\cup B)\\le P(A)+P(B)\\). Hence \\(P(E\\cup F\\cup G)\\le P(E\\cup F)+P(G)\\le P(E)+P(F)+P(G)\\)."
     },
     "caution": "Adding probabilities is only valid for mutually exclusive events. For overlapping events, \\(P(E)+P(F)\\) counts the overlap twice and can even exceed 1.",
-    "bridge": "When the sample space is finite and all outcomes are equally likely, the axioms reduce probability to counting, which is the subject of the next chapter.",
+    "bridge": "When the sample space is finite and all outcomes are equally likely, the axioms reduce probability to counting; the next lesson shows how.",
     "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 2 (axioms of probability; some simple propositions)."
   },
   {
@@ -128,7 +129,7 @@
       ],
       "answer": "There are \\(2^4=16\\) equally likely sequences, and \\(\\binom42=6\\) have exactly two heads, so the probability is \\(6/16=3/8\\)."
     },
-    "caution": "Combining data can reverse a comparison (Simpson’s paradox): a treatment can have the higher success rate in every subgroup yet the lower rate overall, because the groups have different sizes. Compare like with like before reading off a ratio.",
+    "caution": "The formula \\(P(E)=|E|/|S|\\) is only as good as the claim that the outcomes in \\(S\\) are equally likely. The sums of two dice, \\(2,\\dots,12\\), are eleven outcomes but not equally likely: a sum of 7 has probability \\(6/36\\), not \\(1/11\\). And \\(E\\) must be counted in the same model as \\(S\\): if \\(S\\) lists ordered pairs, count the ordered pairs in \\(E\\) too.",
     "bridge": "Counting \\(|E|\\) quickly needs systematic tools: the multiplication principle, permutations and combinations.",
     "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 2 (sample spaces having equally likely outcomes)."
   }

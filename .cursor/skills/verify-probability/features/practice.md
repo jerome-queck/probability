@@ -9,7 +9,7 @@
 
 ## How to get to it (user POV)
 
-Top bar → “Practice”, or the “Practise →” button on the home page.
+Top bar → “Practice”, or the “Practise problems” button on the home page.
 
 ## Driving it with control-probability
 

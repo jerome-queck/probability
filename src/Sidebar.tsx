@@ -34,10 +34,12 @@ function Highlight({ text, query }: { text: string; query: string }) {
 }
 export function Sidebar({
   drawer,
+  hiddenOffscreen,
   onClose,
   onSelect,
 }: {
   drawer: boolean;
+  hiddenOffscreen: boolean;
   onClose: () => void;
   onSelect: (id: string) => void;
 }) {
@@ -51,6 +53,14 @@ export function Sidebar({
       : undefined;
   const [query, setQuery] = useState('');
   const [expanded, setExpanded] = useState<string[]>(savedChapters);
+  // Opening a lesson expands its chapter once; after that the reader can collapse it.
+  const activeCluster = active?.cluster;
+  useEffect(() => {
+    if (activeCluster)
+      setExpanded((current) =>
+        current.includes(activeCluster) ? current : [...current, activeCluster],
+      );
+  }, [activeCluster]);
   useEffect(() => {
     try {
       localStorage.setItem(preferenceKey, JSON.stringify(expanded));
@@ -74,6 +84,7 @@ export function Sidebar({
     <aside
       id="lesson-sidebar"
       className={`sidebar ${drawer ? 'open' : ''}`}
+      inert={hiddenOffscreen}
       aria-label="Lesson navigation"
     >
       <div className="brand">
@@ -120,7 +131,9 @@ export function Sidebar({
         onChange={(event) => setQuery(event.target.value)}
       />
       <div className="search-status" aria-live="polite">
-        {normalized ? `${found.length} matching lessons` : 'Browse by chapter'}
+        {normalized
+          ? `${found.length} matching ${found.length === 1 ? 'lesson' : 'lessons'}`
+          : 'Browse by chapter'}
       </div>
       <nav className="lesson-nav" aria-label="Chapters and lessons">
         {normalized && found.length === 0 && (
@@ -136,10 +149,7 @@ export function Sidebar({
             ? found.filter((lesson) => lesson.cluster === cluster)
             : lessons.filter((lesson) => lesson.cluster === cluster);
           if (visible.length === 0) return null;
-          const open =
-            Boolean(normalized) ||
-            expanded.includes(cluster) ||
-            active?.cluster === cluster;
+          const open = Boolean(normalized) || expanded.includes(cluster);
           const panelId = `chapter-${index}`;
           return (
             <section className="chapter" key={cluster}>
