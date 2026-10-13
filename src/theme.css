@@ -1006,9 +1006,3 @@ main {
 }
 
 /* On phones a long unbroken formula is worse than a wrap: let inline maths break. */
-@media (min-width: 521px) {
-  .math-nowrap-wide .katex,
-  .math-nowrap-wide .katex-html {
-    white-space: nowrap;
-  }
-}

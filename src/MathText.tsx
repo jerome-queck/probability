@@ -40,12 +40,9 @@ export function MathText({ text }: { text: string }) {
           displayMode
             ? 'math-block'
             : // Short formulas never break; long ones may break after a relation, as TeX does.
-              // Mid-length ones stay whole except on phones, where they could overflow.
               latex.length <= 24
               ? 'math-inline math-nowrap'
-              : latex.length <= 48
-                ? 'math-inline math-nowrap-wide'
-                : 'math-inline'
+              : 'math-inline'
         }
         // biome-ignore lint/security/noDangerouslySetInnerHtml: KaTeX runs with trust disabled; error text is escaped.
         dangerouslySetInnerHTML={{ __html: html }}

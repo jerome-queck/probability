@@ -518,9 +518,14 @@ async function smoke() {
         '/practice',
         '/reference',
       ];
-      for (const vp of Object.keys(viewports)) {
+      const sweepWidths = {
+        ...viewports,
+        w600: { width: 600, height: 900 },
+        w860: { width: 860, height: 900 },
+      };
+      for (const vp of Object.keys(sweepWidths)) {
         const page = await browserApp.newPage({
-          viewport: viewports[vp],
+          viewport: sweepWidths[vp],
           deviceScaleFactor: 1,
           reducedMotion: 'reduce',
         });
@@ -540,7 +545,7 @@ async function smoke() {
         }
       }
       console.log(
-        `sweep: ${routes.length} pages checked at ${Object.keys(viewports).length} widths`,
+        `sweep: ${routes.length} pages checked at ${Object.keys(sweepWidths).length} widths`,
       );
     }
   } finally {
