@@ -20,8 +20,7 @@ const key = 'probability.progress.v1';
 function reset(stored: object) {
   blocked = false;
   data.set(key, JSON.stringify(stored));
-  progressStore.toggleStudied('RESET');
-  progressStore.toggleStudied('RESET');
+  progressStore.reload();
 }
 
 test('a change made in another tab is kept by the next local change', () => {

@@ -45,10 +45,7 @@ if (typeof window !== 'undefined')
   window.addEventListener('storage', (event) => {
     if (event.key !== key) return;
     // Events can arrive late; storage itself holds the newest value.
-    const stored = readStored();
-    if (!stored) return;
-    snapshot = stored;
-    notify();
+    progressStore.reload();
   });
 
 // Read-modify-write against storage, so a change made in another tab is kept.
@@ -95,6 +92,13 @@ export const progressStore = {
     return () => listeners.delete(listener);
   },
   getSnapshot: () => snapshot,
+  /** Adopt whatever storage holds now (another tab's change, or a test's seed). */
+  reload() {
+    const stored = readStored();
+    if (!stored) return;
+    snapshot = stored;
+    notify();
+  },
   toggleStudied(id: string) {
     update((current) => toggleStudiedIn(current, id));
   },
