@@ -1,0 +1,198 @@
+[
+  {
+    "id": "C01",
+    "title": "The multiplication principle and permutations",
+    "cluster": "Counting",
+    "question": "How many outcomes does a procedure have when it is built from successive choices?",
+    "prerequisites": [
+      "F03"
+    ],
+    "summary": "If a procedure is a sequence of choices and each choice has a fixed number of options, the number of outcomes is the product of those numbers. That product counts ordered samples, the \\(n!\\) orderings of \\(n\\) distinct objects, and the distinct arrangements of objects that are not all different.",
+    "intuition": "Each new choice multiplies the list already counted, because every outcome of the earlier steps can be continued in as many ways as the next step allows.",
+    "definition": [
+      "Basic counting principle. Suppose a procedure has two steps. If the first step can be completed in \\(m\\) ways and, for each of those ways, the second step can be completed in \\(n\\) ways, then the procedure has \\(mn\\) outcomes.",
+      "Generalized multiplication rule. Suppose a procedure has \\(r\\) steps and step \\(i\\) can be completed in \\(n_i\\) ways no matter how the earlier steps turned out. Then the procedure has \\(n_1 n_2 \\cdots n_r\\) outcomes.",
+      "An ordered sample of size \\(r\\) from a set of \\(n\\) objects is a sequence of length \\(r\\). With replacement (repetition allowed) there are \\(n^r\\) such samples. Without replacement, and with \\(r\\le n\\), there are \\(n(n-1)\\cdots(n-r+1)\\) such samples. The falling factorial \\((n)_r=n!/(n-r)!\\) is that product.",
+      "For a positive integer \\(n\\), the factorial is \\(n!=n(n-1)\\cdots 1\\), and one sets \\(0!=1\\). There are \\(n!\\) orderings of \\(n\\) distinct objects, since \\((n)_n=n!\\).",
+      "Suppose \\(n\\) objects fall into \\(r\\) types, with \\(n_i\\) identical objects of type \\(i\\) and \\(n_1+\\cdots+n_r=n\\). The number of distinct linear arrangements is \\(n!/(n_1! n_2! \\cdots n_r!)\\)."
+    ],
+    "theorem": "Let \\(n\\), \\(r\\) and \\(n_1,\\ldots,n_r\\) be non-negative integers. Ordered samples of size \\(r\\) from \\(n\\) distinct objects number \\(n^r\\) when replacement is allowed. When replacement is forbidden and \\(r\\le n\\), they number \\[(n)_r=n(n-1)\\cdots(n-r+1)=\\frac{n!}{(n-r)!}.\\] If instead the \\(n\\) objects are of \\(r\\) types, with \\(n_i\\) identical objects of type \\(i\\) and \\(n_1+\\cdots+n_r=n\\), the number of distinct linear arrangements is \\(n!/(n_1!\\cdots n_r!)\\). In particular there are \\(n!\\) linear arrangements of \\(n\\) distinct objects.",
+    "hypotheses": [
+      "A single product \\(n_1\\cdots n_r\\) is justified only when every path through the earlier steps leaves the same number of options at the current step. If an early choice changes that number, split into cases and add the resulting counts.",
+      "Sampling without replacement uses \\(r\\le n\\) distinct objects and counts sequences: two orders of the same objects are different outcomes. The identical-object formula applies only when objects of one type are indistinguishable and two arrangements are identified precisely when they place the same type in each position."
+    ],
+    "proof": [
+      "Basic principle. Label the outcomes of the first step \\(a_1,\\ldots,a_m\\). Let \\(B_i\\) be the set of complete outcomes whose first step is \\(a_i\\). The sets \\(B_i\\) are pairwise disjoint, their union is the whole set of outcomes, and each contains \\(n\\) elements, so there are \\(mn\\) outcomes.",
+      "Generalized rule, by induction on \\(r\\). The case \\(r=1\\) is the count \\(n_1\\), and \\(r=2\\) is the basic principle. For the inductive step, view an \\(r\\)-step procedure as an \\((r-1)\\)-step procedure, with \\(N=n_1\\cdots n_{r-1}\\) outcomes, followed by a last step that has \\(n_r\\) options on every path. The basic principle multiplies these and gives \\(N n_r\\).",
+      "With replacement, each of the \\(r\\) positions may be any of the \\(n\\) objects, independently of the others. The generalized rule therefore gives \\(n^r\\).",
+      "Without replacement, position 1 has \\(n\\) choices, position 2 has \\(n-1\\) remaining choices, and position \\(r\\) has \\(n-r+1\\). The product equals \\(n!/(n-r)!\\) because \\(n!=(n(n-1)\\cdots(n-r+1))\\cdot(n-r)!\\) and \\((n-r)!\\ne 0\\). Setting \\(r=n\\) leaves the empty product \\((n-n)! = 0! = 1\\) in the denominator, so there are \\(n!\\) orderings of \\(n\\) distinct objects.",
+      "Identical objects. If all \\(n\\) objects were distinct there would be \\(n!\\) arrangements. Fix one pattern of types along the line. Any of the \\(n_i!\\) permutations of the objects of type \\(i\\), for each \\(i\\), reproduces that same pattern, and these internal permutations may be chosen independently. Each distinct pattern is therefore produced by exactly \\(n_1! n_2! \\cdots n_r!\\) labelled arrangements, and the number of patterns is \\(n!/(n_1!\\cdots n_r!)\\). \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "A baker lines up 8 pastries in a window: 3 identical almond croissants, 3 identical berry tarts and 2 identical sesame buns. How many distinct displays are there?",
+      "steps": [
+        "Pastries of one kind cannot be told apart, and the display is a line, so the identical-object count applies with \\(n=8\\), \\(n_1=3\\), \\(n_2=3\\) and \\(n_3=2\\).",
+        "The number is \\(8!/(3!\\,3!\\,2!)\\). Here \\(8!=40320\\), \\(3!=6\\) and \\(2!=2\\), so the denominator is \\(6\\cdot 6\\cdot 2=72\\).",
+        "Dividing gives \\(40320/72=560\\)."
+      ],
+      "conclusion": "There are 560 distinct displays."
+    },
+    "practice": {
+      "prompt": "A chef records an ordered tasting of 3 spices chosen from 9 distinct spices. How many records are possible if a spice cannot be repeated, and how many if repetition is allowed?",
+      "hints": [
+        "Without repetition the first taste has 9 choices, the second has 8 and the third has 7.",
+        "With repetition each of the three positions has 9 choices, so use the power \\(9^3\\)."
+      ],
+      "answer": "Without repetition there are \\(9\\cdot 8\\cdot 7=504\\) records. With repetition there are \\(9^3=729\\) records."
+    },
+    "caution": "The falling product \\((n)_r\\) counts ordered samples of distinct objects. If some of the objects are identical, that product counts arrangements that look the same as if they were different; divide by the factorial of each repeated type. The value \\(0!=1\\) is required for the empty arrangement and for \\((n)_n=n!\\). If the order of a selection does not matter at all, a further division is needed.",
+    "bridge": "When the order inside a selection is irrelevant, each unordered selection has been counted once for every way to order its members. Dividing by that symmetry produces the binomial coefficients.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 1 (the basic principle of counting; permutations)."
+  },
+  {
+    "id": "C02",
+    "title": "Combinations and the binomial theorem",
+    "cluster": "Counting",
+    "question": "How many ways can one choose a group when the order of selection does not matter?",
+    "prerequisites": [
+      "C01"
+    ],
+    "summary": "The binomial coefficient \\(\\binom{n}{k}\\) counts the \\(k\\)-element subsets of an \\(n\\)-element set. Pascal's identity builds these numbers from smaller ones, the binomial theorem expands \\((x+y)^n\\), and adding every coefficient shows that an \\(n\\)-element set has \\(2^n\\) subsets.",
+    "intuition": "An unordered selection is an ordered one with the internal order forgotten, so divide the permutation count by \\(k!\\).",
+    "definition": [
+      "Let \\(n\\) and \\(k\\) be integers. The binomial coefficient is \\(\\binom{n}{k}=n!/(k!(n-k)!)\\) when \\(n\\ge k\\ge 0\\), and \\(\\binom{n}{k}=0\\) when \\(k<0\\) or \\(k>n\\). For \\(1\\le k\\le n\\) the same number is \\(n(n-1)\\cdots(n-k+1)/k!\\), and \\(\\binom{n}{0}=1\\). It counts the \\(k\\)-element subsets of an \\(n\\)-element set: the combinations of \\(n\\) distinct objects taken \\(k\\) at a time.",
+      "Pascal's identity. For every integer \\(n\\ge 1\\) and every integer \\(k\\), \\(\\binom{n}{k}=\\binom{n-1}{k}+\\binom{n-1}{k-1}\\), where a binomial coefficient with a negative lower index or with lower index larger than its upper index is 0."
+    ],
+    "theorem": "For every non-negative integer \\(n\\) and all numbers \\(x\\) and \\(y\\), \\[(x+y)^n=\\sum_{k=0}^{n}\\binom{n}{k} x^{k} y^{n-k}.\\] In particular \\(\\sum_{k=0}^{n}\\binom{n}{k}=2^n\\), so an \\(n\\)-element set has exactly \\(2^n\\) subsets, counting both the empty set and the full set.",
+    "hypotheses": [
+      "The factorial formula counts subsets only when the \\(n\\) objects are distinct. If some objects are identical, different index sets can produce the same visible result, and \\(\\binom{n}{k}\\) is then the wrong count.",
+      "In the binomial theorem \\(n\\) is a non-negative integer, and \\(x\\) and \\(y\\) commute, as ordinary numbers do. Pascal's identity uses the convention that \\(\\binom{n}{k}=0\\) when \\(k<0\\) or \\(k>n\\)."
+    ],
+    "proof": [
+      "Subsets from ordered samples. The number of sequences of \\(k\\) distinct elements drawn from \\(n\\) is \\((n)_k=n!/(n-k)!\\). Each \\(k\\)-element subset produces exactly \\(k!\\) sequences. Those sequences partition into groups of size \\(k!\\), one group for each subset, so the number of subsets is \\((n)_k/k!=n!/(k!(n-k)!)\\).",
+      "Pascal's identity, by splitting subsets. Let \\(S\\) have \\(n\\ge 1\\) elements and fix an element \\(s\\in S\\). The \\(k\\)-element subsets of \\(S\\) fall into two disjoint families: those that contain \\(s\\), and those that do not. A subset that contains \\(s\\) is \\(\\{s\\}\\) together with a \\((k-1)\\)-element subset of the remaining \\(n-1\\) elements, so there are \\(\\binom{n-1}{k-1}\\) such subsets. A subset that omits \\(s\\) is a \\(k\\)-element subset of those \\(n-1\\) elements, so there are \\(\\binom{n-1}{k}\\) of them. Adding the two family sizes gives Pascal's identity. The endpoint cases \\(k=0\\) and \\(k=n\\) also match, because \\(\\binom{n}{0}=1=\\binom{n-1}{0}\\) and \\(\\binom{n}{n}=1=\\binom{n-1}{n-1}\\), with the extra term equal to 0.",
+      "Binomial theorem, by induction on \\(n\\). For \\(n=0\\) both sides equal 1. Assume the identity for exponent \\(n-1\\), where \\(n\\ge 1\\). Then \\((x+y)^n=(x+y)\\sum_{k=0}^{n-1}\\binom{n-1}{k} x^{k} y^{n-1-k}\\). Distributing produces \\(\\sum_{k=0}^{n-1}\\binom{n-1}{k} x^{k+1} y^{n-1-k}+\\sum_{k=0}^{n-1}\\binom{n-1}{k} x^{k} y^{n-k}\\).",
+      "In the first sum set \\(j=k+1\\), so \\(j\\) runs from 1 to \\(n\\) and the coefficient of \\(x^{j} y^{n-j}\\) is \\(\\binom{n-1}{j-1}\\). In the second sum that coefficient is \\(\\binom{n-1}{j}\\) for \\(0\\le j\\le n-1\\). For \\(1\\le j\\le n-1\\) Pascal's identity adds the two contributions to \\(\\binom{n}{j}\\). The \\(j=0\\) term is \\(\\binom{n-1}{0}=1\\), and the \\(j=n\\) term is \\(\\binom{n-1}{n-1}=1\\).",
+      "Total number of subsets. Set \\(x=y=1\\) in the binomial theorem: \\((1+1)^n=2^n=\\sum_{k=0}^{n}\\binom{n}{k}\\). The same count is a product: a subset is built by deciding, for each of the \\(n\\) elements, whether it is in or out. Those are \\(n\\) binary choices, hence \\(2^n\\) subsets. The sum groups the subsets by size. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "A trail club has 8 members and must choose a committee of 3. How many committees are there? Check the count by Pascal's identity, singling out one member, and find how many subsets of the membership there are in all.",
+      "steps": [
+        "The committee is an unordered 3-element subset, so the count is \\(\\binom{8}{3}=(8\\cdot 7\\cdot 6)/(3\\cdot 2\\cdot 1)=336/6=56\\).",
+        "Fix one member, Mia. Committees that include Mia are completed by choosing 2 of the other 7 members, and committees that exclude Mia are the 3-element subsets of those 7. Pascal's identity says \\(\\binom{8}{3}=\\binom{7}{2}+\\binom{7}{3}\\).",
+        "\\(\\binom{7}{2}=(7\\cdot 6)/2=21\\) and \\(\\binom{7}{3}=(7\\cdot 6\\cdot 5)/6=35\\). Then \\(21+35=56\\), in agreement with the direct count. Every subset of the 8 members arises by including or excluding each member, so there are \\(2^8=256\\) subsets."
+      ],
+      "conclusion": "There are 56 committees, and the club has 256 subsets of its membership."
+    },
+    "practice": {
+      "prompt": "In the expansion of \\((2+x)^6\\), find the coefficient of \\(x^3\\). Also evaluate \\(\\sum_{k=0}^{6}\\binom{6}{k}\\).",
+      "hints": [
+        "The binomial theorem writes \\((2+x)^6=\\sum_{k=0}^{6}\\binom{6}{k} 2^{6-k} x^{k}\\).",
+        "The sum of all \\(\\binom{6}{k}\\) equals \\((1+1)^6\\)."
+      ],
+      "answer": "The coefficient of \\(x^3\\) is \\(\\binom{6}{3} 2^{3}=20\\cdot 8=160\\). The sum of the binomial coefficients is \\(2^6=64\\)."
+    },
+    "caution": "The binomial coefficient \\(\\binom{n}{k}\\) forgets order, while \\((n)_k\\) remembers it. Dividing by \\(n!\\) instead of by \\(k!\\), or listing subsets and forgetting the empty set, changes the count. The symmetry \\(\\binom{n}{k}=\\binom{n}{n-k}\\) is safe to use: choosing who is left out is the same problem as choosing who is included, and \\(\\binom{n}{0}=1\\) is part of the total \\(2^n\\).",
+    "bridge": "The same idea, dividing a permutation by the rearrangements inside each block, counts splits into more than two labelled groups. Identical objects placed into distinct boxes need one further device, stars and bars.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 1 (combinations; the binomial theorem)."
+  },
+  {
+    "id": "C03",
+    "title": "Multinomial coefficients",
+    "cluster": "Counting",
+    "question": "How many ways can distinct objects be split into labelled groups, and how many ways can identical objects be placed into distinct boxes?",
+    "prerequisites": [
+      "C02"
+    ],
+    "summary": "The multinomial coefficient \\(n!/(n_1!\\cdots n_r!)\\) counts divisions of \\(n\\) distinct objects into \\(r\\) labelled groups of prescribed sizes, and it is the coefficient of the corresponding monomial in \\((x_1+\\cdots+x_r)^n\\). When the objects are identical and the boxes are distinct, stars and bars replaces that count by a single binomial coefficient, shifted by one if every box must be nonempty.",
+    "intuition": "Order inside a labelled group is irrelevant, so divide a full permutation by the internal rearrangements; identical balls in distinct urns are a row of stars cut into blocks by bars.",
+    "definition": [
+      "Let \\(n_1,\\ldots,n_r\\) be non-negative integers with \\(n_1+\\cdots+n_r=n\\). The multinomial coefficient is \\(\\binom{n}{n_1,\\ldots,n_r}=n!/(n_1! n_2! \\cdots n_r!)\\). It counts the divisions of \\(n\\) distinct objects into \\(r\\) labelled groups of sizes \\(n_1,\\ldots,n_r\\). The labels distinguish the groups, order inside a group does not matter, and a size \\(n_i=0\\) means an empty group, using \\(0!=1\\). The same number counts the words of length \\(n\\) on an alphabet of \\(r\\) letters in which letter \\(i\\) appears exactly \\(n_i\\) times. When \\(r=2\\) and the sizes are \\(k\\) and \\(n-k\\), it equals \\(\\binom{n}{k}\\).",
+      "The same quotient already counted linear arrangements of a multiset. The two readings meet because labelling positions and then forgetting which identical copy occupies a position is the same arithmetic as labelling objects and then forgetting the order inside each group.",
+      "Stars and bars, non-negative case. The number of non-negative integer solutions of \\(x_1+\\cdots+x_r=n\\), with \\(r\\ge 1\\) and \\(n\\ge 0\\), is \\(\\binom{n+r-1}{r-1}\\). This is the number of ways to distribute \\(n\\) indistinguishable balls into \\(r\\) distinguishable urns, with empty urns allowed.",
+      "Stars and bars, positive case. The number of positive integer solutions, each \\(x_i\\ge 1\\), is \\(\\binom{n-1}{r-1}\\) when \\(n\\ge r\\ge 1\\), and it is 0 when \\(n<r\\). This is the distribution above with every urn required to be nonempty."
+    ],
+    "theorem": "For a non-negative integer \\(n\\) and numbers \\(x_1,\\ldots,x_r\\), \\[(x_1+\\cdots+x_r)^n=\\sum_{n_1+\\cdots+n_r=n}\\binom{n}{n_1,\\ldots,n_r} x_1^{n_1}\\cdots x_r^{n_r},\\] where the sum runs over non-negative integers. Separately, \\(x_1+\\cdots+x_r=n\\) has \\(\\binom{n+r-1}{r-1}\\) non-negative integer solutions, and it has \\(\\binom{n-1}{r-1}\\) positive integer solutions when \\(n\\ge r\\), and none when \\(n<r\\).",
+    "hypotheses": [
+      "In the group-division reading the \\(n\\) objects are distinct and the \\(r\\) groups are labelled. If the groups carry no labels, two divisions that differ only by swapping groups of equal size are the same division and have been counted separately.",
+      "The multinomial theorem uses a non-negative integer \\(n\\) and commuting variables. Stars and bars uses indistinguishable balls and distinguishable urns. Identical urns lead to integer partitions, which one binomial coefficient does not count. The non-negative formula allows zeros; the positive formula forbids them and requires \\(n\\ge r\\)."
+    ],
+    "proof": [
+      "Multinomial coefficient. Choose the groups in order. There are \\(\\binom{n}{n_1}\\) ways to choose the first group, then \\(\\binom{n-n_1}{n_2}\\) ways to choose the second, and so on, until the last group receives whatever remains. The product is \\(\\frac{n!}{n_1!(n-n_1)!}\\cdot\\frac{(n-n_1)!}{n_2!(n-n_1-n_2)!}\\cdots\\frac{n_r!}{n_r!\\,0!}\\). Cancellation leaves \\(n!/(n_1!\\cdots n_r!)\\). An empty prescribed group contributes a factor \\(0!=1\\).",
+      "Multinomial theorem. The product \\((x_1+\\cdots+x_r)^n\\) consists of \\(n\\) factors. In the expansion, one summand is chosen from each factor. If \\(x_i\\) is chosen from exactly \\(n_i\\) factors, the resulting monomial is \\(x_1^{n_1}\\cdots x_r^{n_r}\\), and the number of ways to assign these choices to the \\(n\\) factors is the number of words with those letter counts, namely the multinomial coefficient. Summing over every tuple of non-negative integers with sum \\(n\\) gives the expansion.",
+      "Non-negative solutions. Encode a solution by a line of \\(n\\) stars and \\(r-1\\) bars. The bars cut the stars into \\(r\\) blocks, possibly empty, and \\(x_i\\) is the number of stars in block \\(i\\). For instance, two stars, then a bar, then a bar, then one star encodes \\((x_1,x_2,x_3)=(2,0,1)\\). Every solution arises from exactly one such line. Choosing positions for the \\(r-1\\) bars among \\(n+r-1\\) symbols can be done in \\(\\binom{n+r-1}{r-1}\\) ways.",
+      "Positive solutions. If each \\(x_i\\ge 1\\), set \\(y_i=x_i-1\\). Then each \\(y_i\\) is a non-negative integer and \\(y_1+\\cdots+y_r=n-r\\). When \\(n<r\\) that equation has no non-negative solution. When \\(n\\ge r\\), the previous count with \\(n\\) replaced by \\(n-r\\) gives \\(\\binom{(n-r)+r-1}{r-1}=\\binom{n-1}{r-1}\\). \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "Ten distinct athletes are sent to three labelled stations, 4 to sprinting, 4 to agility and 2 to recovery. How many assignments are there? Separately, 10 identical water bottles are placed into 3 distinct coolers. How many placements allow empty coolers, and how many put at least one bottle in every cooler?",
+      "steps": [
+        "The stations are labelled and the athletes are distinct, so the count is \\(\\binom{10}{4,4,2}=\\binom{10}{4}\\binom{6}{4}\\binom{2}{2}\\).",
+        "\\(\\binom{10}{4}=(10\\cdot 9\\cdot 8\\cdot 7)/24=5040/24=210\\) and \\(\\binom{6}{4}=\\binom{6}{2}=15\\), while \\(\\binom{2}{2}=1\\). Hence \\(210\\cdot 15=3150\\).",
+        "Empty coolers allowed: the number of non-negative solutions of \\(x_1+x_2+x_3=10\\) is \\(\\binom{10+3-1}{3-1}=\\binom{12}{2}=66\\).",
+        "Every cooler nonempty: the number of positive solutions is \\(\\binom{10-1}{3-1}=\\binom{9}{2}=36\\)."
+      ],
+      "conclusion": "There are 3150 assignments, 66 placements that allow empty coolers, and 36 placements in which every cooler is used."
+    },
+    "practice": {
+      "prompt": "Find the coefficient of \\(a^{2}bc^{2}\\) in \\((a+b+c)^5\\). Also find the number of positive integer solutions of \\(x+y+z=8\\), and the number of non-negative integer solutions.",
+      "hints": [
+        "The monomial \\(a^{2}bc^{2}\\) arises by choosing the summand \\(a\\) from two factors, \\(b\\) from one factor and \\(c\\) from two factors.",
+        "For positive solutions set \\(x=x'+1\\) and likewise for \\(y\\) and \\(z\\), leaving a non-negative equation with right-hand side 5. For non-negative solutions, place 2 bars among 8 stars."
+      ],
+      "answer": "The coefficient is \\(\\binom{5}{2,1,2}=5!/(2!\\,1!\\,2!)=120/4=30\\). There are \\(\\binom{7}{2}=21\\) positive solutions and \\(\\binom{10}{2}=45\\) non-negative solutions."
+    },
+    "caution": "Multinomial groups are labelled. Splitting 6 distinct people into two unlabelled groups of 3 can be done in \\(\\binom{6}{3,3}/2!=20/2=10\\) ways, because swapping the two groups does not give a new division; when the prescribed sizes are all different, that extra division is not performed. Distinct objects sent to distinct boxes, empty boxes allowed, are counted by \\(r^n\\), the multinomial theorem with every variable equal to 1, and stars and bars does not apply to them. The two ball formulas answer different constraints: \\(\\binom{n+r-1}{r-1}\\) allows empty urns and \\(\\binom{n-1}{r-1}\\) forbids them. Two indistinguishable balls and two urns give a small check, namely 3 non-negative placements and 1 positive placement.",
+    "bridge": "Each of these counts becomes a probability as soon as every outcome in the sample space is equally likely. Shared birthdays, random matchings and dealt hands are the first places the ratio is taken.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 1 (multinomial coefficients; the number of integer solutions of equations)."
+  },
+  {
+    "id": "C04",
+    "title": "Counting in action: birthdays and matchings",
+    "cluster": "Counting",
+    "question": "How do counting formulas become probabilities for shared birthdays, derangements and dealt hands?",
+    "prerequisites": [
+      "C03"
+    ],
+    "summary": "When every outcome is equally likely, the chance of a shared birthday, of a permutation with no fixed point, and of a given hand are ratios of counts. The shared-birthday probability among \\(n\\) people first exceeds \\(1/2\\) at \\(n=23\\), where it equals \\(0.5073\\) to four decimal places, and the probability of no fixed point in a random permutation tends to \\(1/e\\).",
+    "intuition": "Shared birthdays become likely while most days are still unused, because every pair of people is another chance to collide. A random permutation leaves nobody fixed with probability close to \\(1/e\\), because inclusion-exclusion reproduces the series for the exponential.",
+    "definition": [
+      "Birthday problem. Take birthdays to be independent and uniform on a year of 365 days, leaving out 29 February. For \\(n\\) people, let \\(A\\) be the event that at least two share a birthday. For \\(1\\le n\\le 365\\), \\(P(A^c)=(365)_n/365^n\\), the number of injections into a set of 365 days divided by the number of all functions, and \\(P(A)=1-P(A^c)\\). For \\(n>365\\), \\(P(A)=1\\).",
+      "Matching problem, also called the hat-check problem. Each of \\(n\\) people receives one of \\(n\\) distinct hats, every one of the \\(n!\\) permutations being equally likely. A fixed point of a permutation \\(\\pi\\) is an index \\(i\\) with \\(\\pi(i)=i\\). A derangement is a permutation with no fixed point; write \\(D_n\\) for the number of derangements of \\(n\\) objects. Then \\(P(\\text{no fixed point})=D_n/n!\\).",
+      "Sampling without replacement. From \\(n\\) distinct objects, of which \\(a\\) form a distinguished class, draw a subset of size \\(m\\) uniformly. The probability that the subset contains exactly \\(j\\) members of that class is \\(\\binom{a}{j}\\binom{n-a}{m-j}/\\binom{n}{m}\\), interpreted as 0 when a binomial coefficient has a negative lower index or a lower index larger than its upper index."
+    ],
+    "theorem": "Under the birthday model above, for \\(1\\le n\\le 365\\), \\[P(A)=1-\\frac{365!/(365-n)!}{365^{n}}.\\] This probability is strictly less than \\(1/2\\) when \\(n=22\\) and strictly greater than \\(1/2\\) when \\(n=23\\). Its decimal expansion at \\(n=23\\) begins \\(0.5072972343\\), so rounded to four decimal places it equals \\(0.5073\\). For a uniform random permutation of \\(n\\) objects, \\[P(\\text{no fixed point})=\\sum_{k=0}^{n}\\frac{(-1)^{k}}{k!},\\] and \\(\\lim_{n\\to\\infty} P(\\text{no fixed point})=1/e\\).",
+    "hypotheses": [
+      "Birthdays in this model are independent and uniform across 365 days. The event \\(A\\) says that some day is shared by at least two people. The probability that someone matches one birthday fixed in advance is a different quantity and crosses \\(1/2\\) much later.",
+      "The matching probability uses the uniform distribution on all \\(n!\\) permutations. The limit \\(1/e\\) is the limit of those probabilities; for each finite \\(n\\) the probability equals the partial sum, which differs from \\(1/e\\). The hand formula requires the same convention in the numerator and the denominator: both unordered, or both ordered."
+    ],
+    "proof": [
+      "Birthdays. The sample space is the set of \\(n\\)-tuples with entries in a 365-day set, so it has \\(365^n\\) equally likely outcomes. The complement \\(A^c\\) consists of the tuples with distinct entries, and there are \\((365)_n=365!/(365-n)!\\) of them when \\(n\\le 365\\). The ratio is the displayed product, and \\(P(A)=1-P(A^c)\\). For \\(n>365\\) there is no injection, so \\(P(A)=1\\).",
+      "The threshold at 23, from below. For \\(0<x<1/2\\) the function \\(f(x)=\\ln(1-x)+x+x^2\\) satisfies \\(f(0)=0\\) and \\(f'(x)=x(1-2x)/(1-x)>0\\), so \\(\\ln(1-x)>-x-x^2\\). For 22 people every ratio \\(k/365\\) with \\(1\\le k\\le 21\\) lies in that interval, and \\(\\sum_{k=1}^{21} k=231\\), \\(\\sum_{k=1}^{21} k^2=21\\cdot 22\\cdot 43/6=3311\\). Therefore \\(\\ln P(A^c)>-231/365-3311/365^2=-87626/133225\\). The comparison \\(3\\cdot 87626=262878<266450=2\\cdot 133225\\) shows \\(87626/133225<2/3\\). The series \\(\\ln 2=\\sum_{m\\ge 1} 1/(m\\, 2^{m})\\), from the expansion of \\(-\\ln(1-u)\\) at \\(u=1/2\\), has positive terms and begins \\(1/2+1/8+1/24=2/3\\), so \\(\\ln 2>2/3\\). Hence \\(\\ln P(A^c)>-\\ln 2\\), \\(P(A^c)>1/2\\) and \\(P(A)<1/2\\).",
+      "The threshold at 23, from above. For \\(0<x<1\\), concavity gives \\(\\ln(1-x)<-x\\), because the second derivative of \\(\\ln(1-x)\\) is \\(-1/(1-x)^2<0\\) and the tangent line at 0 is \\(-x\\). With 23 people there are \\(\\binom{23}{2}=253\\) pairs, and \\(\\ln P(A^c)=\\sum_{k=1}^{22}\\ln(1-k/365)<-253/365\\). It remains to check \\(253/365>\\ln 2\\). The same series for \\(\\ln 2\\), stopped after 12 terms, equals \\(7869871/11354112\\). The tail satisfies \\(0<\\sum_{m\\ge 13} 1/(m\\, 2^{m})<1/(13\\cdot 2^{12})=1/53248\\), since \\(\\sum_{m\\ge 13} 2^{-m}=2^{-12}\\) and each denominator \\(m\\) is at least 13. Adding the partial sum to this tail bound and reducing the fraction produces \\(\\ln 2<102311095/147603456\\). Cross-multiplication gives \\(102311095\\cdot 365=37343549675<37343674368=253\\cdot 147603456\\), so \\(\\ln 2<253/365\\). Therefore \\(P(A^c)<\\exp(-253/365)<1/2\\), and \\(P(A)>1/2\\). Long division of the exact integers yields an expansion beginning \\(0.47569530766\\) for 22 people and an expansion beginning \\(0.50729723432\\) for 23 people. Rounded to four decimal places, the probability for 23 people is \\(0.5073\\). The pair count explains the location of the threshold: \\(253/365=0.6931506849\\ldots\\) sits just above \\(\\ln 2\\), so the exponential approximation is already under two millionths away from \\(1/2\\), and the stricter inequality \\(\\ln(1-x)<-x\\) pushes the shared-birthday probability further above \\(1/2\\), to the value whose expansion begins \\(0.50729723432\\). The probability is a non-decreasing function of the number of people, because a shared birthday among some of them is still a shared birthday when one more person is present. Together with the bounds at 22 and at 23, the probability first exceeds \\(1/2\\) at 23 people.",
+      "Matchings, by inclusion-exclusion. Let \\(A_i\\) be the set of permutations of \\(\\{1,\\ldots,n\\}\\) with \\(\\pi(i)=i\\). For distinct indices, the intersection of \\(k\\) of the sets \\(A_i\\) fixes those \\(k\\) points and permutes the remaining \\(n-k\\) freely, so it has \\((n-k)!\\) elements. There are \\(\\binom{n}{k}\\) such intersections. Inclusion-exclusion therefore gives \\(\\big|\\bigcup_{i=1}^{n} A_i\\big|=\\sum_{k=1}^{n}(-1)^{k+1}\\binom{n}{k}(n-k)!\\). The derangements are the permutations outside that union, so \\(D_n=\\sum_{k=0}^{n}(-1)^{k}\\binom{n}{k}(n-k)!\\). Dividing by \\(n!\\) and using \\(\\binom{n}{k}(n-k)!/n!=1/k!\\) produces \\(P(\\text{no fixed point})=\\sum_{k=0}^{n}(-1)^{k}/k!\\).",
+      "A check for four hats: \\(1-1+1/2-1/6+1/24=(24-24+12-4+1)/24=9/24=3/8\\). There are \\(4!=24\\) permutations and \\(D_4=9\\) derangements.",
+      "The limit. The exponential series \\(e^{x}=\\sum_{k=0}^{\\infty} x^{k}/k!\\) is the analytic input used here; at \\(x=-1\\) it says \\(1/e=\\sum_{k=0}^{\\infty}(-1)^{k}/k!\\). For every \\(k\\ge 1\\), \\(1/(k+1)!<1/k!\\). After \\(n\\) terms the remainder is \\((-1)^{n+1}\\) times \\(\\big(1/(n+1)!-1/(n+2)!+1/(n+3)!-\\cdots\\big)\\). Grouping the series in parentheses as \\(\\big(1/(n+1)!-1/(n+2)!\\big)+\\big(1/(n+3)!-1/(n+4)!\\big)+\\cdots\\) shows that it is positive. The same grouping, begun one term later, shows that \\(1/(n+2)!-1/(n+3)!+\\cdots\\) is positive, so the series in parentheses is strictly smaller than its first term \\(1/(n+1)!\\). The absolute error is therefore smaller than \\(1/(n+1)!\\), which tends to 0. The matching probability is exactly the partial sum, so its limit is \\(1/e\\). \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "A shelf holds 20 distinct books, of which 8 are novels. Five books are drawn uniformly at random, order ignored. What is the probability that exactly 3 of the five are novels?",
+      "steps": [
+        "The sample space is the set of 5-element subsets of a 20-element set, so it has \\(\\binom{20}{5}\\) equally likely outcomes. Expanding, \\(\\binom{20}{5}=(20\\cdot 19\\cdot 18\\cdot 17\\cdot 16)/120\\). The numerator is \\(20\\cdot 19=380\\), \\(380\\cdot 18=6840\\), \\(6840\\cdot 17=116280\\) and \\(116280\\cdot 16=1860480\\). Then \\(1860480/120=15504\\).",
+        "The favourable outcomes choose 3 novels from 8 and 2 non-novels from 12: \\(\\binom{8}{3}\\binom{12}{2}\\). Here \\(\\binom{8}{3}=(8\\cdot 7\\cdot 6)/6=56\\) and \\(\\binom{12}{2}=(12\\cdot 11)/2=66\\), so the product is \\(56\\cdot 66=3696\\).",
+        "The probability is \\(3696/15504\\). Since \\(48\\cdot 77=3696\\) and \\(48\\cdot 323=15504\\), dividing the numerator and the denominator by 48 gives \\(77/323\\). And \\(77=7\\cdot 11\\) shares no prime factor with \\(323=17\\cdot 19\\)."
+      ],
+      "conclusion": "The probability is \\(77/323\\)."
+    },
+    "practice": {
+      "prompt": "Assuming 365 equally likely days, find the probability that at least two of three people share a birthday, as a fraction in lowest terms.",
+      "hints": [
+        "Compute the complementary count \\(365\\cdot 364\\cdot 363\\) and divide by \\(365^3\\), which cancels one factor of 365.",
+        "The denominator that remains is \\(365^2=133225\\), and \\(364\\cdot 363=132132\\)."
+      ],
+      "answer": "The probability that all three birthdays differ is \\(132132/133225\\), so the probability of at least one shared birthday is \\((133225-132132)/133225=1093/133225\\). The fraction is in lowest terms: \\(133225=5^{2}\\cdot 73^{2}\\), while \\(1093\\) is not divisible by 5, and \\(73\\cdot 15=1095\\), so \\(1093\\) is not divisible by 73 either."
+    },
+    "caution": "The event that at least two of the \\(n\\) people share some birthday is larger than the event that someone matches one birthday named in advance; the room size 23 belongs only to the first question. In the matching problem the alternating sum is the probability of no fixed point, and it tends to \\(1/e\\); the probability of at least one fixed point tends to \\(1-1/e\\). Stopping the sum early, or dropping the alternating signs, answers a different question. For a hand, counting ordered deals in the numerator and unordered deals in the denominator, or the reverse, does not compute \\(P(E)\\).",
+    "bridge": "Every probability in this lesson is a ratio of counts taken in the whole sample space. The next question is how that ratio changes when one already knows that some event has occurred.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 2 (sample spaces having equally likely outcomes).",
+    "lab": "birthday"
+  }
+]
