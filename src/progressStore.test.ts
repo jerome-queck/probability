@@ -16,8 +16,16 @@ Object.assign(globalThis, {
 const { progressStore } = await import('./progress.ts');
 const key = 'probability.progress.v1';
 
+// Each test starts from the same stored state, whatever ran before it.
+function reset(stored: object) {
+  blocked = false;
+  data.set(key, JSON.stringify(stored));
+  progressStore.toggleStudied('RESET');
+  progressStore.toggleStudied('RESET');
+}
+
 test('a change made in another tab is kept by the next local change', () => {
-  progressStore.toggleStudied('F01');
+  reset({ studied: ['F01'], practice: {} });
   data.set(key, JSON.stringify({ studied: ['F01', 'F02'], practice: {} }));
   progressStore.setVerdict('F03', 'review');
   assert.deepEqual(JSON.parse(data.get(key) ?? ''), {
@@ -27,6 +35,7 @@ test('a change made in another tab is kept by the next local change', () => {
 });
 
 test('when storage fails the change is kept for the visit and marked unsaved', () => {
+  reset({ studied: [], practice: { F03: 'review' } });
   blocked = true;
   progressStore.setVerdict('F03', 'review');
   assert.equal(progressStore.getSnapshot().practice.F03, undefined);

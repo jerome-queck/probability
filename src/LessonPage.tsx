@@ -287,10 +287,10 @@ function SelfCheck({ id }: { id: string }) {
         className={`self-check-saved ${unsaved ? 'unsaved' : ''}`}
         aria-live="polite"
       >
-        {!touched
-          ? ''
-          : unsaved
-            ? notSaved
+        {unsaved
+          ? notSaved
+          : !touched
+            ? ''
             : verdict === 'got-it'
               ? 'Saved. Nice work.'
               : verdict === 'review'
