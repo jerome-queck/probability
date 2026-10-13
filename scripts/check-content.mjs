@@ -51,9 +51,14 @@ for (const l of lessons) {
     fail(l, `unknown lab ${l.lab}; add it to LabId in types.ts and Labs.tsx`);
 }
 const position = new Map(order.map((id, i) => [id, i]));
+if (position.size !== order.length)
+  errors.push('order.json lists a lesson more than once');
+for (const l of lessons)
+  if (!Array.isArray(l.prerequisites))
+    fail(l, 'prerequisites must be an array (use [] for none)');
 for (const l of lessons) {
   if (!position.has(l.id)) fail(l, 'not listed in order.json');
-  for (const p of l.prerequisites ?? []) {
+  for (const p of Array.isArray(l.prerequisites) ? l.prerequisites : []) {
     if (!seen.has(p)) fail(l, `prerequisite ${p} does not exist`);
     else if ((position.get(p) ?? 1e9) >= (position.get(l.id) ?? -1))
       fail(l, `prerequisite ${p} must come earlier in order.json`);

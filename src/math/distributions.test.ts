@@ -123,3 +123,10 @@ test('Chebyshev bound', () => {
   assert.equal(chebyshevBound(2), 0.25);
   assert.equal(chebyshevBound(0.5), 1);
 });
+
+test('hypergeometric rejects impossible inputs and returns 0 off the support', () => {
+  assert.equal(hypergeometricPmf(20, 7, 5, 6), 0);
+  assert.equal(hypergeometricPmf(10, 8, 5, 2), 0); // at least 3 marked items must be drawn
+  assert.throws(() => hypergeometricPmf(10, 3, 12, 0), RangeError);
+  assert.equal(hypergeometricSummary(1, 1, 1).variance, 0);
+});

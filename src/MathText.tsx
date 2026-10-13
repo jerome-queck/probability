@@ -16,12 +16,18 @@ export function MathText({ text }: { text: string }) {
     const latex = match[1] ?? match[2];
     let html: string;
     try {
-      html = katex.renderToString(latex, {
-        displayMode,
-        throwOnError: true,
-        trust: false,
-        output: 'htmlAndMathml',
-      });
+      // Display formulas are typeset in display style but as breakable inline math, so a
+      // long chain of equalities wraps after a relation on a phone instead of being cut
+      // off; on a wide screen it still sits on one centred line.
+      html = katex.renderToString(
+        displayMode ? `\\displaystyle ${latex}` : latex,
+        {
+          displayMode: false,
+          throwOnError: true,
+          trust: false,
+          output: 'htmlAndMathml',
+        },
+      );
     } catch {
       html = `<span class="math-error">Invalid mathematics: ${escapeHtml(latex)}</span>`;
     }

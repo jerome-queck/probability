@@ -51,7 +51,20 @@ export function hypergeometricPmf(
   n: number,
   k: number,
 ): number {
-  if (!Number.isInteger(k) || k < 0) return 0;
+  for (const [name, v] of [
+    ['N', N],
+    ['m', m],
+    ['n', n],
+  ] as const)
+    if (!Number.isInteger(v) || v < 0)
+      throw new RangeError(`${name} must be a natural number`);
+  if (m > N || n > N) throw new RangeError('need m ≤ N and n ≤ N');
+  if (
+    !Number.isInteger(k) ||
+    k < Math.max(0, n - (N - m)) ||
+    k > Math.min(n, m)
+  )
+    return 0;
   return Number(choose(m, k) * choose(N - m, n - k)) / Number(choose(N, n));
 }
 export function hypergeometricSummary(
@@ -59,10 +72,13 @@ export function hypergeometricSummary(
   m: number,
   n: number,
 ): Summary {
+  if (!(N >= 1 && m >= 0 && m <= N && n >= 0 && n <= N))
+    throw new RangeError('need 0 ≤ m ≤ N, 0 ≤ n ≤ N and N ≥ 1');
   const p = m / N;
   return {
     mean: n * p,
-    variance: n * p * (1 - p) * ((N - n) / (N - 1)),
+    // With one item the draw is fixed, so the finite-population factor is 0.
+    variance: N === 1 ? 0 : n * p * (1 - p) * ((N - n) / (N - 1)),
   };
 }
 

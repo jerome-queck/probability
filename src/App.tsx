@@ -17,12 +17,24 @@ export function App() {
       : undefined;
   const [drawer, setDrawer] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
+  const narrow = useNarrow();
+  const firstRoute = useRef(true);
+  function closeDrawer() {
+    setDrawer(false);
+    menuButton.current?.focus();
+  }
   useEffect(() => {
     document.title = lesson
       ? `${lesson.title} · Probability`
       : `${route.view[0].toUpperCase()}${route.view.slice(1)} · Probability`;
     setDrawer(false);
     window.scrollTo({ top: 0, behavior: 'instant' });
+    // Move focus to the new page's heading so keyboard and screen-reader users land on it.
+    if (firstRoute.current) firstRoute.current = false;
+    else
+      document
+        .querySelector<HTMLElement>('main h1')
+        ?.focus({ preventScroll: true });
   }, [lesson, route.view]);
   useEffect(() => {
     if (!drawer) return;
@@ -45,18 +57,19 @@ export function App() {
       </a>
       <Sidebar
         drawer={drawer}
-        onClose={() => setDrawer(false)}
+        hiddenOffscreen={narrow && !drawer}
+        onClose={closeDrawer}
         onSelect={select}
       />
       {drawer && (
         <button
           type="button"
           className="scrim"
-          onClick={() => setDrawer(false)}
+          onClick={closeDrawer}
           aria-label="Close lesson navigation"
         />
       )}
-      <main id="main-content" tabIndex={-1}>
+      <main id="main-content" tabIndex={-1} inert={narrow && drawer}>
         <header className="topbar">
           <button
             type="button"
@@ -105,5 +118,18 @@ export function App() {
         ) : null}
       </main>
     </div>
+  );
+}
+
+// Matches the CSS breakpoint where the sidebar becomes a drawer.
+const narrowQuery = '(max-width: 860px)';
+function useNarrow() {
+  return useSyncExternalStore(
+    (notify) => {
+      const query = window.matchMedia(narrowQuery);
+      query.addEventListener('change', notify);
+      return () => query.removeEventListener('change', notify);
+    },
+    () => window.matchMedia(narrowQuery).matches,
   );
 }

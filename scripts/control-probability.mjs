@@ -4,9 +4,11 @@
 // .cursor/skills/verify-probability/SKILL.md for the workflow.
 import { spawn } from 'node:child_process';
 import {
+  closeSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
+  openSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -83,11 +85,13 @@ async function launch() {
           '--strictPort',
         ];
   const log = join(dataDir, 'server.log');
+  const logFd = openSync(log, 'a');
   const child = spawn(process.execPath, viteArgs, {
     cwd: root,
     detached: true,
-    stdio: ['ignore', 'ignore', 'ignore'],
+    stdio: ['ignore', logFd, logFd],
   });
+  closeSync(logFd);
   child.unref();
   const url = `http://127.0.0.1:${port}`;
   writeFileSync(
@@ -117,7 +121,12 @@ async function launch() {
     } catch {}
     await new Promise((r) => setTimeout(r, 200));
   }
-  throw new Error(`server did not answer on ${url}`);
+  // Do not leave an orphan holding the port, or a state file that blocks the next launch.
+  try {
+    process.kill(-child.pid, 'SIGTERM');
+  } catch {}
+  rmSync(statePathOf(), { force: true });
+  throw new Error(`server did not answer on ${url}; see ${log}`);
 }
 
 function alive(pid) {
@@ -191,7 +200,11 @@ const heading = (page) => page.locator('h1').first().innerText();
 async function stop() {
   const s = readState();
   if (!s) return console.log('nothing to stop');
-  if (alive(s.pid)) process.kill(-s.pid, 'SIGTERM');
+  try {
+    if (alive(s.pid)) process.kill(-s.pid, 'SIGTERM');
+  } catch (error) {
+    if (error.code !== 'ESRCH') throw error;
+  }
   rmSync(statePathOf());
   console.log(`stopped pid ${s.pid} (artifacts kept)`);
 }
@@ -216,7 +229,7 @@ async function renderingProblems(page) {
       );
     // A display formula wider than its box is clipped on screen even when the page
     // itself does not scroll sideways, so check each one.
-    for (const el of document.querySelectorAll('.katex-display')) {
+    for (const el of document.querySelectorAll('.katex-display, .math-block')) {
       if (el.getClientRects().length && el.scrollWidth > el.clientWidth + 1)
         problems.push(
           `clipped display math: ${el.scrollWidth}px formula in a ${el.clientWidth}px box (“${el.textContent.slice(0, 40)}”)`,
@@ -370,25 +383,26 @@ async function smoke() {
   );
   const failures = [];
   let shots = 0;
-  await launch();
-  const { chromium } = await import('playwright-core');
-  const executablePath =
-    process.env.CHROME_PATH ??
-    [
-      '/usr/bin/google-chrome',
-      '/usr/bin/google-chrome-stable',
-      '/usr/bin/chromium',
-    ].find(existsSync);
-  const browserApp = await chromium.launch({
-    executablePath,
-    headless: true,
-    args: [
-      '--font-render-hinting=none',
-      '--disable-lcd-text',
-      '--force-color-profile=srgb',
-    ],
-  });
+  let browserApp;
   try {
+    await launch();
+    const { chromium } = await import('playwright-core');
+    const executablePath =
+      process.env.CHROME_PATH ??
+      [
+        '/usr/bin/google-chrome',
+        '/usr/bin/google-chrome-stable',
+        '/usr/bin/chromium',
+      ].find(existsSync);
+    browserApp = await chromium.launch({
+      executablePath,
+      headless: true,
+      args: [
+        '--font-render-hinting=none',
+        '--disable-lcd-text',
+        '--force-color-profile=srgb',
+      ],
+    });
     await doctor();
     if (process.exitCode) throw new Error('doctor failed');
     const { url } = readState();
@@ -420,6 +434,9 @@ async function smoke() {
           for (const want of step.expect ?? [])
             if (!text.includes(want))
               failures.push(`${label}: expected “${want}” on ${path}`);
+          for (const sel of step.expectHidden ?? [])
+            if (await page.locator(sel).isVisible())
+              failures.push(`${label}: expected ${sel} to be hidden`);
           if (step.expectPath && path !== step.expectPath)
             failures.push(
               `${label}: expected path ${step.expectPath}, got ${path}`,
@@ -468,8 +485,10 @@ async function smoke() {
       }
     }
   } finally {
-    await browserApp.close();
-    await stop();
+    await browserApp?.close();
+    try {
+      await stop();
+    } catch {}
     rmSync(base, { recursive: true, force: true });
   }
   if (failures.length) {

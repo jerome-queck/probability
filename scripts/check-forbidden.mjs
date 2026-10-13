@@ -29,11 +29,33 @@ for (const path of git('ls-files', '-co', '--exclude-standard')
 let history = '';
 try {
   history = git('log', '--format=%H%n%an%n%ae%n%B', '-p', '--no-color', 'HEAD');
-} catch {
-  // A repository without commits has no history to scan.
+} catch (error) {
+  // Only a repository without commits may skip the history scan; any other failure
+  // (including an exceeded buffer) must fail the check rather than pass it silently.
+  if (
+    !/does not have any commits|unknown revision/.test(
+      String(error.stderr ?? ''),
+    )
+  )
+    throw error;
 }
-for (const hit of findForbidden(history, 'git-history'))
-  if (!hit.path.endsWith('package-lock.json')) hits.push(hit);
+const historyLines = history.split('\n');
+// The file a history line belongs to, from the nearest preceding diff header.
+function historyFileOf(line) {
+  for (let i = line - 1; i >= 0; i -= 1) {
+    const m = /^diff --git a\/(\S+) /.exec(historyLines[i]);
+    if (m) return m[1];
+    if (/^[0-9a-f]{40}$/.test(historyLines[i])) return '';
+  }
+  return '';
+}
+for (const hit of findForbidden(history, 'git-history')) {
+  const file = historyFileOf(hit.line);
+  // Lockfile hashes are random letters and digits; the tree scan exempts them too.
+  if (hit.name === 'course code' && file.endsWith('package-lock.json'))
+    continue;
+  hits.push(file ? { ...hit, path: `git-history:${file}` } : hit);
+}
 
 const branch =
   process.env.GITHUB_HEAD_REF ||
@@ -64,18 +86,7 @@ if (process.env.GITHUB_EVENT_PATH) {
   }
 }
 
-// History hits inside the lockfile diff are hash noise; filter by the diff header.
-const filtered = hits.filter(
-  (hit) =>
-    !(
-      hit.path === 'git-history' &&
-      hit.name === 'course code' &&
-      /^[+-]\s*"(integrity|resolved)"/.test(lineOf(history, hit.line))
-    ),
-);
-function lineOf(text, n) {
-  return text.split('\n')[n - 1] ?? '';
-}
+const filtered = hits;
 
 if (filtered.length) {
   for (const hit of filtered)
