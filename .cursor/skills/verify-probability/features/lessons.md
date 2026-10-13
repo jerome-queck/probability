@@ -15,6 +15,7 @@ Chapters currently published (kept in sync by `check:drift`):
 - Counting
 - Conditional probability
 - Discrete random variables
+- Continuous random variables
 
 ## How to get to it (user POV)
 

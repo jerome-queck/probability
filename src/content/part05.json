@@ -1,0 +1,412 @@
+[
+  {
+    "id": "R01",
+    "title": "Densities and distribution functions",
+    "cluster": "Continuous random variables",
+    "question": "How does a density assign probabilities to a quantity that can take every value in an interval?",
+    "prerequisites": [
+      "D01"
+    ],
+    "summary": "A continuous random variable is described by a density: a nonnegative function that integrates to 1. Probabilities are areas under that curve, the distribution function is the running area from the left, and every single point has probability 0.",
+    "intuition": "Probability is area under the density. The height \\(f(x)\\) records how tightly that area is packed near \\(x\\), so the height itself need not be smaller than 1.",
+    "definition": [
+      "A random variable \\(X\\) is continuous when there is a function \\(f\\), called a density of \\(X\\), such that \\(f(x)\\ge 0\\) for every real \\(x\\) and \\(\\int_{-\\infty}^{\\infty} f(x)\\,dx=1\\). For a region \\(B\\) on the line (an interval, or a finite union of intervals), \\[P(X\\in B)=\\int_B f(x)\\,dx.\\] In particular, if \\(a<b\\) then \\(P(a<X\\le b)=\\int_a^b f(x)\\,dx\\).",
+      "The distribution function of \\(X\\) is \\(F(x)=P(X\\le x)=\\int_{-\\infty}^{x} f(t)\\,dt\\). It is also called the cdf. The conditions on \\(f\\) force \\(F\\) to be nondecreasing, with \\(\\lim_{x\\to-\\infty}F(x)=0\\) and \\(\\lim_{x\\to\\infty}F(x)=1\\).",
+      "Changing \\(f\\) at finitely many points does not change any integral, so a density is determined only up to values on a set of area zero. The probabilities come from the areas, not from the height at a single \\(x\\)."
+    ],
+    "theorem": "If \\(X\\) has density \\(f\\) and distribution function \\(F\\), then for all real \\(a<b\\), \\[P(a<X\\le b)=F(b)-F(a)=\\int_a^b f(x)\\,dx,\\] and \\(P(X=a)=0\\). Consequently the four intervals with endpoints \\(a\\) and \\(b\\), open or closed, all have the same probability. If \\(f\\) is continuous at \\(x\\), then \\(F'(x)=f(x)\\).",
+    "hypotheses": [
+      "\\(f\\) must be nonnegative everywhere and integrate to 1. Either failure means \\(f\\) is not a density.",
+      "The identity \\(F'(x)=f(x)\\) is claimed only where \\(f\\) is continuous. At a jump of \\(f\\), the two-sided derivative of \\(F\\) may fail to exist.",
+      "The region \\(B\\) must be one over which the integral of \\(f\\) is defined. Every interval, and every finite union of intervals, is allowed."
+    ],
+    "proof": [
+      "Split the integral that defines \\(F\\): \\(F(b)-F(a)=\\int_{-\\infty}^{b} f(t)\\,dt-\\int_{-\\infty}^{a} f(t)\\,dt=\\int_a^b f(x)\\,dx\\). By the definition of a density, that integral equals \\(P(a<X\\le b)\\).",
+      "The integral of any integrable function over a single point is 0, so \\(P(X=a)=\\int_{\\{a\\}} f=0\\). Adding or removing the endpoints \\(a\\) and \\(b\\) therefore changes the probability by 0, and \\(P(a\\le X\\le b)=P(a<X<b)=F(b)-F(a)\\).",
+      "Suppose \\(f\\) is continuous at \\(x\\) and \\(h>0\\). The difference quotient is the average value \\(\\frac{F(x+h)-F(x)}{h}=\\frac{1}{h}\\int_x^{x+h} f(t)\\,dt\\). As \\(h\\to 0\\), continuity of \\(f\\) at \\(x\\) pulls this average to \\(f(x)\\). For \\(h<0\\) the same argument on the interval from \\(x+h\\) to \\(x\\) gives the left-hand derivative. Thus \\(F'(x)=f(x)\\). \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "The scaled size \\(X\\) of a voltage spike has density \\(f(x)=3x^2\\) for \\(0<x<1\\) and \\(f(x)=0\\) otherwise. Confirm that \\(f\\) is a density, find \\(F(x)\\) on \\([0,1]\\), compute \\(P(X>1/2)\\), and evaluate \\(f(9/10)\\).",
+      "steps": [
+        "On \\((0,1)\\) one has \\(f(x)\\ge 0\\), and \\(\\int_0^1 3x^2\\,dx=\\bigl[x^3\\bigr]_0^1=1\\). Outside \\((0,1)\\) the density is 0, so \\(f\\) integrates to 1 and is a density.",
+        "For \\(0\\le x\\le 1\\), \\(F(x)=\\int_0^x 3t^2\\,dt=x^3\\). Also \\(F(x)=0\\) for \\(x\\le 0\\) and \\(F(x)=1\\) for \\(x\\ge 1\\). Differentiating on \\((0,1)\\) recovers \\(F'(x)=3x^2=f(x)\\).",
+        "\\(P(X>1/2)=1-F(1/2)=1-(1/2)^3=1-1/8=7/8\\). The single point does not contribute: \\(P(X=1/2)=0\\), so \\(P(X\\ge 1/2)\\) equals the same \\(7/8\\).",
+        "At \\(x=9/10\\), \\(f(9/10)=3\\cdot(81/100)=243/100\\), which is greater than 1. The probability of that upper region is the area \\(P(X>9/10)=1-(9/10)^3=1-729/1000=271/1000\\), a number between 0 and 1."
+      ],
+      "conclusion": "\\(F(x)=x^3\\) for \\(0\\le x\\le 1\\), \\(P(X>1/2)=7/8\\), and \\(f(9/10)=243/100\\), which is larger than 1 and is not a probability."
+    },
+    "practice": {
+      "prompt": "A mark on a rail of length 3 lies at a random point \\(X\\) with density \\(f(x)=c x^2\\) for \\(0<x<3\\) and \\(f(x)=0\\) otherwise. Find \\(c\\), write \\(F(x)\\) for \\(0\\le x\\le 3\\), and compute \\(P(1\\le X\\le 2)\\).",
+      "hints": [
+        "Choose \\(c\\) so that \\(c\\int_0^3 x^2\\,dx=1\\).",
+        "Then \\(P(1\\le X\\le 2)=F(2)-F(1)\\). Including the endpoints does not change the value."
+      ],
+      "answer": "\\(\\int_0^3 x^2\\,dx=\\bigl[x^3/3\\bigr]_0^3=9\\), so \\(c=1/9\\) and \\(f(x)=x^2/9\\) on \\((0,3)\\). For \\(0\\le x\\le 3\\), \\(F(x)=\\int_0^x t^2/9\\,dt=x^3/27\\). Therefore \\(P(1\\le X\\le 2)=8/27-1/27=7/27\\). Since \\(P(X=1)=P(X=2)=0\\), the open interval \\((1,2)\\) has the same probability."
+    },
+    "caution": "A density is not a probability. The value \\(f(a)\\) is not \\(P(X=a)\\): that probability is 0, and \\(f(a)\\) is allowed to exceed 1. A second boundary appears where the density jumps. If \\(f=1\\) on \\((0,1)\\) and \\(f=0\\) elsewhere, then \\(F(x)=0\\) for \\(x\\le 0\\), \\(F(x)=x\\) for \\(0\\le x\\le 1\\), and \\(F(x)=1\\) for \\(x\\ge 1\\). The two-sided derivative \\(F'(0)\\) does not exist, even though \\(f\\) may be given any value at \\(0\\). Differentiating \\(F\\) recovers \\(f\\) only at continuity points of \\(f\\).",
+    "bridge": "Areas under the density are probabilities. The same integral, weighted by \\(x\\) or by a function of \\(x\\), produces averages and spreads.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 5 (continuous random variables)."
+  },
+  {
+    "id": "R02",
+    "title": "Expectation and variance of continuous random variables",
+    "cluster": "Continuous random variables",
+    "question": "How do we compute an average and a spread from a density?",
+    "prerequisites": [
+      "R01",
+      "D03"
+    ],
+    "summary": "The expectation of a continuous random variable is the integral of \\(x\\) against its density, and the expectation of \\(g(X)\\) is the integral of \\(g\\) against the same density. Variance is the expected square deviation from the mean, and it equals \\(E[X^2]-(E[X])^2\\).",
+    "intuition": "The density marks where the probability sits, and the expectation is the balance point of that mass. Variance is the average squared distance from the balance point.",
+    "definition": [
+      "Let \\(X\\) have density \\(f\\). The expectation of \\(X\\) is \\[E[X]=\\int_{-\\infty}^{\\infty} x f(x)\\,dx,\\] provided \\(\\int_{-\\infty}^{\\infty} |x| f(x)\\,dx<\\infty\\). If that integral is infinite, the expectation is not defined as a real number.",
+      "For a real function \\(g\\) with \\(\\int_{-\\infty}^{\\infty} |g(x)| f(x)\\,dx<\\infty\\), the expectation of \\(g(X)\\) is \\[E[g(X)]=\\int_{-\\infty}^{\\infty} g(x) f(x)\\,dx.\\] This formula is sometimes called the law of the unconscious statistician: one integrates \\(g\\) against the density of \\(X\\), without first finding a density of \\(g(X)\\).",
+      "Write \\(\\mu=E[X]\\). The variance is \\(\\operatorname{Var}(X)=E[(X-\\mu)^2]\\), when \\(E[X^2]<\\infty\\). The standard deviation is the nonnegative square root of the variance.",
+      "Linearity says \\(E[aX+b]=a E[X]+b\\) for constants \\(a,b\\), and \\(E[g(X)+h(X)]=E[g(X)]+E[h(X)]\\) whenever the three expectations exist. For random variables \\(X\\) and \\(Y\\) on the same experiment, \\(E[X+Y]=E[X]+E[Y]\\) as well, and independence is not required."
+    ],
+    "theorem": "Let \\(X\\) have density \\(f\\). If \\(Y\\ge 0\\), then the tail formula \\[E[Y]=\\int_0^{\\infty} P(Y>y)\\,dy\\] holds in \\([0,\\infty]\\). If \\(g\\ge 0\\), then \\[E[g(X)]=\\int_{-\\infty}^{\\infty} g(x) f(x)\\,dx.\\] If \\(E[X^2]<\\infty\\) and \\(\\mu=E[X]\\), the variance shortcut is \\[\\operatorname{Var}(X)=E[X^2]-\\mu^2,\\] and for any constants \\(a,b\\), \\(\\operatorname{Var}(aX+b)=a^2\\operatorname{Var}(X)\\).",
+    "hypotheses": [
+      "The tail formula as an equality of real numbers needs \\(Y\\ge 0\\). A signed random variable is handled by splitting it into its positive and negative parts.",
+      "\\(E[g(X)]\\) is finite precisely when \\(\\int |g| f<\\infty\\). Nonnegative \\(g\\) may be left in the extended range \\([0,\\infty]\\).",
+      "The shortcut \\(E[X^2]-\\mu^2\\) needs a finite second moment. Absolute integrability of \\(x f(x)\\) is required before \\(E[X]\\) itself is a real number.",
+      "Scaling \\(\\operatorname{Var}(aX+b)=a^2\\operatorname{Var}(X)\\) uses a finite variance. The constant \\(b\\) must not appear in the result: shifting does not change spread."
+    ],
+    "proof": [
+      "For any nonnegative number \\(c\\), the identity \\(c=\\int_0^{\\infty} 1_{\\{c>y\\}}\\,dy\\) holds, because the integrand equals 1 on \\(0<y<c\\) and equals 0 for \\(y\\ge c\\). Apply this pathwise to a nonnegative random variable \\(Y\\): \\(Y=\\int_0^{\\infty} 1_{\\{Y>y\\}}\\,dy\\).",
+      "The integrand is nonnegative, so expectation may pass inside the integral (Tonelli's theorem): \\(E[Y]=\\int_0^{\\infty} E[1_{\\{Y>y\\}}]\\,dy=\\int_0^{\\infty} P(Y>y)\\,dy\\). This is the tail formula. Both sides may equal \\(+\\infty\\).",
+      "Now let \\(g\\ge 0\\) and set \\(Y=g(X)\\), where \\(X\\) has density \\(f\\). Then \\(P(g(X)>y)=\\int_{\\{x:g(x)>y\\}} f(x)\\,dx\\), so \\[E[g(X)]=\\int_0^{\\infty}\\int_{\\{x:g(x)>y\\}} f(x)\\,dx\\,dy.\\] The region of integration is \\(x\\in\\mathbb{R}\\) and \\(0<y<g(x)\\). Swapping the order, again because the integrand is nonnegative, gives \\(\\int_{-\\infty}^{\\infty} f(x)\\Bigl(\\int_0^{g(x)} 1\\,dy\\Bigr) dx=\\int_{-\\infty}^{\\infty} g(x) f(x)\\,dx\\).",
+      "If \\(g\\) changes sign and \\(\\int |g| f<\\infty\\), write \\(g=g^+-g^-\\) with \\(g^+=\\max(g,0)\\) and \\(g^-=\\max(-g,0)\\). Both parts are nonnegative and integrable against \\(f\\). Apply the previous step to each and subtract.",
+      "Linearity for one random variable is the same integral: \\(E[aX+b]=\\int (ax+b) f(x)\\,dx=a E[X]+b\\), when \\(E[|X|]<\\infty\\). Likewise \\(E[g(X)+h(X)]=E[g(X)]+E[h(X)]\\) when both expectations on the right exist. For two random variables on one experiment, \\(E[X+Y]=E[X]+E[Y]\\) holds whenever \\(E[|X|]\\) and \\(E[|Y|]\\) are finite, without independence. It is the additivity of expectation; when a joint density exists it follows by splitting \\(\\iint(x+y)f(x,y)\\,dx\\,dy\\) into two integrals, as in the chapter on properties of expectation.",
+      "Let \\(\\mu=E[X]\\) and assume \\(E[X^2]<\\infty\\). Expand the square and use linearity: \\(E[(X-\\mu)^2]=E[X^2-2\\mu X+\\mu^2]=E[X^2]-2\\mu E[X]+\\mu^2=E[X^2]-\\mu^2\\). For the scaling, \\(aX+b-E[aX+b]=a(X-\\mu)\\), so \\(\\operatorname{Var}(aX+b)=E[a^2(X-\\mu)^2]=a^2\\operatorname{Var}(X)\\). \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "A rain gauge on a wet afternoon holds a depth \\(X\\), in centimetres, with density \\(f(x)=x/8\\) for \\(0<x<4\\) and \\(f(x)=0\\) otherwise. Find \\(E[X]\\) and \\(\\operatorname{Var}(X)\\).",
+      "steps": [
+        "Check the density: \\(\\int_0^4 x/8\\,dx=\\bigl[x^2/16\\bigr]_0^4=16/16=1\\), and \\(f\\ge 0\\).",
+        "\\(E[X]=\\int_0^4 x\\cdot(x/8)\\,dx=\\int_0^4 x^2/8\\,dx=\\bigl[x^3/24\\bigr]_0^4=64/24=8/3\\).",
+        "\\(E[X^2]=\\int_0^4 x^2\\cdot(x/8)\\,dx=\\int_0^4 x^3/8\\,dx=\\bigl[x^4/32\\bigr]_0^4=256/32=8\\).",
+        "The shortcut gives \\(\\operatorname{Var}(X)=8-(8/3)^2=8-64/9=(72-64)/9=8/9\\)."
+      ],
+      "conclusion": "\\(E[X]=8/3\\) and \\(\\operatorname{Var}(X)=8/9\\)."
+    },
+    "practice": {
+      "prompt": "A continuous reading \\(X\\) has density \\(f(x)=4x^3\\) for \\(0<x<1\\) and \\(f(x)=0\\) otherwise. Find \\(E[X]\\), \\(\\operatorname{Var}(X)\\), \\(E[3X+1]\\) and \\(\\operatorname{Var}(3X+1)\\).",
+      "hints": [
+        "Compute \\(E[X]=\\int_0^1 x\\cdot 4x^3\\,dx\\) and \\(E[X^2]=\\int_0^1 x^2\\cdot 4x^3\\,dx\\), then use \\(\\operatorname{Var}(X)=E[X^2]-(E[X])^2\\).",
+        "Adding 1 does not change the variance, and a constant factor of 3 is squared: \\(\\operatorname{Var}(3X+1)=9\\operatorname{Var}(X)\\)."
+      ],
+      "answer": "\\(\\int_0^1 4x^3\\,dx=1\\), so \\(f\\) is a density. \\(E[X]=\\int_0^1 4x^4\\,dx=4/5\\) and \\(E[X^2]=\\int_0^1 4x^5\\,dx=4/6=2/3\\). Then \\(\\operatorname{Var}(X)=2/3-(4/5)^2=2/3-16/25=(50-48)/75=2/75\\). Linearity gives \\(E[3X+1]=3\\cdot(4/5)+1=12/5+5/5=17/5\\), and \\(\\operatorname{Var}(3X+1)=9\\cdot(2/75)=18/75=6/25\\)."
+    },
+    "caution": "The integral for \\(E[X]\\) must converge absolutely. The Cauchy density \\(f(x)=1/(\\pi(1+x^2))\\) integrates to 1, because \\(\\int_{-\\infty}^{\\infty} dx/(\\pi(1+x^2))=(1/\\pi)\\bigl[\\arctan x\\bigr]_{-\\infty}^{\\infty}=(1/\\pi)\\cdot\\pi=1\\). But \\(\\int_0^{\\infty} x/(1+x^2)\\,dx=\\infty\\), so \\(E[|X|]\\) is infinite and \\(E[X]\\) is not defined. A second common slip is to expand the variance as \\(E[X^2]-E[X]\\) and forget to square the mean, or to treat \\(\\operatorname{Var}(aX+b)\\) as \\(a\\operatorname{Var}(X)\\) instead of \\(a^2\\operatorname{Var}(X)\\).",
+    "bridge": "With expectation and variance in hand, the named families become concrete: each density produces a mean and a variance by these integrals.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 5 (expectation and variance of continuous random variables)."
+  },
+  {
+    "id": "R03",
+    "title": "Uniform random variables",
+    "cluster": "Continuous random variables",
+    "question": "What is the model for a number spread evenly across an interval, and what are its mean and variance?",
+    "prerequisites": [
+      "R02"
+    ],
+    "summary": "The uniform distribution on an interval \\((a,b)\\) has constant density \\(1/(b-a)\\). Probabilities are ratios of lengths, the mean is the midpoint, and the variance is \\((b-a)^2/12\\).",
+    "intuition": "If the value is spread evenly, probability is just the fraction of the interval that the event occupies. The centre of mass sits at the midpoint, and a longer interval spreads the mass further.",
+    "definition": [
+      "Let \\(a<b\\). A random variable \\(X\\) is uniform on \\((a,b)\\), written \\(X\\sim\\operatorname{Unif}(a,b)\\), when it has density \\(f(x)=1/(b-a)\\) for \\(a<x<b\\) and \\(f(x)=0\\) otherwise.",
+      "The distribution function is \\(F(x)=0\\) for \\(x\\le a\\), \\(F(x)=(x-a)/(b-a)\\) for \\(a<x<b\\), and \\(F(x)=1\\) for \\(x\\ge b\\).",
+      "Whether the endpoints \\(a\\) and \\(b\\) are included in the interval does not matter: each is a single point, so it has probability 0. The same density describes the uniform law on \\([a,b]\\), on \\((a,b]\\), and on \\([a,b)\\)."
+    ],
+    "theorem": "Let \\(a<b\\) and \\(X\\sim\\operatorname{Unif}(a,b)\\). If \\(a\\le c<d\\le b\\), then \\[P(c<X<d)=\\frac{d-c}{b-a}.\\] The mean and variance are \\[E[X]=\\frac{a+b}{2},\\qquad \\operatorname{Var}(X)=\\frac{(b-a)^2}{12}.\\]",
+    "hypotheses": [
+      "The interval must be finite and nonempty: \\(a<b\\). There is no uniform density on the whole line, because a positive constant does not integrate to 1 over an infinite range.",
+      "The length formula \\(P(c<X<d)=(d-c)/(b-a)\\) needs \\([c,d]\\) inside \\([a,b]\\). If the query interval sticks out, intersect it with \\((a,b)\\) before measuring length.",
+      "The variance formula is for the length \\(b-a\\) itself. Replacing the length by its square root, or forgetting the 12, are the usual arithmetic slips."
+    ],
+    "proof": [
+      "On \\(a<x<b\\) the density equals the constant \\(1/(b-a)\\). For \\(a\\le c<d\\le b\\), \\[P(c<X<d)=\\int_c^d \\frac{1}{b-a}\\,dx=\\frac{d-c}{b-a}.\\] The same computation with the running integral gives the distribution function stated above. Outside \\([a,b]\\) the probability of any subinterval is 0.",
+      "The mean is \\[E[X]=\\int_a^b \\frac{x}{b-a}\\,dx=\\frac{1}{b-a}\\cdot\\frac{b^2-a^2}{2}=\\frac{(b-a)(a+b)}{2(b-a)}=\\frac{a+b}{2}.\\]",
+      "The second moment is \\[E[X^2]=\\int_a^b \\frac{x^2}{b-a}\\,dx=\\frac{b^3-a^3}{3(b-a)}.\\] Factor \\(b^3-a^3=(b-a)(a^2+ab+b^2)\\), so \\(E[X^2]=(a^2+ab+b^2)/3\\).",
+      "Subtract the squared mean, using the common denominator 12: \\[\\operatorname{Var}(X)=\\frac{a^2+ab+b^2}{3}-\\left(\\frac{a+b}{2}\\right)^2=\\frac{4(a^2+ab+b^2)-3(a+b)^2}{12}.\\] The numerator is \\(4a^2+4ab+4b^2-3(a^2+2ab+b^2)=4a^2+4ab+4b^2-3a^2-6ab-3b^2=a^2-2ab+b^2=(a-b)^2\\). Hence \\(\\operatorname{Var}(X)=(b-a)^2/12\\). \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "A tram arrives at a time \\(X\\), in minutes past the hour, distributed as uniform on \\((8,20)\\). Find the density, \\(P(X<11)\\), \\(P(X>17)\\), \\(P(12<X<18)\\), the mean and the variance.",
+      "steps": [
+        "The length is \\(20-8=12\\), so \\(f(x)=1/12\\) for \\(8<x<20\\) and \\(f(x)=0\\) otherwise.",
+        "Each probability is a ratio of lengths: \\(P(X<11)=(11-8)/12=3/12=1/4\\), \\(P(X>17)=(20-17)/12=3/12=1/4\\), and \\(P(12<X<18)=(18-12)/12=6/12=1/2\\).",
+        "The mean is the midpoint \\((8+20)/2=14\\). The variance is \\((20-8)^2/12=144/12=12\\)."
+      ],
+      "conclusion": "The density is \\(1/12\\) on \\((8,20)\\), the three probabilities are \\(1/4\\), \\(1/4\\) and \\(1/2\\), \\(E[X]=14\\) and \\(\\operatorname{Var}(X)=12\\)."
+    },
+    "practice": {
+      "prompt": "A ferry's departure offset, in minutes, is uniform on \\((4,10)\\). Find the probability that the offset falls in the first quarter of that window, and find the mean and the variance.",
+      "hints": [
+        "The window has length \\(10-4=6\\), so the first quarter has length \\(6/4=3/2\\) and runs from 4 to \\(11/2\\).",
+        "Use \\(E[X]=(a+b)/2\\) and \\(\\operatorname{Var}(X)=(b-a)^2/12\\) with \\(a=4\\) and \\(b=10\\)."
+      ],
+      "answer": "The first quarter is the interval from 4 to \\(4+3/2=11/2\\), of length \\(3/2\\). Its probability is \\((3/2)/6=3/12=1/4\\). The mean is \\((4+10)/2=7\\) and the variance is \\(6^2/12=36/12=3\\)."
+    },
+    "caution": "Length ratios are legitimate only after the outcomes have been modelled as uniform. If a clock is more likely to stop near the hour than in the middle of the window, the constant density does not apply and the probability is not the ratio of lengths. Also keep the endpoints straight: the variance depends on \\(b-a\\), not on the midpoint. Moving the interval from \\((0,6)\\) to \\((4,10)\\) leaves the variance equal to 3 and changes only the mean.",
+    "bridge": "The uniform law is the flat density. The bell-shaped density that dominates measurement error is the normal law, built next.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 5 (uniform random variables)."
+  },
+  {
+    "id": "R04",
+    "title": "Normal random variables",
+    "cluster": "Continuous random variables",
+    "question": "Why does the normal density integrate to one, and how is every normal probability read from a single table?",
+    "prerequisites": [
+      "R02"
+    ],
+    "summary": "The normal family \\(N(\\mu,\\sigma^2)\\) is a location-scale family built on the standard normal density. An affine function of a normal random variable is normal, standardisation reduces every probability to the standard distribution function \\(\\Phi\\), and the parameters \\(\\mu\\) and \\(\\sigma^2\\) are the mean and the variance.",
+    "intuition": "The standard bell curve is symmetric about 0 and has spread 1. Shifting it by \\(\\mu\\) and stretching it by \\(\\sigma\\) moves the centre and the width without changing the shape, which is why one table serves the whole family.",
+    "definition": [
+      "The standard normal density is \\[\\varphi(z)=\\frac{1}{\\sqrt{2\\pi}}\\exp\\left(-\\frac{z^2}{2}\\right),\\qquad -\\infty<z<\\infty.\\] Its distribution function is \\(\\Phi(z)=\\int_{-\\infty}^{z} \\varphi(t)\\,dt\\). The integral for \\(\\Phi(z)\\) has no elementary antiderivative, so numerical values are taken from a standard normal table or a computer.",
+      "For \\(\\mu\\in\\mathbb{R}\\) and \\(\\sigma>0\\), the normal density with mean \\(\\mu\\) and variance \\(\\sigma^2\\) is \\[f(x)=\\frac{1}{\\sigma\\sqrt{2\\pi}}\\exp\\left(-\\frac{(x-\\mu)^2}{2\\sigma^2}\\right),\\qquad -\\infty<x<\\infty.\\] A random variable with this density is written \\(X\\sim N(\\mu,\\sigma^2)\\). The second parameter is the variance, not the standard deviation. The case \\(\\mu=0\\), \\(\\sigma=1\\) is the standard normal law \\(N(0,1)\\).",
+      "The density is symmetric about \\(\\mu\\): \\(f(\\mu+u)=f(\\mu-u)\\). For the standard law this symmetry is \\(\\varphi(-z)=\\varphi(z)\\), and it implies \\(\\Phi(-z)=1-\\Phi(z)\\)."
+    ],
+    "theorem": "The standard normal density integrates to 1: \\(\\int_{-\\infty}^{\\infty}\\varphi(z)\\,dz=1\\). If \\(X\\sim N(\\mu,\\sigma^2)\\) and \\(a\\ne 0\\), then \\[aX+b\\sim N(a\\mu+b,\\, a^2\\sigma^2).\\] In particular the standardised variable \\(Z=(X-\\mu)/\\sigma\\) satisfies \\(Z\\sim N(0,1)\\), and \\[P(X\\le x)=\\Phi\\left(\\frac{x-\\mu}{\\sigma}\\right).\\] Furthermore \\(\\Phi(-z)=1-\\Phi(z)\\) for every real \\(z\\), \\(E[Z]=0\\), \\(\\operatorname{Var}(Z)=1\\), and therefore \\(E[X]=\\mu\\) and \\(\\operatorname{Var}(X)=\\sigma^2\\).",
+    "hypotheses": [
+      "The scale \\(\\sigma\\) must be strictly positive. The symbol \\(N(\\mu,\\sigma^2)\\) records the variance: \\(N(150,16)\\) has standard deviation 4, while \\(N(150,4)\\) has standard deviation 2.",
+      "The affine transformation needs \\(a\\ne 0\\). If \\(a=0\\), then \\(aX+b\\) is the constant \\(b\\), which has no density.",
+      "Table values of \\(\\Phi\\) are decimal approximations. Arithmetic that starts from a four-decimal table is exact relative to those table entries, and it should be labelled as such.",
+      "The moment claims use absolute integrability of \\(|z|\\varphi(z)\\) and of \\(z^2\\varphi(z)\\), checked in the proof, so the odd-function cancellation for \\(E[Z]\\) is legitimate."
+    ],
+    "proof": [
+      "Let \\(I=\\int_{-\\infty}^{\\infty} \\exp(-x^2/2)\\,dx\\). Then \\(I>0\\) and \\[I^2=\\iint_{\\mathbb{R}^2} \\exp\\bigl(-(x^2+y^2)/2\\bigr)\\,dx\\,dy.\\] Pass to polar coordinates \\(x=r\\cos\\theta\\), \\(y=r\\sin\\theta\\), with area element \\(r\\,dr\\,d\\theta\\), where \\(r\\ge 0\\) and \\(0\\le\\theta\\le 2\\pi\\). The integrand depends only on \\(r\\): \\[I^2=\\int_0^{2\\pi}\\int_0^{\\infty} \\exp(-r^2/2)\\, r\\,dr\\,d\\theta.\\] The inner integral uses \\(u=r^2/2\\), so \\(du=r\\,dr\\), and \\(\\int_0^{\\infty} e^{-u}\\,du=1\\). Thus \\(I^2=\\int_0^{2\\pi} 1\\,d\\theta=2\\pi\\), and \\(I=\\sqrt{2\\pi}\\). Dividing by \\(\\sqrt{2\\pi}\\) shows that \\(\\varphi\\) integrates to 1.",
+      "For the general density, substitute \\(z=(x-\\mu)/\\sigma\\), so \\(dx=\\sigma\\,dz\\). Then \\[\\int_{-\\infty}^{\\infty} \\frac{1}{\\sigma\\sqrt{2\\pi}}\\exp\\left(-\\frac{(x-\\mu)^2}{2\\sigma^2}\\right) dx=\\int_{-\\infty}^{\\infty} \\varphi(z)\\,dz=1.\\]",
+      "Let \\(Y=aX+b\\) with \\(a>0\\). The distribution function is \\(F_Y(y)=P(aX+b\\le y)=P\\bigl(X\\le (y-b)/a\\bigr)=F_X((y-b)/a)\\). Differentiating with the chain rule, \\[f_Y(y)=f_X\\left(\\frac{y-b}{a}\\right)\\cdot\\frac{1}{a}=\\frac{1}{a\\sigma\\sqrt{2\\pi}}\\exp\\left(-\\frac{((y-b)/a-\\mu)^2}{2\\sigma^2}\\right).\\] The exponent simplifies because \\((y-b)/a-\\mu=(y-(a\\mu+b))/a\\), so \\[\\frac{((y-b)/a-\\mu)^2}{2\\sigma^2}=\\frac{(y-(a\\mu+b))^2}{2 a^2\\sigma^2}.\\] Since \\(a>0\\), one has \\(a=|a|\\), and \\(f_Y\\) is the \\(N(a\\mu+b, a^2\\sigma^2)\\) density.",
+      "If \\(a<0\\), dividing by \\(a\\) reverses the inequality: \\(F_Y(y)=P\\bigl(X\\ge (y-b)/a\\bigr)\\). Because \\(X\\) has a density, \\(P(X\\ge c)=1-F_X(c)\\). Differentiating gives \\(f_Y(y)=-f_X((y-b)/a)\\cdot(1/a)\\). Now \\(-1/a=1/|a|\\), and the same algebra as in the previous step produces the \\(N(a\\mu+b, a^2\\sigma^2)\\) density. In both cases the variance parameter is \\(a^2\\sigma^2\\).",
+      "Standardisation is the case \\(a=1/\\sigma>0\\) and \\(b=-\\mu/\\sigma\\): \\(Z=(X-\\mu)/\\sigma\\sim N(0,1)\\). Therefore \\(P(X\\le x)=P(Z\\le (x-\\mu)/\\sigma)=\\Phi((x-\\mu)/\\sigma)\\), and \\(P(x_0<X<x_1)=\\Phi((x_1-\\mu)/\\sigma)-\\Phi((x_0-\\mu)/\\sigma)\\).",
+      "Symmetry of \\(\\varphi\\) gives \\(\\Phi(-z)=\\int_{-\\infty}^{-z}\\varphi(t)\\,dt\\). The substitution \\(u=-t\\) turns the integral into \\(\\int_z^{\\infty}\\varphi(u)\\,du=1-\\Phi(z)\\).",
+      "The integrand \\(z\\varphi(z)\\) is odd. It is absolutely integrable, because \\(\\int_0^{\\infty} z e^{-z^2/2}\\,dz=1\\) by the substitution \\(u=z^2/2\\), hence \\(\\int_0^{\\infty} z\\varphi(z)\\,dz=1/\\sqrt{2\\pi}<\\infty\\). The two halves cancel, so \\(E[Z]=0\\).",
+      "For the second moment, integrate by parts. Set \\(u=z\\) and \\(dv=z e^{-z^2/2}\\,dz\\), so \\(du=dz\\) and \\(v=-e^{-z^2/2}\\). Then \\[\\int_{-\\infty}^{\\infty} z^2 e^{-z^2/2}\\,dz=\\Bigl[-z e^{-z^2/2}\\Bigr]_{-\\infty}^{\\infty}+\\int_{-\\infty}^{\\infty} e^{-z^2/2}\\,dz.\\] The boundary term vanishes: \\(|z| e^{-z^2/2}\\to 0\\) as \\(|z|\\to\\infty\\), since \\(z/e^{z^2/2}\\) is an \\(\\infty/\\infty\\) form whose derivative ratio is \\(1/(z e^{z^2/2})\\to 0\\). The remaining integral equals \\(\\sqrt{2\\pi}\\) by the first step. Therefore \\(E[Z^2]=(1/\\sqrt{2\\pi})\\cdot\\sqrt{2\\pi}=1\\), and \\(\\operatorname{Var}(Z)=1\\).",
+      "Write \\(X=\\mu+\\sigma Z\\). Linearity gives \\(E[X]=\\mu+\\sigma E[Z]=\\mu\\). The variance scaling gives \\(\\operatorname{Var}(X)=\\sigma^2\\operatorname{Var}(Z)=\\sigma^2\\). \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "The length, in millimetres, of a ceramic tile is \\(X\\sim N(150,16)\\). Using a standard normal table with \\(\\Phi(1.00)=0.8413\\) and \\(\\Phi(2.00)=0.9772\\), find \\(P(146<X<158)\\).",
+      "steps": [
+        "The variance is 16, so the standard deviation is \\(\\sigma=4\\), not 16. Standardise the endpoints: \\((146-150)/4=-1\\) and \\((158-150)/4=2\\).",
+        "\\(P(146<X<158)=P(-1<Z<2)=\\Phi(2)-\\Phi(-1)\\), where \\(Z\\sim N(0,1)\\).",
+        "Symmetry gives \\(\\Phi(-1)=1-\\Phi(1)=1-0.8413=0.1587\\). Subtract: \\(0.9772-0.1587=0.8185\\)."
+      ],
+      "conclusion": "\\(P(146<X<158)=0.8185\\), to the accuracy of the four-decimal table."
+    },
+    "practice": {
+      "prompt": "A curing time, in minutes, is \\(X\\sim N(70,25)\\). Using \\(\\Phi(2.00)=0.9772\\), find \\(P(X<60)\\) and \\(P(|X-70|\\le 10)\\).",
+      "hints": [
+        "The standard deviation is 5. Convert \\(X<60\\) into a statement about \\(Z=(X-70)/5\\), and use \\(\\Phi(-2)=1-\\Phi(2)\\).",
+        "The event \\(|X-70|\\le 10\\) is \\(|Z|\\le 2\\), whose probability is \\(\\Phi(2)-\\Phi(-2)\\)."
+      ],
+      "answer": "\\((60-70)/5=-2\\), so \\(P(X<60)=\\Phi(-2)=1-0.9772=0.0228\\). And \\(P(|X-70|\\le 10)=P(|Z|\\le 2)=\\Phi(2)-\\Phi(-2)=0.9772-0.0228=0.9544\\). Equivalently, \\(1-2\\cdot 0.0228=1-0.0456=0.9544\\)."
+    },
+    "caution": "Two slips dominate normal calculations. The first is to standardise with the variance instead of the standard deviation: for \\(N(150,16)\\) one divides by 4, not by 16. The second is to forget that a negative coefficient reverses an inequality when working directly with the cdf, even though the variance parameter \\(a^2\\sigma^2\\) stays positive. A table also gives \\(\\Phi\\), the probability of being at most \\(z\\), so a right-hand tail is \\(1-\\Phi(z)\\), and \\(\\Phi(-z)\\) equals that tail rather than \\(\\Phi(z)\\).",
+    "bridge": "Binomial counts with a large number of trials have nearly this bell shape. The next lesson turns that resemblance into a numerical approximation.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 5 (normal random variables)."
+  },
+  {
+    "id": "R05",
+    "title": "The normal approximation to the binomial",
+    "cluster": "Continuous random variables",
+    "question": "When can a normal curve stand in for a binomial count, and when is a Poisson approximation the better tool?",
+    "prerequisites": [
+      "R04",
+      "D04"
+    ],
+    "summary": "The De Moivre-Laplace theorem says that a binomial count, after centring at \\(np\\) and scaling by \\(\\sqrt{np(1-p)}\\), converges to the standard normal. For finite \\(n\\) one uses a continuity correction, and the practical requirement is \\(np(1-p)\\ge 10\\). A Poisson approximation is the one to use when \\(p\\) is small and that product is not large.",
+    "intuition": "A binomial histogram is a stack of bars of width 1. When many bars form a nearly symmetric mound, the normal curve tracks their tops, and each bar's area is matched by the normal probability on an interval of length 1 centred at the integer.",
+    "definition": [
+      "Let \\(0<p<1\\) and let \\(S_n\\) be binomial with parameters \\(n\\) and \\(p\\): \\(P(S_n=k)=\\binom{n}{k} p^k (1-p)^{n-k}\\) for \\(k=0,1,\\ldots,n\\). Then \\(E[S_n]=np\\) and \\(\\operatorname{Var}(S_n)=np(1-p)\\). Write \\(\\mu=np\\) and \\(\\sigma=\\sqrt{np(1-p)}\\).",
+      "The continuity correction matches the bar of height \\(P(S_n=k)\\), which sits over the unit interval centred at the integer \\(k\\), with normal area on that interval. For integers \\(c\\le d\\) and \\(Y\\sim N(\\mu,\\sigma^2)\\), \\[P(S_n=c)\\approx P(c-1/2<Y<c+1/2),\\] \\[P(S_n\\le c)\\approx P(Y\\le c+1/2),\\qquad P(S_n\\ge c)\\approx P(Y\\ge c-1/2),\\] and \\(P(c\\le S_n\\le d)\\approx P(c-1/2<Y<d+1/2)\\). In standardised form the last of these is \\(\\Phi((d+1/2-\\mu)/\\sigma)-\\Phi((c-1/2-\\mu)/\\sigma)\\).",
+      "Two different limits hide inside the binomial family. If \\(p\\) stays fixed in \\((0,1)\\) and \\(n\\to\\infty\\), the standardised count approaches a normal. If instead \\(p\\) shrinks so that \\(np\\to\\lambda\\in(0,\\infty)\\), the count approaches a Poisson random variable with mean \\(\\lambda\\). The Poisson approximation compares two integer-valued laws, so it uses no continuity correction.",
+      "A practical rule of thumb for the normal approximation is \\(np(1-p)\\ge 10\\). Because \\(\\min(np,n(1-p))=np(1-p)/\\max(p,1-p)\\) and the denominator is at most 1, this single inequality forces both \\(np\\ge 10\\) and \\(n(1-p)\\ge 10\\). When \\(np(1-p)<10\\), especially when \\(p\\) is small and \\(\\lambda=np\\) is moderate, the Poisson approximation is the appropriate one."
+    ],
+    "theorem": "De Moivre-Laplace theorem. Let \\(0<p<1\\) be fixed and let \\(S_n\\) be binomial with parameters \\(n\\) and \\(p\\). For any fixed real numbers \\(a<b\\), \\[\\lim_{n\\to\\infty} P\\left(a\\le \\frac{S_n-np}{\\sqrt{np(1-p)}}\\le b\\right)=\\Phi(b)-\\Phi(a).\\] One-sided statements follow by sending an endpoint to \\(\\pm\\infty\\), using \\(\\Phi(z)\\to 1\\) as \\(z\\to\\infty\\) and \\(\\Phi(z)\\to 0\\) as \\(z\\to-\\infty\\).",
+    "hypotheses": [
+      "The limit requires \\(p\\) fixed in \\((0,1)\\), not depending on \\(n\\). If \\(p\\) tends to 0 or 1 as \\(n\\) grows, the normal limit can fail and the Poisson limit may apply instead.",
+      "For a numerical approximation at a finite \\(n\\), check \\(np(1-p)\\ge 10\\) before using the normal curve. The continuity correction is a finite-sample refinement: the shift of \\(1/2\\) becomes negligible after division by \\(\\sigma\\to\\infty\\), so it does not change the limit theorem.",
+      "Apply the continuity correction only when a continuous distribution is standing in for an integer-valued one. A Poisson approximation to a binomial probability does not get a half-unit shift.",
+      "Table readings of \\(\\Phi\\) are four-decimal inputs. The arithmetic below is exact given those inputs."
+    ],
+    "proof": [
+      "The argument is a local limit plus a Riemann sum. The analytic input we use, and do not reprove, is Stirling's approximation in the range we need: \\(\\ln(m!) = m\\ln m - m + \\tfrac{1}{2}\\ln(2\\pi m) + \\delta_m\\) with \\(\\delta_m\\to 0\\) as \\(m\\to\\infty\\), uniformly for the integers \\(k\\) and \\(n-k\\) that appear when \\((k-np)/\\sqrt{np(1-p)}\\) stays in a fixed bounded interval.",
+      "Let \\(q=1-p\\), \\(\\sigma_n=\\sqrt{npq}\\) and \\(x_k=(k-np)/\\sigma_n\\). For such \\(k\\), Stirling produces \\[P(S_n=k)=\\sqrt{\\frac{n}{2\\pi k(n-k)}}\\, \\exp\\bigl(-n H(k/n)\\bigr)\\, e^{\\varepsilon_n},\\] where \\(\\varepsilon_n\\to 0\\) and \\(H(t)=t\\ln(t/p)+(1-t)\\ln((1-t)/q)\\). The square-root prefactor equals \\((1/(\\sigma_n\\sqrt{2\\pi}))\\sqrt{pq/((k/n)(1-k/n))}\\).",
+      "The function \\(H\\) satisfies \\(H(p)=0\\), \\(H'(p)=0\\) and \\(H''(p)=1/(pq)\\), since \\(H'(t)=\\ln(t/p)-\\ln((1-t)/q)\\) and \\(H''(t)=1/t+1/(1-t)\\). With \\(k/n=p+x_k\\sqrt{pq/n}\\), Taylor expansion gives \\(n H(k/n)=x_k^2/2+O(n^{-1/2})\\), uniformly for \\(x_k\\) in a bounded interval. Also \\(k/n\\to p\\), so the square-root factor tends to 1. Therefore \\[P(S_n=k)\\sim \\frac{1}{\\sigma_n\\sqrt{2\\pi}}\\exp\\left(-\\frac{x_k^2}{2}\\right).\\]",
+      "Write \\(\\varphi\\) for the standard normal density. Each local probability is already on the scale of the spacing \\(\\Delta x=1/\\sigma_n\\): \\(P(S_n=k)\\sim \\varphi(x_k)\\,\\Delta x\\). Summing over the integers \\(k\\) with \\(a\\le x_k\\le b\\) is therefore a Riemann sum for \\(\\int_a^b (1/\\sqrt{2\\pi})\\exp(-x^2/2)\\,dx=\\Phi(b)-\\Phi(a)\\). The Stirling remainder and the Taylor remainder are uniform on this bounded range of \\(x\\), which is the content of the analytic input in the first step, and the limit follows. \\(\\square\\)",
+      "The continuity correction is not part of that limit. It is the histogram reading of the same local approximation: \\(P(S_n=k)\\) is about \\(\\varphi(x_k)/\\sigma_n\\), and \\(\\varphi(x_k)/\\sigma_n\\) is about the normal probability of an interval of length 1 about \\(k\\), namely \\((k-1/2,k+1/2)\\)."
+    ],
+    "example": {
+      "prompt": "A fair die is rolled 180 times, and \\(X\\) is the number of sixes. Using the continuity correction and the table values \\(\\Phi(1.10)=0.8643\\) and \\(\\Phi(2.10)=0.9821\\), approximate \\(P(20\\le X\\le 35)\\). Separately, each of 500 circuit boards fails independently with probability \\(0.004\\). Let \\(Y\\) be the number of failures and approximate \\(P(Y=0)\\), choosing between the normal and Poisson approximations.",
+      "steps": [
+        "Here \\(X\\) is binomial with \\(n=180\\) and \\(p=1/6\\). The mean is \\(180/6=30\\). The variance is \\(180\\cdot(1/6)\\cdot(5/6)=30\\cdot(5/6)=25\\), so \\(\\sigma=5\\). The rule of thumb holds: \\(np(1-p)=25\\ge 10\\). Since \\(p=1/6\\) is not small, the normal approximation is the appropriate one.",
+        "The integers from 20 to 35 correspond to the continuous interval from \\(19.5\\) to \\(35.5\\). Standardise: \\((19.5-30)/5=-10.5/5=-2.1\\) and \\((35.5-30)/5=5.5/5=1.1\\).",
+        "Thus \\(P(20\\le X\\le 35)\\approx \\Phi(1.10)-\\Phi(-2.10)=0.8643-(1-0.9821)=0.8643-0.0179=0.8464\\).",
+        "For the boards, \\(Y\\) is binomial with mean \\(500\\cdot 0.004=2\\). The normal rule fails: \\(np(1-p)=2\\cdot 0.996=1.992<10\\). Use the Poisson approximation with mean \\(\\lambda=2\\), and do not apply a continuity correction. Then \\(P(Y=0)\\approx e^{-2}\\)."
+      ],
+      "conclusion": "\\(P(20\\le X\\le 35)\\approx 0.8464\\) by the normal approximation with continuity correction. For the rare failures, the Poisson approximation gives \\(P(Y=0)\\approx e^{-2}\\)."
+    },
+    "practice": {
+      "prompt": "Each of 625 invited readers replies independently with probability \\(1/5\\). Let \\(X\\) be the number of replies. Using a continuity correction and \\(\\Phi(1.55)=0.9394\\), approximate \\(P(110\\le X\\le 140)\\). Explain why a Poisson approximation is a weaker choice for this count.",
+      "hints": [
+        "Compute \\(np\\) and \\(np(1-p)\\). The standard deviation is 10, and the continuity correction replaces the integer window by \\((109.5, 140.5)\\).",
+        "A Poisson model with the same mean would have variance equal to that mean. Compare it with \\(np(1-p)\\), and check whether \\(p\\) is small."
+      ],
+      "answer": "\\(np=625/5=125\\) and \\(np(1-p)=625\\cdot(1/5)\\cdot(4/5)=100\\ge 10\\), so \\(\\sigma=10\\) and the normal approximation is justified. Then \\((109.5-125)/10=-1.55\\) and \\((140.5-125)/10=1.55\\), hence \\(P(110\\le X\\le 140)\\approx \\Phi(1.55)-\\Phi(-1.55)=0.9394-(1-0.9394)=0.9394-0.0606=0.8788\\). A Poisson approximation with mean 125 would assign variance 125 rather than 100, and \\(p=1/5\\) is not small, so the Poisson limit is the wrong regime."
+    },
+    "caution": "Omitting the continuity correction shifts every endpoint by half a unit before dividing by \\(\\sigma\\). For a single point probability, such as \\(P(X=30)\\) in the die example, that half-unit is the whole approximation: one uses \\(P(29.5<Y<30.5)\\), not the normal density at 30. A second boundary is the rule of thumb. If \\(np(1-p)<10\\), forcing a normal curve, especially onto a count that piles up near 0, misrepresents the skew. Use Poisson there, with no half-unit correction.",
+    "bridge": "The normal law approximates a count. The next family is already continuous: the exponential law for a waiting time.",
+    "lab": "normal-approximation",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 5 (normal approximation to the binomial)."
+  },
+  {
+    "id": "R06",
+    "title": "Exponential random variables",
+    "cluster": "Continuous random variables",
+    "question": "What does an exponential waiting time remember, and why does it appear in a Poisson process?",
+    "prerequisites": [
+      "R02",
+      "D05"
+    ],
+    "summary": "The exponential distribution with rate \\(\\lambda\\) has density \\(\\lambda e^{-\\lambda x}\\) on the positive line, mean \\(1/\\lambda\\) and variance \\(1/\\lambda^2\\). It is memoryless, it is the only continuous memoryless law, and it is the waiting time until the first event of a Poisson process of rate \\(\\lambda\\).",
+    "intuition": "A constant hazard means the process has no ageing: surviving up to time \\(s\\) does not change the law of the remaining wait. That is exactly the gap before the next event when events arrive at a steady rate.",
+    "definition": [
+      "Let \\(\\lambda>0\\). A random variable \\(X\\) is exponential with rate \\(\\lambda\\), written \\(X\\sim\\operatorname{Exp}(\\lambda)\\), when its density is \\(f(x)=\\lambda e^{-\\lambda x}\\) for \\(x\\ge 0\\) and \\(f(x)=0\\) for \\(x<0\\). The distribution function is \\(F(x)=0\\) for \\(x<0\\) and \\(F(x)=1-e^{-\\lambda x}\\) for \\(x\\ge 0\\). The survival probabilities are \\(P(X>x)=e^{-\\lambda x}\\) for \\(x\\ge 0\\), and \\(P(X>x)=1\\) for \\(x<0\\).",
+      "The parameter \\(\\lambda\\) is a rate: larger \\(\\lambda\\) packs the density closer to 0. The mean is \\(1/\\lambda\\), so a specification by the mean uses the reciprocal of the rate. The convention used here is the rate.",
+      "A Poisson process of rate \\(\\lambda\\) is a model for events on the half-line in which the number of events in any interval of length \\(t\\) is a Poisson random variable with mean \\(\\lambda t\\). In particular, if \\(N(t)\\) is the number of events in \\([0,t]\\), then \\(P(N(t)=k)=e^{-\\lambda t}(\\lambda t)^k/k!\\) for integers \\(k\\ge 0\\)."
+    ],
+    "theorem": "If \\(X\\sim\\operatorname{Exp}(\\lambda)\\), then \\(E[X]=1/\\lambda\\) and \\(\\operatorname{Var}(X)=1/\\lambda^2\\). The memoryless property holds: for all \\(s,t\\ge 0\\), \\[P(X>s+t\\mid X>s)=P(X>t).\\] Conversely, if \\(X\\) is a continuous random variable with \\(P(X>0)=1\\) whose survival function \\(G(t)=P(X>t)\\) is not identically 1, and if \\(G(s+t)=G(s)G(t)\\) for all \\(s,t\\ge 0\\), then \\(X\\) is exponential for \\(\\lambda=-\\ln G(1)\\). If events occur as a Poisson process of rate \\(\\lambda\\), the waiting time \\(T\\) until the first event satisfies \\(P(T>t)=e^{-\\lambda t}\\) for \\(t>0\\), so \\(T\\sim\\operatorname{Exp}(\\lambda)\\).",
+    "hypotheses": [
+      "The rate \\(\\lambda\\) must be positive. Memoryless equalities are stated for \\(s,t\\ge 0\\); the survival function is 1 for negative arguments.",
+      "Uniqueness uses continuity of the distribution, which makes \\(G\\) continuous, together with \\(G(0)=1\\) and the requirement that \\(G\\) is not identically 1. Without continuity, the functional equation \\(G(s+t)=G(s)G(t)\\) has wild solutions that are not distribution functions.",
+      "The link to the Poisson process uses only the marginal law of the count: \\(N(t)\\) is Poisson with mean \\(\\lambda t\\). The identification \\(T>t\\) if and only if \\(N(t)=0\\) needs the events to be those of that process on \\([0,t]\\)."
+    ],
+    "proof": [
+      "The density integrates to 1: \\(\\int_0^{\\infty} \\lambda e^{-\\lambda x}\\,dx=\\bigl[-e^{-\\lambda x}\\bigr]_0^{\\infty}=1\\). Differentiating \\(F(x)=1-e^{-\\lambda x}\\) for \\(x>0\\) returns \\(\\lambda e^{-\\lambda x}\\).",
+      "Integrate by parts for the mean. Set \\(u=x\\) and \\(dv=\\lambda e^{-\\lambda x}\\,dx\\), so \\(du=dx\\) and \\(v=-e^{-\\lambda x}\\). Then \\[E[X]=\\Bigl[-x e^{-\\lambda x}\\Bigr]_0^{\\infty}+\\int_0^{\\infty} e^{-\\lambda x}\\,dx.\\] The boundary term is 0 at 0, and it is 0 at infinity because \\(x e^{-\\lambda x}\\to 0\\). The remaining integral equals \\(1/\\lambda\\). The tail formula gives the same result with less work: \\(E[X]=\\int_0^{\\infty} P(X>x)\\,dx=\\int_0^{\\infty} e^{-\\lambda x}\\,dx=1/\\lambda\\).",
+      "For the second moment, set \\(u=x^2\\) and \\(dv=\\lambda e^{-\\lambda x}\\,dx\\). The boundary term \\(x^2 e^{-\\lambda x}\\) vanishes at both ends, and \\[E[X^2]=\\int_0^{\\infty} 2x e^{-\\lambda x}\\,dx=\\frac{2}{\\lambda}\\int_0^{\\infty} x\\lambda e^{-\\lambda x}\\,dx=\\frac{2}{\\lambda}\\cdot\\frac{1}{\\lambda}=\\frac{2}{\\lambda^2}.\\] Therefore \\(\\operatorname{Var}(X)=2/\\lambda^2-(1/\\lambda)^2=1/\\lambda^2\\).",
+      "Memoryless: if \\(s,t\\ge 0\\), then \\(P(X>s)=e^{-\\lambda s}>0\\) and \\[P(X>s+t\\mid X>s)=\\frac{P(X>s+t)}{P(X>s)}=\\frac{e^{-\\lambda(s+t)}}{e^{-\\lambda s}}=e^{-\\lambda t}=P(X>t).\\]",
+      "For the converse, \\(G(0)=P(X>0)=1\\). If \\(G(t_0)=0\\) for some \\(t_0>0\\), then \\(G(t_0)=G(t_0/2)^2\\) forces \\(G(t_0/2)=0\\), and repeating gives \\(G(t_0/2^n)=0\\). Continuity of \\(G\\) at 0 would then give \\(G(0)=0\\), a contradiction. So \\(G(t)>0\\) for every \\(t\\ge 0\\). The functional equation yields \\(G(nt)=G(t)^n\\) by induction, and \\(G(t)=G(n\\cdot t/n)=G(t/n)^n\\), so \\(G(t/n)=G(t)^{1/n}\\). Therefore \\(G(m/n)=G(1)^{m/n}\\) for positive integers \\(m,n\\). The function \\(t\\mapsto G(1)^t\\) is continuous and agrees with \\(G\\) on the nonnegative rationals, hence on all of \\([0,\\infty)\\) by continuity. The value \\(G(1)=1\\) would make \\(G\\) identically 1, which was excluded, and \\(G(1)\\le 1\\). Set \\(\\lambda=-\\ln G(1)>0\\). Then \\(G(t)=e^{-\\lambda t}\\), which is the exponential survival function of rate \\(\\lambda\\).",
+      "Let \\(T\\) be the time of the first event in a Poisson process of rate \\(\\lambda\\), and let \\(N(t)\\) be the number of events in \\([0,t]\\). For \\(t>0\\), the event \\(T>t\\) occurs exactly when \\(N(t)=0\\). The Poisson formula with mean \\(\\lambda t\\) gives \\(P(N(t)=0)=e^{-\\lambda t}\\). Hence \\(P(T>t)=e^{-\\lambda t}\\), so \\(T\\) has the exponential distribution function of rate \\(\\lambda\\). \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "Night-shift alerts arrive as a Poisson process of rate \\(\\lambda=4\\) per hour. Let \\(T\\) be the number of hours until the first alert. Find \\(E[T]\\), \\(\\operatorname{Var}(T)\\), \\(P(T>1/2)\\), and the conditional probability \\(P(T>1\\mid T>1/2)\\).",
+      "steps": [
+        "The waiting time for the first event is exponential with rate 4, so \\(E[T]=1/4\\) and \\(\\operatorname{Var}(T)=1/16\\).",
+        "\\(P(T>1/2)=e^{-4\\cdot(1/2)}=e^{-2}\\). Equivalently, this is the probability that a Poisson count of mean \\(4\\cdot(1/2)=2\\) equals 0.",
+        "Memoryless shortens the conditioning: \\(P(T>1\\mid T>1/2)=P(T>1-1/2)=P(T>1/2)=e^{-2}\\). The half hour already spent waiting does not change the chance of a further quiet half hour."
+      ],
+      "conclusion": "\\(E[T]=1/4\\), \\(\\operatorname{Var}(T)=1/16\\), and both \\(P(T>1/2)\\) and \\(P(T>1\\mid T>1/2)\\) equal \\(e^{-2}\\)."
+    },
+    "practice": {
+      "prompt": "A printer jams after an exponential time \\(T\\), in hours, of rate \\(\\lambda=5\\). Find \\(E[T]\\), \\(\\operatorname{Var}(T)\\), \\(P(T>2/5)\\) and \\(P(T>6/5\\mid T>4/5)\\).",
+      "hints": [
+        "Use \\(E[T]=1/\\lambda\\) and \\(\\operatorname{Var}(T)=1/\\lambda^2\\), and \\(P(T>t)=e^{-\\lambda t}\\).",
+        "Memoryless replaces the conditional event by a fresh wait of length \\(6/5-4/5\\)."
+      ],
+      "answer": "\\(E[T]=1/5\\) and \\(\\operatorname{Var}(T)=1/25\\). Then \\(P(T>2/5)=e^{-5\\cdot(2/5)}=e^{-2}\\). The gap in the conditional probability is \\(6/5-4/5=2/5\\), so \\(P(T>6/5\\mid T>4/5)=P(T>2/5)=e^{-2}\\)."
+    },
+    "caution": "Memoryless is a severe modelling assumption. It says that a component which has already run for a long time has the same remaining life as a new one, so the exponential law is a poor description of human lifetimes or of wear-out failures. A second slip is to swap the rate and the mean: under the rate convention, \\(P(X>t)=e^{-\\lambda t}\\) and \\(E[X]=1/\\lambda\\), not \\(e^{-t/\\lambda}\\) and \\(\\lambda\\). Because the distribution is continuous, \\(P(X>t)=P(X\\ge t)\\), so the memoryless statement may be written with either inequality.",
+    "bridge": "The exponential law is the wait for the first event. The wait for the \\(n\\)th event is the gamma law built from the same rate.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 5 (exponential random variables)."
+  },
+  {
+    "id": "R07",
+    "title": "Gamma random variables",
+    "cluster": "Continuous random variables",
+    "question": "How do we model the waiting time until the n-th event, and what are its mean and variance?",
+    "prerequisites": [
+      "R06"
+    ],
+    "summary": "The gamma function normalises a two-parameter density on the positive line. A gamma random variable with shape \\(\\alpha\\) and rate \\(\\lambda\\) has mean \\(\\alpha/\\lambda\\) and variance \\(\\alpha/\\lambda^2\\). When the shape is an integer \\(n\\), this is the waiting time until the \\(n\\)th event of a Poisson process of rate \\(\\lambda\\), and the exponential law is the case \\(n=1\\).",
+    "intuition": "Each new event adds another exponential wait of mean \\(1/\\lambda\\). After \\(n\\) events the means have added to \\(n/\\lambda\\), and the gamma density is the law of that total wait.",
+    "definition": [
+      "The gamma function is defined for \\(\\alpha>0\\) by \\[\\Gamma(\\alpha)=\\int_0^{\\infty} t^{\\alpha-1} e^{-t}\\,dt.\\] It is finite for every \\(\\alpha>0\\). Integration by parts gives the recurrence \\(\\Gamma(\\alpha)=(\\alpha-1)\\Gamma(\\alpha-1)\\) for \\(\\alpha>1\\).",
+      "In particular \\(\\Gamma(1)=\\int_0^{\\infty} e^{-t}\\,dt=1\\), and then \\(\\Gamma(n)=(n-1)!\\) for every integer \\(n\\ge 1\\). Also \\(\\Gamma(1/2)=\\sqrt{\\pi}\\).",
+      "For \\(\\alpha>0\\) and \\(\\lambda>0\\), the gamma density with shape \\(\\alpha\\) and rate \\(\\lambda\\) is \\[f(x)=\\frac{\\lambda e^{-\\lambda x}(\\lambda x)^{\\alpha-1}}{\\Gamma(\\alpha)}=\\frac{\\lambda^{\\alpha} x^{\\alpha-1} e^{-\\lambda x}}{\\Gamma(\\alpha)}\\] for \\(x>0\\), and \\(f(x)=0\\) for \\(x\\le 0\\). A random variable with this density is written \\(X\\sim\\operatorname{gamma}(\\alpha,\\lambda)\\). The exponential density of rate \\(\\lambda\\) is exactly the case \\(\\alpha=1\\), because \\(\\Gamma(1)=1\\) and \\((\\lambda x)^{0}=1\\)."
+    ],
+    "theorem": "If \\(X\\sim\\operatorname{gamma}(\\alpha,\\lambda)\\), then \\[E[X]=\\frac{\\alpha}{\\lambda},\\qquad \\operatorname{Var}(X)=\\frac{\\alpha}{\\lambda^2}.\\] If events occur as a Poisson process of rate \\(\\lambda\\) and \\(T_n\\) is the time of the \\(n\\)th event, for an integer \\(n\\ge 1\\), then \\(T_n\\sim\\operatorname{gamma}(n,\\lambda)\\). In particular \\(T_1\\) is exponential with rate \\(\\lambda\\).",
+    "hypotheses": [
+      "The shape \\(\\alpha\\) and the rate \\(\\lambda\\) are both positive. The factorial formula \\(\\Gamma(n)=(n-1)!\\) is only for positive integers; for other shapes one leaves the gamma function in the normalising constant.",
+      "Some authors parameterise the same density by the scale \\(\\theta=1/\\lambda\\), placing \\(\\theta^{\\alpha}\\) in the denominator. The formulas \\(E[X]=\\alpha/\\lambda\\) and \\(\\operatorname{Var}(X)=\\alpha/\\lambda^2\\) belong to the rate convention used here.",
+      "The identification of \\(T_n\\) uses a Poisson process of rate \\(\\lambda\\): the count \\(N(t)\\) in an interval of length \\(t\\) is Poisson with mean \\(\\lambda t\\), and \\(T_n\\le t\\) if and only if at least \\(n\\) events fall in \\([0,t]\\)."
+    ],
+    "proof": [
+      "First, \\(\\Gamma(1)=1\\). For \\(\\alpha>1\\), integrate by parts with \\(u=t^{\\alpha-1}\\) and \\(dv=e^{-t}\\,dt\\). The boundary term \\(t^{\\alpha-1} e^{-t}\\) vanishes at 0 and at infinity, and \\(\\Gamma(\\alpha)=(\\alpha-1)\\Gamma(\\alpha-1)\\). Iterating from \\(\\Gamma(1)=1\\) yields \\(\\Gamma(n)=(n-1)!\\).",
+      "For the value at one half, substitute \\(t=z^2\\) in \\(\\Gamma(1/2)=\\int_0^{\\infty} t^{-1/2} e^{-t}\\,dt\\), so \\(dt=2z\\,dz\\) and \\(t^{-1/2}=1/z\\). The integrand simplifies to \\(2 e^{-z^2}\\), and \\(\\Gamma(1/2)=2\\int_0^{\\infty} e^{-z^2}\\,dz=\\int_{-\\infty}^{\\infty} e^{-z^2}\\,dz\\). Call this integral \\(J\\). In polar coordinates the area element is \\(r\\,dr\\,d\\theta\\), so \\[J^2=\\int_0^{2\\pi}\\int_0^{\\infty} e^{-r^2} r\\,dr\\,d\\theta.\\] The inner integral uses \\(u=r^2\\) and \\(du=2r\\,dr\\), so it equals \\(\\int_0^{\\infty} e^{-u}\\,du/2=1/2\\). Hence \\(J^2=2\\pi\\cdot(1/2)=\\pi\\) and \\(J=\\sqrt{\\pi}\\). Thus \\(\\Gamma(1/2)=\\sqrt{\\pi}\\).",
+      "The gamma density integrates to 1. Substitute \\(u=\\lambda x\\) in \\(\\int_0^{\\infty} \\lambda^{\\alpha} x^{\\alpha-1} e^{-\\lambda x}/\\Gamma(\\alpha)\\,dx\\) to obtain \\(\\int_0^{\\infty} u^{\\alpha-1} e^{-u}/\\Gamma(\\alpha)\\,du=\\Gamma(\\alpha)/\\Gamma(\\alpha)=1\\).",
+      "For the mean, substitute \\(u=\\lambda x\\) in \\(\\int_0^{\\infty} x^{\\alpha} e^{-\\lambda x}\\,dx\\). Then \\(x=u/\\lambda\\) and \\(dx=du/\\lambda\\), so the integral equals \\(\\lambda^{-\\alpha-1}\\int_0^{\\infty} u^{\\alpha} e^{-u}\\,du=\\Gamma(\\alpha+1)/\\lambda^{\\alpha+1}\\). Therefore \\[E[X]=\\frac{\\lambda^{\\alpha}}{\\Gamma(\\alpha)}\\cdot\\frac{\\Gamma(\\alpha+1)}{\\lambda^{\\alpha+1}}=\\frac{\\alpha}{\\lambda},\\] where the recurrence \\(\\Gamma(\\alpha+1)=\\alpha\\Gamma(\\alpha)\\) was used.",
+      "One further power of \\(x\\) produces \\(\\int_0^{\\infty} x^{\\alpha+1} e^{-\\lambda x}\\,dx=\\Gamma(\\alpha+2)/\\lambda^{\\alpha+2}\\). Hence \\[E[X^2]=\\frac{\\Gamma(\\alpha+2)}{\\lambda^2\\Gamma(\\alpha)}=\\frac{(\\alpha+1)\\alpha}{\\lambda^2},\\] because \\(\\Gamma(\\alpha+2)=(\\alpha+1)\\alpha\\Gamma(\\alpha)\\). Therefore \\[\\operatorname{Var}(X)=\\frac{\\alpha(\\alpha+1)}{\\lambda^2}-\\left(\\frac{\\alpha}{\\lambda}\\right)^2=\\frac{\\alpha}{\\lambda^2}.\\]",
+      "Now let \\(T_n\\) be the time of the \\(n\\)th event and let \\(N(t)\\) be the number of events in \\([0,t]\\), which is Poisson with mean \\(\\lambda t\\). For \\(t>0\\), \\(T_n>t\\) if and only if \\(N(t)\\le n-1\\), so \\[P(T_n>t)=\\sum_{k=0}^{n-1} e^{-\\lambda t}\\frac{(\\lambda t)^k}{k!}.\\] Write \\(p_k(t)\\) for the summand. Differentiate: \\(p_0'(t)=-\\lambda p_0(t)\\), and for \\(k\\ge 1\\) the product rule gives \\(p_k'(t)=-\\lambda p_k(t)+\\lambda p_{k-1}(t)\\), because the derivative of \\((\\lambda t)^k\\) contributes a factor \\(k\\lambda(\\lambda t)^{k-1}\\) and \\(k/k!=1/(k-1)!\\).",
+      "Summing from \\(k=0\\) to \\(n-1\\) telescopes: \\[\\frac{d}{dt}P(T_n>t)=-\\lambda\\sum_{k=0}^{n-1} p_k(t)+\\lambda\\sum_{k=1}^{n-1} p_{k-1}(t)=-\\lambda p_{n-1}(t).\\] The density of \\(T_n\\) is the negative of that derivative, namely \\(\\lambda e^{-\\lambda t}(\\lambda t)^{n-1}/(n-1)!\\) for \\(t>0\\). Since \\(\\Gamma(n)=(n-1)!\\), this is the \\(\\operatorname{gamma}(n,\\lambda)\\) density. For \\(n=1\\) the sum in the survival function is only \\(p_0\\), and the density is \\(\\lambda e^{-\\lambda t}\\). \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "Meteors visible from a dark site arrive as a Poisson process of rate \\(\\lambda=2\\) per hour. Let \\(T\\) be the time, in hours, of the third meteor. Identify the distribution of \\(T\\), give its density, its mean and its variance, and compute \\(P(T>1)\\).",
+      "steps": [
+        "The third event of a rate-2 Poisson process has the \\(\\operatorname{gamma}(3,2)\\) law. Here \\(\\Gamma(3)=2!=2\\), so the density is \\(f(t)=2 e^{-2t}(2t)^{2}/2=4 t^2 e^{-2t}\\) for \\(t>0\\).",
+        "The mean and variance formulas give \\(E[T]=\\alpha/\\lambda=3/2\\) and \\(\\operatorname{Var}(T)=\\alpha/\\lambda^2=3/4\\).",
+        "The event \\(T>1\\) means fewer than 3 meteors in the first hour, and the count is Poisson with mean 2: \\[P(T>1)=e^{-2}\\left(1+2+\\frac{2^2}{2}\\right)=e^{-2}(1+2+2)=5e^{-2}.\\]"
+      ],
+      "conclusion": "\\(T\\sim\\operatorname{gamma}(3,2)\\) with density \\(4t^2 e^{-2t}\\) on \\((0,\\infty)\\), \\(E[T]=3/2\\), \\(\\operatorname{Var}(T)=3/4\\) and \\(P(T>1)=5e^{-2}\\)."
+    },
+    "practice": {
+      "prompt": "Bacterial colonies are detected as a Poisson process of rate \\(\\lambda=3\\) per day. Let \\(T\\) be the time, in days, of the second colony. Write the density of \\(T\\), find \\(E[T]\\) and \\(\\operatorname{Var}(T)\\) from the gamma formulas, and compute \\(P(T>1)\\).",
+      "hints": [
+        "The second event has shape 2 and rate 3, so \\(\\Gamma(2)=1\\) and the density is \\(3 e^{-3t}(3t)\\).",
+        "Use \\(E[T]=\\alpha/\\lambda\\) and \\(\\operatorname{Var}(T)=\\alpha/\\lambda^2\\). For the probability, \\(T>1\\) means the Poisson count of mean 3 is 0 or 1."
+      ],
+      "answer": "\\(T\\sim\\operatorname{gamma}(2,3)\\), with density \\(f(t)=9 t e^{-3t}\\) for \\(t>0\\). Then \\(E[T]=2/3\\) and \\(\\operatorname{Var}(T)=2/9\\). And \\(P(T>1)=e^{-3}(1+3)=4e^{-3}\\). As a check of the second moment, \\(E[T^2]=\\alpha(\\alpha+1)/\\lambda^2=2\\cdot 3/9=2/3\\), so \\(\\operatorname{Var}(T)=2/3-(2/3)^2=2/3-4/9=2/9\\)."
+    },
+    "caution": "The factorial in the integer case is \\((n-1)!\\), not \\(n!\\). Using \\(n!\\) in the denominator makes the density fail to integrate to 1. A second boundary is the parameterisation: if a formula was derived for a scale parameter \\(\\theta\\), its mean is \\(\\alpha\\theta\\), which matches \\(\\alpha/\\lambda\\) only after \\(\\theta=1/\\lambda\\). Mixing the two conventions doubles or squares the rate in the wrong place.",
+    "bridge": "The gamma and exponential laws are densities of waiting times. The same cdf-then-differentiate step finds the density of a function of any continuous random variable.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 5 (gamma random variables)."
+  },
+  {
+    "id": "R08",
+    "title": "Functions of a random variable",
+    "cluster": "Continuous random variables",
+    "question": "If the density of \\(X\\) is known, how do we find the density of \\(Y=g(X)\\)?",
+    "prerequisites": [
+      "R04"
+    ],
+    "summary": "The distribution function of \\(Y=g(X)\\) is a probability statement about \\(X\\), and the density of \\(Y\\) is its derivative. When \\(g\\) is strictly monotone and differentiable, that derivative collapses to a single formula involving the inverse of \\(g\\). Squaring, affine maps, and the logarithm each illustrate the method.",
+    "intuition": "Probability is pushed forward by \\(g\\), and the factor \\(|h'(y)|=1/|g'(h(y))|\\) rescales the density so the area is preserved. Where \\(g\\) is steep, a stretch of \\(y\\)-values comes from a short stretch of \\(x\\)-values, so the probability is spread thin and the density of \\(Y\\) is low. Where \\(g\\) is flat, the same stretch of \\(y\\) collects a long stretch of \\(x\\), and the density of \\(Y\\) is high.",
+    "definition": [
+      "Let \\(X\\) have density \\(f_X\\) and distribution function \\(F_X\\), and let \\(Y=g(X)\\) for a real function \\(g\\). The cdf method has two steps. First write \\(F_Y(y)=P(Y\\le y)=P(g(X)\\le y)\\) as a probability about \\(X\\), and express it through \\(F_X\\). Then differentiate: wherever the derivative exists, \\(f_Y(y)=F_Y'(y)\\).",
+      "The method does not require \\(g\\) to be one-to-one. If several stretches of \\(x\\) land in the same \\(y\\), the event \\(g(X)\\le y\\) is a union of those stretches, and the derivative accounts for all of them at once.",
+      "Two maps are used constantly. If \\(Y=aX+b\\) with \\(a\\ne 0\\), the inverse is \\(x=(y-b)/a\\) and \\[f_Y(y)=f_X\\left(\\frac{y-b}{a}\\right)\\frac{1}{|a|},\\] on the range of the map. If \\(Y=X^2\\), the event \\(Y\\le y\\) is empty for \\(y<0\\); for \\(y>0\\) it is \\(-\\sqrt{y}\\le X\\le\\sqrt{y}\\), which brings in both the positive and the negative square root."
+    ],
+    "theorem": "Let \\(X\\) have density \\(f_X\\) supported on an interval \\(I\\). Let \\(g:I\\to J\\) be continuously differentiable and strictly monotone, with \\(g'(x)\\ne 0\\) for every \\(x\\) in the interior of \\(I\\), and write \\(h=g^{-1}:J\\to I\\). Then \\(Y=g(X)\\) has density \\[f_Y(y)=f_X\\bigl(h(y)\\bigr)\\,\\left|h'(y)\\right|\\] for \\(y\\) in the interior of \\(J\\), and \\(f_Y(y)=0\\) outside the closure of \\(J\\).",
+    "hypotheses": [
+      "Strict monotonicity on the whole support of \\(X\\) is required before the single-branch formula applies. The map \\(x\\mapsto x^2\\) on an interval that meets both positive and negative numbers is not strictly monotone, so the formula must not be applied on that whole interval; use the cdf method, or split the support into monotone pieces and add the contributions.",
+      "Differentiability of \\(g\\) and the condition \\(g'\\ne 0\\) guarantee that \\(h\\) is differentiable and \\(h'(y)=1/g'(h(y))\\). At a point where \\(g'(x_0)=0\\), \\(h\\) has no finite derivative at \\(g(x_0)\\), so the formula does not apply there.",
+      "The absolute value is required. When \\(g\\) is decreasing, \\(h'\\) is negative, and dropping the absolute value produces a negative function, which cannot be a density.",
+      "\\(X\\) must have a density, so that \\(F_X\\) is continuous and \\(P(X\\ge c)=1-F_X(c)\\). A discrete random variable is transformed by summing point masses, not by this derivative."
+    ],
+    "proof": [
+      "Suppose first that \\(g\\) is strictly increasing. Then \\(g(X)\\le y\\) if and only if \\(X\\le h(y)\\), so \\(F_Y(y)=F_X(h(y))\\). Differentiate by the chain rule: \\(f_Y(y)=f_X(h(y))\\, h'(y)\\). Here \\(h'(y)>0\\), so \\(h'(y)=|h'(y)|\\).",
+      "Suppose instead that \\(g\\) is strictly decreasing. Then \\(g(X)\\le y\\) if and only if \\(X\\ge h(y)\\). Since \\(X\\) has a density, \\(P(X\\ge h(y))=1-F_X(h(y))\\). Differentiating gives \\(f_Y(y)=-f_X(h(y))\\, h'(y)\\). Now \\(h'(y)<0\\), so \\(-h'(y)=|h'(y)|\\). The two cases together are the stated formula. \\(\\square\\)",
+      "Affine maps are the first application. Let \\(Y=aX+b\\) with \\(a\\ne 0\\). Then \\(h(y)=(y-b)/a\\) and \\(h'(y)=1/a\\), so \\(|h'(y)|=1/|a|\\). The formula yields \\(f_Y(y)=f_X((y-b)/a)/|a|\\). If \\(X\\sim N(\\mu,\\sigma^2)\\) and \\(a>0\\), this is the calculation that shows \\(Y\\sim N(a\\mu+b, a^2\\sigma^2)\\): the factor \\(1/a\\) and the chain rule inside the exponent replace \\(\\sigma\\) by \\(a\\sigma\\).",
+      "The logarithm turns a uniform random variable into an exponential one. Let \\(U\\) have density 1 on \\((0,1)\\), let \\(\\lambda>0\\), and set \\(Y=-\\ln(U)/\\lambda\\). The map \\(g(u)=-\\ln(u)/\\lambda\\) is strictly decreasing from \\((0,1)\\) onto \\((0,\\infty)\\), with inverse \\(h(y)=e^{-\\lambda y}\\) and \\(h'(y)=-\\lambda e^{-\\lambda y}\\). Hence \\(|h'(y)|=\\lambda e^{-\\lambda y}\\), and \\(f_Y(y)=1\\cdot\\lambda e^{-\\lambda y}\\) for \\(y>0\\). So \\(Y\\sim\\operatorname{Exp}(\\lambda)\\).",
+      "The exponential of a normal random variable is lognormal. Let \\(X\\sim N(\\mu,\\sigma^2)\\) and \\(Y=e^{X}\\). Then \\(g(x)=e^{x}\\) is strictly increasing from \\(\\mathbb{R}\\) onto \\((0,\\infty)\\), with \\(h(y)=\\ln y\\) and \\(|h'(y)|=1/y\\). Therefore, for \\(y>0\\), \\[f_Y(y)=\\frac{1}{y\\sigma\\sqrt{2\\pi}}\\exp\\left(-\\frac{(\\ln y-\\mu)^2}{2\\sigma^2}\\right).\\] As a check, \\(P(Y\\le e^{\\mu})=P(X\\le\\mu)=1/2\\), since a normal random variable sits at or below its mean with probability \\(1/2\\)."
+    ],
+    "example": {
+      "prompt": "An aiming error \\(X\\), in centimetres, is uniform on \\((-2,2)\\), so its density is \\(1/4\\) on that interval. Find the density of the squared error \\(Y=X^2\\), and find the density of the rescaled reading \\(W=3X-1\\).",
+      "steps": [
+        "The range of \\(Y\\) is \\((0,4)\\). For \\(y\\le 0\\), \\(F_Y(y)=0\\). For \\(y\\ge 4\\), \\(F_Y(y)=1\\). For \\(0<y<4\\), \\[F_Y(y)=P(-\\sqrt{y}\\le X\\le\\sqrt{y})=\\frac{2\\sqrt{y}}{4}=\\frac{\\sqrt{y}}{2},\\] because the density is the constant \\(1/4\\). Differentiating gives \\(f_Y(y)=1/(4\\sqrt{y})\\) for \\(0<y<4\\), and \\(f_Y(y)=0\\) otherwise.",
+        "Check the integral: \\(\\int_0^4 y^{-1/2}/4\\,dy=\\bigl[y^{1/2}/2\\bigr]_0^4=(1/2)\\cdot 2=1\\). The map \\(x\\mapsto x^2\\) is not monotone on \\((-2,2)\\), so this derivative has already added the two branches; the single-branch formula does not apply on the whole interval.",
+        "For \\(W=3X-1\\) the coefficient \\(3\\) is positive, so \\(W\\) runs over \\((-7,5)\\). The inverse is \\((w+1)/3\\), with derivative \\(1/3\\). Thus \\(f_W(w)=(1/4)\\cdot(1/3)=1/12\\) for \\(-7<w<5\\). The length of \\((-7,5)\\) is 12, and \\(1/12\\) integrates to 1, which matches the fact that an affine image of a uniform random variable is uniform on the image interval."
+      ],
+      "conclusion": "\\(f_Y(y)=1/(4\\sqrt{y})\\) for \\(0<y<4\\), and \\(f_W(w)=1/12\\) for \\(-7<w<5\\)."
+    },
+    "practice": {
+      "prompt": "Let \\(X\\) have density \\(f_X(x)=2x\\) for \\(0<x<1\\) and \\(f_X(x)=0\\) otherwise. Find the density of \\(Y=X^2\\).",
+      "hints": [
+        "On \\((0,1)\\) the map \\(x\\mapsto x^2\\) is strictly increasing. The inverse is \\(\\sqrt{y}\\), with derivative \\(1/(2\\sqrt{y})\\).",
+        "Multiply \\(f_X\\) at \\(\\sqrt{y}\\) by that derivative. As a check, compute \\(P(X^2\\le y)=P(X\\le\\sqrt{y})\\) directly from the density of \\(X\\)."
+      ],
+      "answer": "For \\(0<y<1\\), \\(h(y)=\\sqrt{y}\\) and \\(|h'(y)|=1/(2\\sqrt{y})\\). Then \\(f_Y(y)=f_X(\\sqrt{y})\\cdot(1/(2\\sqrt{y}))=2\\sqrt{y}\\cdot(1/(2\\sqrt{y}))=1\\). So \\(Y\\) is uniform on \\((0,1)\\). The cdf confirms it: \\(P(X\\le\\sqrt{y})=\\int_0^{\\sqrt{y}} 2x\\,dx=y\\)."
+    },
+    "caution": "The absolute value in the monotone formula is not optional: a decreasing map has a negative derivative, and a density cannot be negative. Applying the one-branch formula to \\(x\\mapsto x^2\\) on an interval that contains both signs drops the probability of the omitted branch, \\(\\int_{x<0}f_X\\) (half the total when the density is symmetric about 0), or double-counts it. Endpoints also need a glance at integrability. The squared-error density \\(1/(4\\sqrt{y})\\) is unbounded near 0, but the integral \\(\\int_0^1 y^{-1/2}\\,dy\\) converges, so an infinite density at a single point is still a genuine density.",
+    "bridge": "Every construction above starts from one random variable. When the new variable depends on two inputs at once, the same probability-first step needs a joint density.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 5 (distribution of a function of a random variable)."
+  }
+]

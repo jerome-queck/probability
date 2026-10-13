@@ -35,6 +35,9 @@ One state per lab once a lesson uses it: `<lab-id>-default` and `<lab-id>-moved`
 - `binomial-poisson-default` (desktop, mobile) — D05 experiment as it loads.
 - `binomial-poisson-moved` (desktop, mobile) — `trials` set to 200.
 
+- `normal-approximation-default` (desktop, mobile) — R05 experiment as it loads.
+- `normal-approximation-moved` (desktop, mobile) — `trials` set to 100.
+
 ## Gotchas
 
 A lab exists in code before any lesson uses it; it can only be driven once a lesson references it. `check:drift` requires every lab ID in `src/content/types.ts` to have a row here.
