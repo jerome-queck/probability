@@ -126,7 +126,9 @@ async function launch() {
     process.kill(-child.pid, 'SIGTERM');
   } catch {}
   rmSync(statePathOf(), { force: true });
-  throw new Error(`server did not answer on ${url}; see ${log}`);
+  throw new Error(
+    `server did not answer on ${url}; the server log is kept as server.log next to the screenshots (smoke) or at ${log} (launch)`,
+  );
 }
 
 function alive(pid) {
@@ -233,6 +235,15 @@ async function renderingProblems(page) {
       if (el.getClientRects().length && el.scrollWidth > el.clientWidth + 1)
         problems.push(
           `clipped display math: ${el.scrollWidth}px formula in a ${el.clientWidth}px box (“${el.textContent.slice(0, 40)}”)`,
+        );
+    }
+    // A wrapped inline formula must not leave a scrap (one symbol and its period) alone
+    // on the next line.
+    for (const el of document.querySelectorAll('.math-inline .katex-html')) {
+      const rects = [...el.getClientRects()].filter((r) => r.width > 0);
+      if (rects.length > 1 && rects[rects.length - 1].width < 24)
+        problems.push(
+          `orphaned formula fragment: “${el.textContent.slice(-20)}” wraps alone onto a new line`,
         );
     }
     if (document.querySelector('.math-error'))
@@ -374,7 +385,7 @@ async function smoke() {
   dataDir = base;
   const update = args.includes('--update-baselines');
   const only = opt('only');
-  const out = resolve(opt('artifacts', join(root, 'artifacts/visual')));
+  const out = resolve(opt('artifacts', join(root, 'artifacts/smoke')));
   const fx = JSON.parse(
     readFileSync(
       join(root, '.cursor/skills/verify-probability/features/smoke.json'),
@@ -435,8 +446,11 @@ async function smoke() {
             if (!text.includes(want))
               failures.push(`${label}: expected “${want}” on ${path}`);
           for (const sel of step.expectHidden ?? [])
-            if (await page.locator(sel).isVisible())
-              failures.push(`${label}: expected ${sel} to be hidden`);
+            if (
+              (await page.locator(sel).count()) === 0 ||
+              (await page.locator(sel).isVisible())
+            )
+              failures.push(`${label}: expected ${sel} to exist and be hidden`);
           if (step.expectPath && path !== step.expectPath)
             failures.push(
               `${label}: expected path ${step.expectPath}, got ${path}`,
@@ -485,10 +499,18 @@ async function smoke() {
       }
     }
   } finally {
-    await browserApp?.close();
+    try {
+      await browserApp?.close();
+    } catch {}
     try {
       await stop();
     } catch {}
+    // Keep the preview server log with the screenshots before the temp dir goes.
+    const log = join(base, 'server.log');
+    if (existsSync(log)) {
+      mkdirSync(out, { recursive: true });
+      writeFileSync(join(out, 'server.log'), readFileSync(log));
+    }
     rmSync(base, { recursive: true, force: true });
   }
   if (failures.length) {
