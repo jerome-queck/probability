@@ -52,7 +52,7 @@ needed (for example `interrogate` for review, `tdd`, `create-verification-skill`
 `maintain-verification-skill`, `correct`, `show-me-your-work`). Agents run on the
 Cursor CLI (`cursor-agent`, also `agent`) with pstack installed as its Cursor plugin. Models are
 `grok-4.7` tiers only (never Claude, GPT, Gemini or Composer); the tier is the effort.
-`setup-pstack` writes `~/.cursor/rules/pstack-models.mdc` (copy in `.cursor/rules/`): pstack's
+`setup-pstack` writes `~/.cursor/rules/pstack-models.mdc`: pstack's
 Task subagents accept only `grok-4.7-high`, so every pstack role uses it. The review workflow
 picks its tier per role and runs each role as a fresh headless session with
 `scripts/agent-run.sh <role> <prompt-file> <out-prefix>`, always in its own git worktree:

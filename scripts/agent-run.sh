@@ -15,7 +15,7 @@ case $role in
   chore) model=grok-4.7-medium ;;
   *) echo "unknown role $role" >&2; exit 2 ;;
 esac
-agent=${CURSOR_AGENT:-cursor-agent}
+agent=${AGENT_BIN:-cursor-agent}
 "$agent" -p --trust --force --model "$model" --output-format stream-json "$(cat "$prompt")" \
   > "$out.jsonl" 2> "$out.err"
 node -e '
