@@ -8,7 +8,7 @@
   {"feature": "lessons", "id": "hint-shown", "url": "/lessons/f03-equally-likely-outcomes", "actions": [{"click": {"role": "button", "name": "Show a hint"}}], "expect": ["Hint 1."]},
   {"feature": "lessons", "id": "answer-shown", "url": "/lessons/f03-equally-likely-outcomes", "actions": [{"click": {"role": "button", "name": "Show answer"}}], "expect": ["Hide answer"]},
   {"feature": "lessons", "id": "sidebar-collapsed", "url": "/lessons/f01-sample-spaces-and-events", "viewports": ["desktop"], "actions": [{"click": {"selector": ".chapter-heading button"}}], "expectHidden": ["#chapter-0"]},
-  {"feature": "lessons", "id": "search-results", "url": "/", "viewports": ["desktop"], "actions": [{"type": {"selector": "#lesson-search", "text": "axioms"}}], "expect": ["1 matching lesson"]},
+  {"feature": "lessons", "id": "search-results", "url": "/", "viewports": ["desktop"], "actions": [{"type": {"selector": "#lesson-search", "text": "F02"}}], "expect": ["1 matching lesson"]},
   {"feature": "lessons", "id": "search-empty", "url": "/", "viewports": ["desktop"], "actions": [{"type": {"selector": "#lesson-search", "text": "zebra"}}], "expect": ["No lessons found"]},
   {"feature": "practice", "id": "load", "url": "/practice", "expect": ["One problem per lesson", "F01 · Sample spaces and events"]},
   {"feature": "practice", "id": "answer-shown", "url": "/practice", "actions": [{"click": {"role": "button", "name": "Show answer"}}], "expect": ["Hide answer"]},
@@ -19,5 +19,7 @@
   {"feature": "routing", "id": "mobile-drawer-open", "url": "/", "viewports": ["mobile"], "actions": [{"click": {"role": "button", "name": "Open lessons"}}], "expect": ["Browse by chapter"]},
   {"feature": "routing", "id": "mobile-drawer-closed", "url": "/", "viewports": ["mobile"], "actions": [{"click": {"role": "button", "name": "Open lessons"}}, {"press": "Escape"}]},
   {"feature": "labs", "id": "birthday-default", "url": "/lessons/c04-counting-in-action-birthdays-and-matchings#lab", "expect": ["P(at least one shared birthday)"]},
-  {"feature": "labs", "id": "birthday-moved", "url": "/lessons/c04-counting-in-action-birthdays-and-matchings#lab", "actions": [{"range": {"name": "people", "value": 40}}], "expect": ["P(at least one shared birthday)"]}
+  {"feature": "labs", "id": "birthday-moved", "url": "/lessons/c04-counting-in-action-birthdays-and-matchings#lab", "actions": [{"range": {"name": "people", "value": 40}}], "expect": ["P(at least one shared birthday)"]},
+  {"feature": "labs", "id": "bayes-default", "url": "/lessons/k03-bayes-rule#lab", "expect": ["P(D | +)"]},
+  {"feature": "labs", "id": "bayes-moved", "url": "/lessons/k03-bayes-rule#lab", "actions": [{"range": {"name": "prior", "value": 0.2}}], "expect": ["P(D | +)"]}
 ]

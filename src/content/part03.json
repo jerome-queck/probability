@@ -1,0 +1,203 @@
+[
+  {
+    "id": "K01",
+    "title": "Conditional probability and the multiplication rule",
+    "cluster": "Conditional probability",
+    "question": "How should the probability of an event be revised once another event is known to have occurred?",
+    "prerequisites": [
+      "F03"
+    ],
+    "summary": "If \\(F\\) has positive probability, \\(P(E\\mid F)\\) is the probability of \\(E\\) recomputed inside \\(F\\). The set function \\(E\\mapsto P(E\\mid F)\\) is itself a probability, and the multiplication rule rebuilds a joint probability as a chain of one-step conditionals.",
+    "intuition": "Learning that \\(F\\) occurred throws away every outcome outside \\(F\\) and rescales the probability that remains so that it totals 1.",
+    "definition": [
+      "Let \\(E\\) and \\(F\\) be events with \\(P(F)>0\\). The conditional probability of \\(E\\) given \\(F\\) is \\[P(E\\mid F)=\\frac{P(EF)}{P(F)}.\\] The ratio is not defined by this formula when \\(P(F)=0\\). On a fair die, take \\(E=\\{6\\}\\) and \\(F=\\{4,5,6\\}\\). Then \\(P(EF)=1/6\\) and \\(P(F)=1/2\\), so \\(P(E\\mid F)=(1/6)/(1/2)=1/3\\). The unconditional value \\(P(E)=1/6\\) is different: conditioning has ruled out the faces 1, 2 and 3.",
+      "Reduced sample space. Suppose \\(S\\) is finite and every outcome is equally likely. If \\(F\\) is nonempty, the same ratio collapses to a count inside \\(F\\): \\[P(E\\mid F)=\\frac{|EF|}{|F|}.\\] The outcomes that remain possible are exactly the members of \\(F\\), they stay equally likely, and \\(F\\) plays the role of the sample space.",
+      "Multiplication rule. Suppose \\(P(E_1\\cdots E_k)>0\\) for each \\(k=1,\\ldots,n-1\\). Then the probability of the whole intersection factors along the chain \\[P(E_1E_2\\cdots E_n)=P(E_1)\\,P(E_2\\mid E_1)\\,P(E_3\\mid E_1E_2)\\cdots P(E_n\\mid E_1\\cdots E_{n-1}).\\]"
+    ],
+    "theorem": "Fix an event \\(F\\) with \\(P(F)>0\\), and define \\(Q(E)=P(E\\mid F)\\). Then \\(Q\\) is a probability on \\(S\\): \\(Q(E)\\ge 0\\), \\(Q(S)=1\\), and \\(Q\\big(\\bigcup_{i\\ge 1}E_i\\big)=\\sum_{i\\ge 1}Q(E_i)\\) whenever \\(E_1,E_2,\\ldots\\) are pairwise mutually exclusive. In particular every identity proved from the axioms alone remains valid if \\(P\\) is replaced by \\(P(\\cdot\\mid F)\\). If \\(S\\) is finite and the outcomes are equally likely, then \\(Q(E)=|EF|/|F|\\). Separately, whenever \\(P(E_1\\cdots E_k)>0\\) for each \\(k<n\\), \\[P(E_1E_2\\cdots E_n)=P(E_1)\\,P(E_2\\mid E_1)\\cdots P(E_n\\mid E_1\\cdots E_{n-1}).\\]",
+    "hypotheses": [
+      "The ratio \\(P(EF)/P(F)\\) requires \\(P(F)>0\\). An event of probability zero is not a legal conditioning event for this definition.",
+      "Each factor \\(P(E_{k+1}\\mid E_1\\cdots E_k)\\) in the multiplication rule requires \\(P(E_1\\cdots E_k)>0\\).",
+      "The counting form \\(|EF|/|F|\\) requires the outcomes in the list to be equally likely. If the bundles you counted have unequal probabilities, return to the ratio of probabilities."
+    ],
+    "proof": [
+      "Non-negativity and total mass. Set \\(Q(E)=P(EF)/P(F)\\). The numerator is at least 0 and the denominator is positive, so \\(Q(E)\\ge 0\\). Also \\(EF\\subseteq F\\), hence \\(P(EF)\\le P(F)\\) and \\(Q(E)\\le 1\\). Taking \\(E=S\\) gives \\(Q(S)=P(F)/P(F)=1\\). The same computation with \\(E=F\\) gives \\(Q(F)=1\\): once \\(F\\) is known, \\(F\\) is certain under \\(Q\\).",
+      "Countable additivity. Let \\(E_1,E_2,\\ldots\\) be pairwise mutually exclusive. Then the slices \\(E_iF\\) are pairwise mutually exclusive, and \\(\\big(\\bigcup_i E_i\\big)F=\\bigcup_i(E_iF)\\). Countable additivity for \\(P\\) yields \\(P\\big(\\bigcup_i E_iF\\big)=\\sum_i P(E_iF)\\). Dividing by \\(P(F)\\) gives \\(Q\\big(\\bigcup_i E_i\\big)=\\sum_i Q(E_i)\\). Thus \\(Q\\) satisfies the axioms, and every consequence of the axioms holds for \\(Q\\).",
+      "Equally likely outcomes. If \\(|S|\\) is finite and each outcome has probability \\(1/|S|\\), then \\(P(EF)=|EF|/|S|\\) and \\(P(F)=|F|/|S|\\). The ratio of those two fractions is \\(|EF|/|F|\\).",
+      "Multiplication rule. The case \\(n=1\\) is \\(P(E_1)=P(E_1)\\). If \\(P(E_1)>0\\), the definition rearranges to \\(P(E_1E_2)=P(E_1)\\,P(E_2\\mid E_1)\\). Proceed by induction for \\(n\\ge 3\\). View \\(E_1\\cdots E_n\\) as the intersection of \\(G=E_1\\cdots E_{n-1}\\) and \\(E_n\\). The hypothesis \\(P(G)>0\\) lets the two-event case give \\(P(GE_n)=P(G)\\,P(E_n\\mid G)\\). The inductive hypothesis replaces \\(P(G)\\) by the product of the first \\(n-1\\) factors. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "Ten distinguishable socks, 6 black and 4 grey, are stacked in a uniformly random order. What is the probability that the top sock is black, the second is grey and the third is black?",
+      "steps": [
+        "Let \\(B_1\\) be the event that position 1 is black, \\(G_2\\) that position 2 is grey, and \\(B_3\\) that position 3 is black. Every remaining sock is equally likely at each draw, so \\(P(B_1)=6/10\\).",
+        "Given \\(B_1\\), five black socks and four grey socks remain, and \\(P(G_2\\mid B_1)=4/9\\). Given \\(B_1G_2\\), five black socks remain among eight socks, so \\(P(B_3\\mid B_1G_2)=5/8\\).",
+        "The multiplication rule multiplies the three factors: \\(P(B_1G_2B_3)=(6/10)\\cdot(4/9)\\cdot(5/8)=120/720=1/6\\).",
+        "Check by counting full stacks. Favourable stacks number \\(6\\cdot 4\\cdot 5\\cdot 7!\\), and there are \\(10!\\) stacks in all, so the probability is \\((6\\cdot 4\\cdot 5)/(10\\cdot 9\\cdot 8)=120/720=1/6\\)."
+      ],
+      "conclusion": "The probability is \\(1/6\\)."
+    },
+    "practice": {
+      "prompt": "Six distinct volunteers, including Nia and Omar, sit in a random order in a row of six seats, every seating equally likely. Given that Nia and Omar sit next to each other, what is the probability that Nia sits in an end seat?",
+      "hints": [
+        "Pass to the reduced sample space of seatings in which Nia and Omar occupy adjacent seats. Those seatings remain equally likely.",
+        "There are 5 adjacent blocks of seats. The pair can sit inside a block in 2 orders, and the other four volunteers can fill the remaining seats in \\(4!\\) ways. Count separately the seatings that put Nia in seat 1 or seat 6."
+      ],
+      "answer": "The adjacent blocks are seats (1,2), (2,3), (3,4), (4,5) and (5,6). There are 5 blocks and 2 orders of Nia and Omar inside a block, and the other four volunteers can be seated in \\(4!=24\\) ways, so the conditioning event contains \\(5\\cdot 2\\cdot 24=240\\) equally likely seatings. If Nia is in seat 1, adjacency forces Omar into seat 2, and the other four volunteers can sit in \\(24\\) ways. If Nia is in seat 6, Omar must sit in seat 5, giving another \\(24\\) seatings. The conditional probability is \\(48/240=1/5\\)."
+    },
+    "caution": "The counting shortcut \\(|EF|/|F|\\) is valid only when the outcomes being counted are equally likely. A second slip is to add \\(P(E\\mid F)\\) and \\(P(E\\mid F^c)\\) and expect 1. Those two quantities condition on different events. On a fair die with \\(E=\\{1,2\\}\\) and \\(F=\\{1\\}\\), one has \\(P(E\\mid F)=1\\), while \\(EF^c=\\{2\\}\\) gives \\(P(E\\mid F^c)=(1/6)/(5/6)=1/5\\), and \\(1+1/5=6/5\\). The pair that does sum to 1 is \\(P(E\\mid F)+P(E^c\\mid F)\\).",
+    "bridge": "The multiplication rule gives the probability of one path through a sequence of events. When the first stage can fall into several alternative pieces, those paths are added by the law of total probability.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 3 (conditional probability and the multiplication rule)."
+  },
+  {
+    "id": "K02",
+    "title": "The law of total probability",
+    "cluster": "Conditional probability",
+    "question": "How can the probability of an event be recovered by conditioning on which piece of a partition occurred?",
+    "prerequisites": [
+      "K01"
+    ],
+    "summary": "If the sample space is cut into disjoint pieces that cover every outcome, \\(P(E)\\) is the sum, over the pieces, of the probability of passing through that piece and then through \\(E\\).",
+    "intuition": "Average the conditional probabilities of \\(E\\), using each piece's probability as its weight. A tree diagram is that average drawn as successive branches.",
+    "definition": [
+      "Events \\(F_1,\\ldots,F_n\\) form a partition of \\(S\\) when they are pairwise mutually exclusive, that is \\(F_iF_j=\\varnothing\\) for \\(i\\ne j\\), and \\(\\bigcup_{i=1}^n F_i=S\\). A countable partition is the same arrangement with countably many pieces. Any event \\(E\\) is then the disjoint union of the slices \\(EF_1,EF_2,\\ldots\\).",
+      "A tree diagram records a two-stage experiment. From the root, draw one branch for each piece \\(F_i\\) with \\(P(F_i)>0\\), and label it \\(P(F_i)\\). From the end of that branch, draw a branch for \\(E\\) labelled \\(P(E\\mid F_i)\\) and a branch for \\(E^c\\) labelled \\(P(E^c\\mid F_i)\\). The multiplication rule says that a full path has probability equal to the product of its labels. Adding the products along the paths whose second step is \\(E\\) gives \\(P(E)\\): those paths account for every slice \\(EF_i\\) of positive probability, and slices from pieces with \\(P(F_i)=0\\) have probability zero."
+    ],
+    "theorem": "Let \\(F_1,F_2,\\ldots\\) be pairwise mutually exclusive events whose union is \\(S\\), and let \\(E\\) be any event. Then \\[P(E)=\\sum_i P(EF_i),\\] where the sum is finite or a series of nonnegative terms. Whenever \\(P(F_i)>0\\), the summand equals \\(P(E\\mid F_i)P(F_i)\\). A piece with \\(P(F_i)=0\\) contributes \\(0\\). In particular, if \\(F_1,\\ldots,F_n\\) is a finite partition and \\(P(F_i)>0\\) for every \\(i\\), then \\[P(E)=\\sum_{i=1}^n P(E\\mid F_i)P(F_i).\\]",
+    "hypotheses": [
+      "The pieces must be pairwise disjoint, and their union must be all of \\(S\\). Without that, the formula is no longer guaranteed: an omitted piece with \\(P(EF_i)>0\\) loses exactly that amount, and an overlap that meets \\(E\\) with positive probability counts it twice.",
+      "Form the conditional probability \\(P(E\\mid F_i)\\) only when \\(P(F_i)>0\\). A piece of probability zero still contributes nothing, because \\(P(EF_i)\\le P(F_i)=0\\).",
+      "On a tree, multiply along a path and add across the paths that realise \\(E\\). Adding the second-stage labels without the first-stage weights is a different, and usually wrong, quantity."
+    ],
+    "proof": [
+      "The slices rebuild \\(E\\). Since \\(\\bigcup_i F_i=S\\), \\(E=ES=E\\cap\\big(\\bigcup_i F_i\\big)=\\bigcup_i(EF_i)\\).",
+      "The slices are pairwise mutually exclusive: an outcome in \\(EF_i\\) and \\(EF_j\\) would lie in both \\(F_i\\) and \\(F_j\\). Finite additivity, or countable additivity if there are infinitely many pieces, therefore gives \\(P(E)=\\sum_i P(EF_i)\\).",
+      "On each piece with \\(P(F_i)>0\\), the multiplication rule rewrites the summand as \\(P(EF_i)=P(E\\mid F_i)P(F_i)\\). On a piece with \\(P(F_i)=0\\), monotonicity forces \\(P(EF_i)=0\\), so that piece may be omitted from the sum. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "A workshop colours each frame grey with probability \\(2/3\\) and green with probability \\(1/3\\). A grey frame is then chipped with probability \\(1/8\\), and a green frame is chipped with probability \\(1/4\\). A frame is inspected at random. What is the probability that it is chipped?",
+      "steps": [
+        "The colour events form a partition: grey has probability \\(2/3\\), green has probability \\(1/3\\), and every frame receives one colour.",
+        "The tree has two first-stage branches, labelled \\(2/3\\) and \\(1/3\\). From the grey branch a chipped branch is labelled \\(1/8\\); from the green branch a chipped branch is labelled \\(1/4\\).",
+        "The grey-then-chipped path has probability \\((2/3)\\cdot(1/8)=1/12\\). The green-then-chipped path has probability \\((1/3)\\cdot(1/4)=1/12\\).",
+        "These two paths are disjoint and exhaust the chipped frames, so \\(P(\\text{chipped})=1/12+1/12=1/6\\)."
+      ],
+      "conclusion": "The probability that the frame is chipped is \\(1/6\\)."
+    },
+    "practice": {
+      "prompt": "A packet is routed along line A, line B or line C with probabilities \\(1/2\\), \\(1/3\\) and \\(1/6\\) respectively. The conditional probabilities of corruption on those lines are \\(1/50\\), \\(1/20\\) and \\(1/10\\). Find the probability that the packet is corrupted.",
+      "hints": [
+        "The three lines form a partition of the ways the packet can travel.",
+        "Multiply the probability of each line by the conditional probability of corruption on that line, then add the three products."
+      ],
+      "answer": "\\(P(\\text{corrupted})=(1/2)\\cdot(1/50)+(1/3)\\cdot(1/20)+(1/6)\\cdot(1/10)=1/100+1/60+1/60\\). The last two terms sum to \\(1/30\\), and \\(1/100+1/30=3/300+10/300=13/300\\)."
+    },
+    "caution": "The weights \\(P(F_i)\\) are part of the formula. The unweighted sum \\(P(E\\mid F_1)+\\cdots+P(E\\mid F_n)\\) is a different quantity: it can exceed 1 even though \\(P(E)\\) cannot, and it agrees with \\(P(E)\\) only in special cases such as \\(n=1\\). Forgetting a partition piece changes the total by exactly the omitted term \\(P(EF_i)\\).",
+    "bridge": "The law writes \\(P(E)\\) as a weighted sum of the probabilities of \\(E\\) given each cause. Bayes' rule uses that same sum as the denominator when the question is reversed, from the effect back to the cause.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 3 (the law of total probability)."
+  },
+  {
+    "id": "K03",
+    "title": "Bayes' rule",
+    "cluster": "Conditional probability",
+    "question": "Given that an effect was observed, how should the probability of each possible cause be updated?",
+    "prerequisites": [
+      "K02"
+    ],
+    "summary": "Bayes' rule turns the conditional probabilities of the evidence given each piece of a partition into the conditional probabilities of the pieces given the evidence. The numbers \\(P(F_i)\\) are the prior probabilities; the numbers \\(P(F_i\\mid E)\\) are the posterior probabilities.",
+    "intuition": "The posterior is proportional to prior times likelihood. A cause that was rare before the observation can remain unlikely afterwards when most of the observations are produced by the large complementary group.",
+    "definition": [
+      "Relative to evidence \\(E\\), the prior probability of a piece \\(F_i\\) is \\(P(F_i)\\), and the posterior probability is \\(P(F_i\\mid E)\\), which is defined once \\(P(E)>0\\). The likelihood of the piece for that evidence is \\(P(E\\mid F_i)\\). The likelihood is a probability statement about the evidence, with the piece treated as given.",
+      "Odds form. Suppose \\(\\{F,F^c\\}\\) is a partition and \\(P(F)\\), \\(P(F^c)\\), \\(P(E\\mid F)\\) and \\(P(E\\mid F^c)\\) are all positive. The prior odds of \\(F\\) against \\(F^c\\) are \\(P(F)/P(F^c)\\), and the likelihood ratio is \\(P(E\\mid F)/P(E\\mid F^c)\\). Posterior odds equal prior odds times the likelihood ratio: \\[\\frac{P(F\\mid E)}{P(F^c\\mid E)}=\\frac{P(F)}{P(F^c)}\\cdot\\frac{P(E\\mid F)}{P(E\\mid F^c)}.\\] Odds \\(r\\) in favour of \\(F\\) correspond to the probability \\(r/(1+r)\\)."
+    ],
+    "theorem": "Let \\(F_1,\\ldots,F_n\\) be a partition of \\(S\\) with \\(P(F_i)>0\\) for every \\(i\\), and let \\(E\\) be an event with \\(P(E)>0\\). Then for each \\(j\\), \\[P(F_j\\mid E)=\\frac{P(E\\mid F_j)P(F_j)}{\\sum_{i=1}^n P(E\\mid F_i)P(F_i)}.\\]",
+    "hypotheses": [
+      "The events \\(F_1,\\ldots,F_n\\) must form a partition, each with positive probability, and \\(P(E)\\) must be positive so that the posterior is defined.",
+      "The factors \\(P(E\\mid F_i)\\) are conditionals of the evidence given the cause. Swapping the two events inside the conditional changes the problem.",
+      "The odds form needs both prior probabilities and both likelihoods to be positive, so that none of the four ratios divides by zero. The prior that enters the formula is the probability appropriate to the case at hand, before the evidence \\(E\\) is used."
+    ],
+    "proof": [
+      "The numerator is a joint probability. By the multiplication rule, \\(P(E\\mid F_j)P(F_j)=P(EF_j)\\).",
+      "The denominator is the law of total probability: \\(\\sum_{i=1}^n P(E\\mid F_i)P(F_i)=P(E)\\).",
+      "Dividing therefore gives \\(P(EF_j)/P(E)\\). By the definition of conditional probability this is \\(P(F_j\\mid E)\\).",
+      "For the odds form, divide the case \\(F_j=F\\) by the case \\(F_j=F^c\\). The factor \\(P(E)\\) appears in both denominators and cancels, leaving prior odds times the likelihood ratio. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "A clotting marker is present in \\(1/50\\) of a lab's samples. An assay is positive for \\(4/5\\) of the samples that carry the marker and for \\(1/10\\) of the samples that do not. A sample tests positive. What is the probability that it carries the marker?",
+      "steps": [
+        "Let \\(M\\) be the event that the sample carries the marker and let \\(+\\) be a positive assay. The priors are \\(P(M)=1/50\\) and \\(P(M^c)=49/50\\). The likelihoods are \\(P(+\\mid M)=4/5\\) and \\(P(+\\mid M^c)=1/10\\).",
+        "The numerator of Bayes' rule is \\((4/5)\\cdot(1/50)=4/250=8/500\\). The false-positive contribution is \\((1/10)\\cdot(49/50)=49/500\\). The denominator is \\(8/500+49/500=57/500\\).",
+        "Therefore \\(P(M\\mid +)=(8/500)/(57/500)=8/57\\).",
+        "The same value comes from odds. Prior odds of \\(M\\) against \\(M^c\\) are \\((1/50)/(49/50)=1/49\\). The likelihood ratio is \\((4/5)/(1/10)=8\\). Posterior odds are \\((1/49)\\cdot 8=8/49\\), and the corresponding probability is \\((8/49)/(57/49)=8/57\\).",
+        "Count the same proportion in a batch of 500 samples with these exact rates: 10 carry the marker and 8 of those test positive; 490 do not, and 49 of those test positive. Of the 57 positive samples, 8 carry the marker.",
+        "The base-rate fallacy is the reading that replaces this posterior by the detection rate \\(4/5\\). That rate says how the assay behaves on carriers. It does not say how many positive assays come from carriers. Because the marker is uncommon, the 49 false positives outnumber the 8 true positives."
+      ],
+      "conclusion": "The posterior probability is \\(8/57\\), far below the detection rate \\(4/5\\)."
+    },
+    "practice": {
+      "prompt": "Factory F supplies \\(1/4\\) of a shop's bulbs and factory G supplies \\(3/4\\). A bulb from F is faulty with probability \\(1/5\\); a bulb from G is faulty with probability \\(1/15\\). A purchased bulb is faulty. Find the posterior odds of F against G, and the probability that the bulb came from F.",
+      "hints": [
+        "Prior odds of F against G are \\((1/4)/(3/4)\\). Multiply by the likelihood ratio of faulty given F over faulty given G.",
+        "Odds \\(r\\) convert to a probability by \\(r/(1+r)\\). Check the result by computing \\(P(\\text{faulty})\\) from the law of total probability and then applying the definition of conditional probability."
+      ],
+      "answer": "Prior odds are \\((1/4)/(3/4)=1/3\\). The likelihood ratio is \\((1/5)/(1/15)=3\\). Posterior odds are \\((1/3)\\cdot 3=1\\), so \\(P(F\\mid\\text{faulty})=1/(1+1)=1/2\\). For the check, \\(P(\\text{faulty})=(1/5)\\cdot(1/4)+(1/15)\\cdot(3/4)=1/20+1/20=1/10\\), and \\(P(F\\mid\\text{faulty})=(1/20)/(1/10)=1/2\\)."
+    },
+    "caution": "A large likelihood \\(P(E\\mid F)\\) does not by itself make the posterior \\(P(F\\mid E)\\) large. In the assay, \\(P(+\\mid M)=4/5\\) while \\(P(M\\mid +)=8/57\\). Using a population base rate as the prior is legitimate only when the case really was drawn from that population and no earlier evidence has already changed the prior.",
+    "bridge": "Bayes' rule measures how far the evidence moves a probability. When the evidence does not move it, \\(P(E\\mid F)\\) equals \\(P(E)\\), which is one of the descriptions of independence.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 3 (Bayes' formula).",
+    "lab": "bayes"
+  },
+  {
+    "id": "K04",
+    "title": "Independent events",
+    "cluster": "Conditional probability",
+    "question": "When does learning that one event occurred leave the probability of another event unchanged?",
+    "prerequisites": [
+      "K01"
+    ],
+    "summary": "Two events are independent when the probability of both equals the product of the probabilities. For three or more events the product formula is required on every subcollection, and in independent repeated trials the probability of at least one success in \\(n\\) trials is \\(1-(1-p)^n\\).",
+    "intuition": "Independent events neither help nor hinder each other. Probability 0 means almost never, and probability 1 means almost surely; in a continuous sample space an outcome can still land in a set of probability 0.",
+    "definition": [
+      "Events \\(E\\) and \\(F\\) are independent when \\(P(EF)=P(E)P(F)\\). If \\(P(F)>0\\), this equality is equivalent to \\(P(E\\mid F)=P(E)\\). If \\(P(E)>0\\), it is also equivalent to \\(P(F\\mid E)=P(F)\\). The product formula remains meaningful when a probability is zero, which is exactly when the conditional form cannot be used.",
+      "Events \\(E_1,\\ldots,E_n\\) are mutually independent when every subcollection satisfies the product formula. For every \\(m\\ge 2\\) and all distinct indices \\(i_1,\\ldots,i_m\\), \\(P(E_{i_1}\\cdots E_{i_m})=P(E_{i_1})\\cdots P(E_{i_m})\\). The cases \\(m=0\\) and \\(m=1\\) hold automatically. For three events the requirement is the three pairwise equalities together with \\(P(EFG)=P(E)P(F)P(G)\\). An infinite family is mutually independent when every finite subfamily is. Pairwise independence means only the conditions with \\(m=2\\).",
+      "Pairwise independence does not give mutual independence. Draw one card from four cards labelled 1, 2, 3 and 4, uniformly. Let \\(E=\\{1,2\\}\\), \\(F=\\{1,3\\}\\) and \\(G=\\{1,4\\}\\). Then \\(P(E)=P(F)=P(G)=1/2\\) and each pairwise intersection equals \\(\\{1\\}\\), so each has probability \\(1/4\\), matching the product \\((1/2)\\cdot(1/2)\\). But \\(EFG=\\{1\\}\\) has probability \\(1/4\\), while \\(P(E)P(F)P(G)=1/8\\).",
+      "The product formula for the full collection does not give the pairwise formulas. Draw a number uniformly from \\(\\{1,2,3,4,5,6\\}\\). Let \\(E=\\{1,2,3\\}\\), \\(F=\\{1,2,4\\}\\) and \\(G=\\{1,3,4,5\\}\\). Then \\(P(E)=P(F)=1/2\\), \\(P(G)=2/3\\) and \\(P(E)P(F)P(G)=1/6\\). The triple intersection is \\(\\{1\\}\\), with probability \\(1/6\\). But \\(EF=\\{1,2\\}\\) has probability \\(1/3\\), while \\(P(E)P(F)=1/4\\), so \\(E\\) and \\(F\\) are not independent.",
+      "Independent repeated trials with success probability \\(p\\) mean that the events \\(A_i\\), that trial \\(i\\) is a success, are mutually independent and satisfy \\(P(A_i)=p\\). A concrete sequence with successes in a fixed set of \\(k\\) positions and failures elsewhere then has probability \\(p^k(1-p)^{n-k}\\), as proved below.",
+      "The equality \\(P(A)=0\\) does not say that \\(A\\) is empty. Choose a number uniformly from the interval \\([0,1]\\), in the sense that the probability of every subinterval is its length. The outcome \\(1/3\\) can occur. For every integer \\(m\\ge 2\\) the singleton \\(\\{1/3\\}\\) is contained in the interval \\([1/3,\\,1/3+1/m]\\) of length \\(1/m\\) inside \\([0,1]\\), so monotonicity gives \\(P(\\{1/3\\})\\le 1/m\\). The only nonnegative number bounded by \\(1/m\\) for every such \\(m\\) is 0. Likewise \\(P(A)=1\\) does not say that \\(A^c\\) is empty: it says that the exceptional set has probability 0. One then says that \\(A\\) occurs almost surely."
+    ],
+    "theorem": "If \\(E\\) and \\(F\\) are independent, then so are \\(E\\) and \\(F^c\\), so are \\(E^c\\) and \\(F\\), and so are \\(E^c\\) and \\(F^c\\). An event \\(A\\) with \\(P(A)=0\\) or \\(P(A)=1\\) is independent of every event. Let \\(A_1,\\ldots,A_n\\) be mutually independent with \\(P(A_i)=p\\), and write \\(m=n-k\\). Each specific pattern with successes on a fixed set of \\(k\\) trials and failures on the other \\(m\\) trials has probability \\(p^k(1-p)^m\\). Hence the probability of exactly \\(k\\) successes is \\(\\binom{n}{k}p^k(1-p)^{n-k}\\) for \\(k=0,1,\\ldots,n\\), and \\[P(\\text{at least one success})=1-(1-p)^n.\\] If \\(B_1\\supseteq B_2\\supseteq\\cdots\\), then \\(P\\big(\\bigcap_{n\\ge 1}B_n\\big)=\\lim_{n\\to\\infty}P(B_n)\\). Consequently, in an infinite sequence of mutually independent trials with success probability \\(p\\), the event that every trial succeeds has probability \\(0\\) when \\(p<1\\) and probability \\(1\\) when \\(p=1\\).",
+    "hypotheses": [
+      "The conditional test \\(P(E\\mid F)=P(E)\\) needs \\(P(F)>0\\). When \\(P(F)=0\\), use the product formula only.",
+      "Mutual independence is a condition on every subcollection. Checking the pairs, or checking only the full intersection, leaves the definition unfinished. The trial formulas use products over whole patterns, so they need mutual independence of the trial events.",
+      "The success probability \\(p\\) is the same on every trial and does not depend on earlier results. The integer \\(k\\) in the exactly-\\(k\\) formula satisfies \\(0\\le k\\le n\\).",
+      "In the continuous illustration, probability of an interval means its length. In the infinite-trial illustration, mutual independence of the infinite family means mutual independence of every finite subfamily, and the sample space contains every sequence of successes and failures."
+    ],
+    "proof": [
+      "Complements. Suppose \\(P(EF)=P(E)P(F)\\). The events \\(EF\\) and \\(EF^c\\) are disjoint and their union is \\(E\\), so \\(P(EF^c)=P(E)-P(EF)=P(E)-P(E)P(F)=P(E)(1-P(F))=P(E)P(F^c)\\). Thus \\(E\\) and \\(F^c\\) are independent. Apply that result to the independent pair \\(F^c\\) and \\(E\\): it yields independence of \\(F^c\\) and \\(E^c\\). Apply the same two-event result to the independent pair \\(F\\) and \\(E\\), with the roles swapped, to conclude that \\(F\\) and \\(E^c\\) are independent.",
+      "Probability 0 or 1. Suppose \\(P(A)=0\\). For an arbitrary event \\(F\\), the inclusion \\(AF\\subseteq A\\) and monotonicity give \\(0\\le P(AF)\\le P(A)=0\\), so \\(P(AF)=0=P(A)P(F)\\). Suppose instead \\(P(A)=1\\). Then \\(P(A^c)=0\\), so the previous case says that \\(A^c\\) is independent of \\(F\\). The complement result, applied to \\(A^c\\), says that \\(A=(A^c)^c\\) is independent of \\(F\\).",
+      "A fixed success-failure pattern. Let \\(A_1,\\ldots,A_n\\) be mutually independent with \\(P(A_i)=p\\), and consider the pattern in which the first \\(k\\) trials succeed and the remaining \\(m=n-k\\) trials fail; every other pattern is a relabeling. Let \\(C=A_1\\cdots A_k\\) when \\(k\\ge 1\\), and let \\(C=S\\) when \\(k=0\\). Mutual independence gives \\(P(C)=p^k\\) when \\(k\\ge 1\\), and \\(P(C)=1=p^0\\) when \\(k=0\\). If \\(m=0\\), the pattern is \\(C\\) itself and its probability is \\(p^n\\). If \\(m\\ge 1\\), set \\(D_j=CA_{k+j}\\) for \\(j=1,\\ldots,m\\). Each \\(D_j\\) is contained in \\(C\\), and the pattern is \\(C\\cap(D_1\\cup\\cdots\\cup D_m)^c\\), with probability \\(P(C)-P(D_1\\cup\\cdots\\cup D_m)\\). In the inclusion-exclusion expansion of that union, the intersection of a particular collection of \\(r\\ge 1\\) of the events \\(D_j\\) equals \\(C\\) cut by those \\(r\\) further success events, hence has probability \\(p^{k+r}\\) by mutual independence. There are \\(\\binom{m}{r}\\) such intersections, and the inclusion-exclusion sign in front of them is \\((-1)^{r+1}\\). The union therefore has probability \\(\\sum_{r=1}^{m}(-1)^{r+1}\\binom{m}{r}p^{k+r}\\), and the pattern has probability \\(p^k-\\sum_{r=1}^{m}(-1)^{r+1}\\binom{m}{r}p^{k+r}\\). For each \\(r\\ge 1\\) the coefficient \\(-(-1)^{r+1}\\) equals \\((-1)^r\\), and the \\(r=0\\) term is \\(p^k\\), so the pattern probability equals \\(\\sum_{r=0}^{m}(-1)^r\\binom{m}{r}p^{k+r}\\).",
+      "The binomial theorem closes the sum. Factor \\(p^k\\) out of each term: \\(\\sum_{r=0}^{m}(-1)^r\\binom{m}{r}p^{k+r}=p^k\\sum_{r=0}^{m}\\binom{m}{r}(-p)^r=p^k(1-p)^m\\), because \\((1+(-p))^m=(1-p)^m\\). Thus the pattern has probability \\(p^k(1-p)^{n-k}\\). The \\(\\binom{n}{k}\\) patterns with exactly \\(k\\) successes are pairwise disjoint and cover that event, so the probability of exactly \\(k\\) successes is \\(\\binom{n}{k}p^k(1-p)^{n-k}\\). The case \\(k=0\\) is the probability of no successes, \\((1-p)^n\\), and the complement rule gives the probability of at least one success, \\(1-(1-p)^n\\).",
+      "Decreasing sequences. Suppose \\(B_1\\supseteq B_2\\supseteq\\cdots\\) and set \\(B=\\bigcap_{n\\ge 1}B_n\\). Monotonicity makes \\(P(B_n)\\) non-increasing and bounded below by 0, so \\(\\lim P(B_n)\\) exists. The complements \\(C_n=B_n^c\\) satisfy \\(C_1\\subseteq C_2\\subseteq\\cdots\\) and \\(\\bigcup_n C_n=B^c\\). Define disjoint pieces by \\(H_1=C_1\\) and \\(H_n=C_n\\setminus C_{n-1}\\) for \\(n\\ge 2\\). Then \\(\\bigcup_{n=1}^\\infty H_n=\\bigcup_n C_n\\), and the partial union \\(H_1\\cup\\cdots\\cup H_N\\) equals \\(C_N\\). Countable additivity gives \\(P(B^c)=\\sum_{n=1}^\\infty P(H_n)=\\lim_{N\\to\\infty}P(C_N)=\\lim_{N\\to\\infty}\\big(1-P(B_N)\\big)\\). Therefore \\(P(B)=1-\\lim_{N\\to\\infty}\\big(1-P(B_N)\\big)=\\lim_{N\\to\\infty}P(B_N)\\).",
+      "Every trial succeeds. Let an infinite sequence of trials have success events that are mutually independent on every finite subcollection, each with probability \\(p\\), and let the sample space contain every infinite sequence of successes and failures. Let \\(B_n\\) be the event that the first \\(n\\) trials all succeed. Finite mutual independence gives \\(P(B_n)=p^n\\), the events decrease, and their intersection is the event that every trial succeeds. If \\(p=1\\), then \\(p^n=1\\) and the limit is 1. If \\(p=0\\), then \\(p^n=0\\) for every \\(n\\ge 1\\) and the limit is 0. If \\(0<p<1\\), set \\(a=(1-p)/p>0\\), so \\(p=1/(1+a)\\). Expanding \\((1+a)^n\\) by the binomial theorem, the degree-1 term is \\(na\\) and every term is nonnegative, so \\((1+a)^n\\ge na\\). Hence \\(0<p^n\\le 1/(na)\\). The bound tends to 0, so \\(p^n\\) tends to 0. When \\(p<1\\) the all-success sequence is still an outcome in the sample space, and it belongs to an event of probability 0. When \\(p=1\\) that event has probability 1, while sequences that contain a failure remain in the sample space and form an event of probability 0: probability 1 means almost surely. The singleton calculation in the definition makes the same point for a continuous sample space. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "A cold-chain logger flags a temperature spike on a given day with probability \\(1/5\\), independently across days. Over a 4-day shipment, find the probability of exactly one spike and the probability of at least one spike.",
+      "steps": [
+        "The four daily spike events are mutually independent with success probability \\(p=1/5\\). A specified pattern with one spike and three quiet days has probability \\((1/5)\\cdot(4/5)^3=(1/5)\\cdot(64/125)=64/625\\).",
+        "There are \\(\\binom{4}{1}=4\\) such patterns, and they are disjoint, so \\(P(\\text{exactly one spike})=4\\cdot(64/625)=256/625\\). The general count gives the same fraction: \\(\\binom{4}{1}(1/5)^1(4/5)^3=4\\cdot(1/5)\\cdot(64/125)=256/625\\).",
+        "No spike on all four days has probability \\((4/5)^4=256/625\\), since \\(4^4=256\\) and \\(5^4=625\\). Therefore \\(P(\\text{at least one spike})=1-256/625=369/625\\)."
+      ],
+      "conclusion": "The probability of exactly one spike is \\(256/625\\), and the probability of at least one spike is \\(369/625\\)."
+    },
+    "practice": {
+      "prompt": "Events \\(E\\) and \\(F\\) are independent, with \\(P(E)=2/5\\) and \\(P(F)=1/4\\). Find \\(P(E\\cup F)\\) and \\(P(E^cF)\\).",
+      "hints": [
+        "Independence gives \\(P(EF)=P(E)P(F)\\). Use the two-event addition formula for the union.",
+        "Independence of \\(E\\) and \\(F\\) implies independence of \\(E^c\\) and \\(F\\), so \\(P(E^cF)=P(E^c)P(F)\\). The same number equals \\(P(F)-P(EF)\\)."
+      ],
+      "answer": "\\(P(EF)=(2/5)\\cdot(1/4)=1/10\\). Then \\(P(E\\cup F)=2/5+1/4-1/10=8/20+5/20-2/20=11/20\\). Also \\(P(E^c)=3/5\\), so \\(P(E^cF)=(3/5)\\cdot(1/4)=3/20\\). The subtraction check is \\(P(F)-P(EF)=1/4-1/10=5/20-2/20=3/20\\)."
+    },
+    "caution": "Disjointness is not independence. If \\(EF=\\varnothing\\) while \\(P(E)>0\\) and \\(P(F)>0\\), then \\(P(EF)=0\\), which is not equal to \\(P(E)P(F)\\), so \\(E\\) and \\(F\\) are dependent: occurrence of one rules the other out. A probability of 0 also does not permit conditioning. The product formula can say that \\(A\\) is independent of \\(E\\) when \\(P(A)=0\\), while \\(P(E\\mid A)\\) remains undefined.",
+    "bridge": "The product formula for events is the template for independent random variables: information about one leaves the distribution of the other unchanged.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 3 (independent events)."
+  }
+]
