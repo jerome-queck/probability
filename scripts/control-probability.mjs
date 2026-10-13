@@ -214,6 +214,14 @@ async function renderingProblems(page) {
       problems.push(
         `horizontal overflow: page is ${document.documentElement.scrollWidth}px wide in a ${window.innerWidth}px viewport`,
       );
+    // A display formula wider than its box is clipped on screen even when the page
+    // itself does not scroll sideways, so check each one.
+    for (const el of document.querySelectorAll('.katex-display')) {
+      if (el.getClientRects().length && el.scrollWidth > el.clientWidth + 1)
+        problems.push(
+          `clipped display math: ${el.scrollWidth}px formula in a ${el.clientWidth}px box (“${el.textContent.slice(0, 40)}”)`,
+        );
+    }
     if (document.querySelector('.math-error'))
       problems.push('KaTeX reported invalid mathematics');
     const families = new Set();
@@ -338,7 +346,7 @@ async function compare(actualPath, baselinePath, diffPath) {
     return `size changed from ${b.width}x${b.height} to ${a.width}x${a.height}`;
   const diff = new PNG({ width: a.width, height: a.height });
   const n = pixelmatch(a.data, b.data, diff.data, a.width, a.height, {
-    threshold: 0.1,
+    threshold: 0.03, // 0.1 let a whole-bar colour shift (#fff → #f4e2e2) pass
   });
   const ratio = n / (a.width * a.height);
   if (ratio > maxDiffRatio) {

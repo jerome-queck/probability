@@ -939,6 +939,9 @@ main {
   }
 }
 @media (max-width: 520px) {
+  .katex-display > .katex {
+    font-size: 0.9em;
+  }
   .topbar {
     gap: 10px;
   }

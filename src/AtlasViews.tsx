@@ -160,7 +160,6 @@ function HeroFigure() {
       >
         {pmf.map((p, k) => (
           <rect
-            // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length chart
             key={k}
             className="bar"
             x={k * slot + 3}
