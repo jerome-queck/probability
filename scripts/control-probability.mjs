@@ -229,7 +229,7 @@ async function renderingProblems(page) {
       );
     // A display formula wider than its box is clipped on screen even when the page
     // itself does not scroll sideways, so check each one.
-    for (const el of document.querySelectorAll('.katex-display')) {
+    for (const el of document.querySelectorAll('.katex-display, .math-block')) {
       if (el.getClientRects().length && el.scrollWidth > el.clientWidth + 1)
         problems.push(
           `clipped display math: ${el.scrollWidth}px formula in a ${el.clientWidth}px box (“${el.textContent.slice(0, 40)}”)`,
