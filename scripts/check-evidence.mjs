@@ -43,7 +43,7 @@ if (
   files.some((f) => f.startsWith('src/content/')) &&
   !(
     /^clean\b/i.test(field('Math review')) &&
-    /\b(grok|reviewer|session)\b/i.test(field('Math review'))
+    /grok-4\.7/i.test(field('Math review'))
   )
 )
   errors.push(
@@ -57,16 +57,46 @@ const touchesFeatures = files.some((f) =>
 );
 if (touchesFeatures) {
   const verify = field('Verify evidence');
-  if (!/actions\/runs\/\d+/.test(verify) || !/\.png\b/.test(verify))
+  const runId = /actions\/runs\/(\d+)/.exec(verify)?.[1];
+  let hasArtifact = false;
+  if (runId) {
+    try {
+      const repo =
+        process.env.GITHUB_REPOSITORY ||
+        gh(
+          'repo',
+          'view',
+          '--json',
+          'nameWithOwner',
+          '-q',
+          '.nameWithOwner',
+        ).trim();
+      const listed = JSON.parse(
+        gh('api', `repos/${repo}/actions/runs/${runId}/artifacts`),
+      );
+      hasArtifact = listed.artifacts.some(
+        (a) => a.name === 'smoke-evidence' && !a.expired && a.size_in_bytes > 0,
+      );
+    } catch {}
+  }
+  if (runId && !hasArtifact)
     errors.push(
-      'feature change: “Verify evidence:” must link the CI run (…/actions/runs/<id>, artifact verify-evidence with the driver run) and name the screenshots inspected (*.png)',
+      `feature change: run ${runId} has no smoke-evidence artifact (screenshots); link a run that uploaded one`,
     );
-  if (!/\b(grok|reviewer|session)\b/i.test(field('Review')))
+  if (!runId || !/\.png\b/.test(verify))
     errors.push(
-      'feature change: “Review:” must name the independent reviewer (session or model)',
+      'feature change: “Verify evidence:” must link the CI run (…/actions/runs/<id>, artifact smoke-evidence with the driver run) and name the screenshots inspected (*.png)',
+    );
+  if (!/grok-4\.7/i.test(field('Review')))
+    errors.push(
+      'feature change: “Review:” must name the independent reviewer and its model (grok-4.7)',
     );
 }
-if (!/verify-probability/.test(field('Skills used')))
+if (
+  !/verify-probability/.test(field('Skills used')) ||
+  !/grok-4\.7/.test(field('Skills used')) ||
+  !/effort/i.test(field('Skills used'))
+)
   errors.push(
     '“Skills used:” must list the skills used (at least verify-probability) with model and effort',
   );

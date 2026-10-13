@@ -374,7 +374,7 @@ async function smoke() {
   dataDir = base;
   const update = args.includes('--update-baselines');
   const only = opt('only');
-  const out = resolve(opt('artifacts', join(root, 'artifacts/visual')));
+  const out = resolve(opt('artifacts', join(root, 'artifacts/smoke')));
   const fx = JSON.parse(
     readFileSync(
       join(root, '.cursor/skills/verify-probability/features/smoke.json'),
@@ -435,8 +435,11 @@ async function smoke() {
             if (!text.includes(want))
               failures.push(`${label}: expected “${want}” on ${path}`);
           for (const sel of step.expectHidden ?? [])
-            if (await page.locator(sel).isVisible())
-              failures.push(`${label}: expected ${sel} to be hidden`);
+            if (
+              (await page.locator(sel).count()) === 0 ||
+              (await page.locator(sel).isVisible())
+            )
+              failures.push(`${label}: expected ${sel} to exist and be hidden`);
           if (step.expectPath && path !== step.expectPath)
             failures.push(
               `${label}: expected path ${step.expectPath}, got ${path}`,
@@ -485,10 +488,18 @@ async function smoke() {
       }
     }
   } finally {
-    await browserApp?.close();
+    try {
+      await browserApp?.close();
+    } catch {}
     try {
       await stop();
     } catch {}
+    // Keep the preview server log with the screenshots before the temp dir goes.
+    const log = join(base, 'server.log');
+    if (existsSync(log)) {
+      mkdirSync(out, { recursive: true });
+      writeFileSync(join(out, 'server.log'), readFileSync(log));
+    }
     rmSync(base, { recursive: true, force: true });
   }
   if (failures.length) {

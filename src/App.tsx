@@ -19,10 +19,27 @@ export function App() {
   const menuButton = useRef<HTMLButtonElement>(null);
   const narrow = useNarrow();
   const firstRoute = useRef(true);
+  // Focus moves only after React has re-rendered, when the target is no longer inert.
+  const focusAfter = useRef<'menu' | 'heading' | null>(null);
   function closeDrawer() {
+    focusAfter.current = 'menu';
     setDrawer(false);
-    menuButton.current?.focus();
   }
+  const drawerOpen = useRef(false);
+  drawerOpen.current = drawer;
+  useEffect(() => {
+    if (drawer) {
+      document.querySelector<HTMLElement>('#lesson-search')?.focus();
+      return;
+    }
+    const target = focusAfter.current;
+    focusAfter.current = null;
+    if (target === 'menu') menuButton.current?.focus();
+    if (target === 'heading')
+      document
+        .querySelector<HTMLElement>('main h1')
+        ?.focus({ preventScroll: true });
+  }, [drawer]);
   useEffect(() => {
     document.title = lesson
       ? `${lesson.title} · Probability`
@@ -31,6 +48,7 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'instant' });
     // Move focus to the new page's heading so keyboard and screen-reader users land on it.
     if (firstRoute.current) firstRoute.current = false;
+    else if (drawerOpen.current) focusAfter.current = 'heading';
     else
       document
         .querySelector<HTMLElement>('main h1')
@@ -40,8 +58,8 @@ export function App() {
     if (!drawer) return;
     const close = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        focusAfter.current = 'menu';
         setDrawer(false);
-        menuButton.current?.focus();
       }
     };
     document.addEventListener('keydown', close);

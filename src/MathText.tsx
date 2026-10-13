@@ -2,7 +2,8 @@ import katex from 'katex';
 import { Fragment } from 'react';
 import 'katex/dist/katex.min.css';
 
-const pattern = /\\\[([\s\S]*?)\\\]|\\\(([\s\S]*?)\\\)/g;
+// Punctuation right after a formula is kept with it, so a period never wraps alone.
+const pattern = /\\\[([\s\S]*?)\\\]([.,;:]?)|\\\(([\s\S]*?)\\\)([.,;:]?)/g;
 export function MathText({ text }: { text: string }) {
   const parts: React.ReactNode[] = [];
   let from = 0;
@@ -13,14 +14,15 @@ export function MathText({ text }: { text: string }) {
         <Fragment key={`t${from}`}>{text.slice(from, match.index)}</Fragment>,
       );
     const displayMode = match[1] !== undefined;
-    const latex = match[1] ?? match[2];
+    const latex = match[1] ?? match[3];
+    const trailing = (displayMode ? match[2] : match[4]) ?? '';
     let html: string;
     try {
       // Display formulas are typeset in display style but as breakable inline math, so a
       // long chain of equalities wraps after a relation on a phone instead of being cut
       // off; on a wide screen it still sits on one centred line.
       html = katex.renderToString(
-        displayMode ? `\\displaystyle ${latex}` : latex,
+        `${displayMode ? '\\displaystyle ' : ''}${latex}${trailing ? `\\text{${trailing}}` : ''}`,
         {
           displayMode: false,
           throwOnError: true,
