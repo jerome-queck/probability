@@ -4,7 +4,7 @@ The landing page at `/`: a hero with the site promise, a start button, and a cha
 
 ## Sub-features
 
-- `home.hero` — heading “Uncertain outcomes. Exact reasoning.” and two actions.
+- `home.hero` — heading “Learn to reason under uncertainty.”, two actions, and the binomial-with-normal-curve figure.
 - `home.start` — “Begin at the beginning” opens the first lesson.
 - `home.chapters` — one card per chapter, each lesson a button.
 
@@ -16,7 +16,7 @@ Open the site root, or click “Probability” / “Learn” in the top bar from
 
 Preconditions: launched instance, doctor OK.
 
-- Load → `open --url /` → heading contains “Uncertain outcomes”.
+- Load → `open --url /` → heading contains “Learn to reason”.
 - Start → `click --url / --role button --name "Begin at the beginning"` → path `/lessons/f01-sample-spaces-and-events`.
 
 ## Visual states

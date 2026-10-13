@@ -20,30 +20,7 @@ export function LessonPage({
   return (
     <div className="reading-shell" data-lesson-id={lesson.id}>
       <div className="breadcrumb">
-        LESSONS <span>/</span> {lesson.cluster.toUpperCase()} <span>/</span>{' '}
-        {lesson.id}
-      </div>
-      <nav className="lesson-sections" aria-label="Read this lesson">
-        <a href="#intuition">Idea</a>
-        <a href="#definition">Definitions</a>
-        <a href="#theorem">Claim & conditions</a>
-        <a href="#proof">Argument</a>
-        <a href="#example">Example</a>
-        {lesson.lab && <a href="#lab">Experiment</a>}
-        <a href="#practice">Your turn</a>
-        <a href="#boundary">Boundary</a>
-      </nav>
-      <div className="lesson-preparation">
-        <span>BUILDING ON</span>
-        {lesson.prerequisites.length ? (
-          lesson.prerequisites.map((id) => (
-            <button type="button" key={id} onClick={() => onSelect(id)}>
-              {id} · {titleOf(id)}
-            </button>
-          ))
-        ) : (
-          <span>No prior lessons needed</span>
-        )}
+        Lessons <span>/</span> {lesson.cluster} <span>/</span> {lesson.id}
       </div>
       <div className="lesson-head">
         <div>
@@ -60,6 +37,18 @@ export function LessonPage({
             <MathText text={lesson.summary} />
           </p>
         </div>
+      </div>
+      <div className="lesson-preparation">
+        <span>Builds on</span>
+        {lesson.prerequisites.length ? (
+          lesson.prerequisites.map((id) => (
+            <button type="button" key={id} onClick={() => onSelect(id)}>
+              {id} · {titleOf(id)}
+            </button>
+          ))
+        ) : (
+          <span>No prior lessons needed</span>
+        )}
       </div>
       <div className="reading-grid">
         <article className="lesson-body">

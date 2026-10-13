@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import type { LabId } from './content/types';
 import { sharedBirthdayProbability } from './math/counting.ts';
 import {
   bayesPosterior,
@@ -13,7 +14,6 @@ import {
   runningProportion,
   standardizedUniformSums,
 } from './math/simulation.ts';
-import type { LabId } from './content/types';
 
 const fmt = (x: number, digits = 4) => x.toFixed(digits);
 

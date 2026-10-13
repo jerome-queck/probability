@@ -46,6 +46,27 @@ if (
     'content changed: “Math review:” must start with “clean” and name the independent reviewer',
   );
 
+// Feature changes need the verify-skill run (driver + screenshots looked at) and a named
+// independent reviewer, and every PR lists the skills used with model and effort.
+const touchesFeatures = files.some((f) =>
+  /^(src\/|index\.html$|\.cursor\/skills\/verify-probability\/)/.test(f),
+);
+if (touchesFeatures) {
+  const verify = field('Verify evidence');
+  if (!/actions\/runs\/\d+/.test(verify) || !/\.png\b/.test(verify))
+    errors.push(
+      'feature change: “Verify evidence:” must link the CI run (…/actions/runs/<id>, artifact verify-evidence with the driver run) and name the screenshots inspected (*.png)',
+    );
+  if (!/\b(grok|reviewer|session)\b/i.test(field('Review')))
+    errors.push(
+      'feature change: “Review:” must name the independent reviewer (session or model)',
+    );
+}
+if (!/verify-probability/.test(field('Skills used')))
+  errors.push(
+    '“Skills used:” must list the skills used (at least verify-probability) with model and effort',
+  );
+
 if (errors.length) {
   console.error(errors.map((e) => `evidence: ${e}`).join('\n'));
   process.exit(1);

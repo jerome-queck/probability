@@ -7,7 +7,7 @@
 A public, interactive learning site for a first course in probability: sample spaces and
 counting, conditional probability, discrete and continuous random variables, joint
 distributions, expectation, and the limit theorems. React 19 + Vite + TypeScript + KaTeX,
-matching the sibling calculus, algebra and number theory sites. Lessons are JSON in
+using the same stack as the sibling calculus, algebra and number theory sites, with its own design (docs/adr/0002-own-design.md). Lessons are JSON in
 `src/content/part*.json`; exact and numeric helpers live in `src/math/`.
 
 **One job for agents here:** keep this site correct, readable and verified — every change lands

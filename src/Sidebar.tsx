@@ -80,26 +80,24 @@ export function Sidebar({
         <span className="brand-mark" aria-hidden="true">
           <svg viewBox="0 0 64 64">
             <title>Probability mark</title>
-            <circle
-              cx="32"
-              cy="32"
-              r="25"
+            <rect
+              x="6"
+              y="6"
+              width="52"
+              height="52"
+              rx="12"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="3"
             />
-            <path
-              d="M12 44c8 0 10-26 20-26s12 26 20 26"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            />
-            <circle cx="32" cy="18" r="3" />
+            <circle cx="20" cy="20" r="5" />
+            <circle cx="32" cy="32" r="5" />
+            <circle cx="44" cy="44" r="5" />
           </svg>
         </span>
         <div>
           <strong>Probability</strong>
-          <small>Jerome Group</small>
+          <small>A first course</small>
         </div>
       </div>
       <button

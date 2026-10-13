@@ -1,5 +1,5 @@
 [
-  { "feature": "home", "id": "load", "url": "/", "expect": ["Uncertain outcomes", "Foundations"] },
+  { "feature": "home", "id": "load", "url": "/", "expect": ["Learn to reason", "Foundations"] },
   { "feature": "home", "id": "start-hover", "url": "/", "actions": [{ "hover": { "role": "button", "name": "Begin at the beginning" } }] },
   { "feature": "home", "id": "start-focus", "url": "/", "actions": [{ "focus": { "role": "button", "name": "Begin at the beginning" } }] },
   { "feature": "home", "id": "start", "url": "/", "actions": [{ "click": { "role": "button", "name": "Begin at the beginning" } }], "expectPath": "/lessons/f01-sample-spaces-and-events", "expect": ["Sample spaces and events"] },
