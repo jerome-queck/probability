@@ -8,7 +8,7 @@ Lessons with a `lab` field render an Experiment section (`#lab`, `data-lab=<id>`
 |---|---|---|
 | `birthday` | `people` | P(at least one shared birthday) |
 | `bayes` | `prior`, `sensitivity`, `false-positive` | P(D \| +) |
-| `binomial-poisson` | `trials`, `p` | λ = np |
+| `binomial-poisson` | `trials`, `lambda` | p = λ/n |
 | `normal-approximation` | `trials`, `p` | P(X = |
 | `law-of-large-numbers` | `tosses` | Proportion of heads |
 | `central-limit` | `n` | Largest gap |
@@ -31,6 +31,9 @@ One state per lab once a lesson uses it: `<lab-id>-default` and `<lab-id>-moved`
 
 - `bayes-default` (desktop, mobile) — K03 experiment as it loads.
 - `bayes-moved` (desktop, mobile) — `prior` set to 0.2.
+
+- `binomial-poisson-default` (desktop, mobile) — D05 experiment as it loads.
+- `binomial-poisson-moved` (desktop, mobile) — `trials` set to 200 with λ = 3 held, so p = 0.015.
 
 ## Gotchas
 
