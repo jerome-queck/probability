@@ -163,7 +163,7 @@ attempt() {
       echo "agent-run: dropped a half-written last line from $part:" >> "$out.err"
       tail -n 1 "$part" >> "$out.err"
       echo >> "$out.err"
-      if tail -n 1 "$part" | grep -qE '(^|\\n|"result":")(VERDICT|REVIEW|MATH): |"model(Name|Id|Slug)?"[[:space:]]*:' ; then
+      if tail -n 1 "$part" | grep -qE '(VERDICT|REVIEW|MATH):|"model(Name|Id|Slug)?\\*"[[:space:]]*:' ; then
         echo "agent-run: the dropped line carried a verdict or a model id; failing the run" >&2
         exit 1
       fi

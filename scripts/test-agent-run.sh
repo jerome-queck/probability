@@ -49,7 +49,7 @@ fake droporphan "if [ \$resume = 1 ]; then $done_ok; else $init; setsid sleep 30
 run droporphan 0 'VERDICT: VERIFIED'
 p=$(cat "$t/drop.pid" 2> /dev/null) && if kill -0 "$p" 2> /dev/null; then echo "FAIL droporphan child $p survived"; fails=$((fails + 1)); kill -KILL "$p"; fi
 fake proseverdict "if [ \$resume = 1 ]; then $done_ok; else $init; printf '{\"type\":\"assistant\",\"text\":\"The VERDICT: comes later'; exit 1; fi"
-run proseverdict 0 'VERDICT: VERIFIED'
+run proseverdict 1 '' # fail closed: any verdict token in a torn line stops the run
 fake churn "if [ \$resume = 1 ]; then $done_ok; else $init; setsid sleep 304 & echo \$! > $t/churn.pid; for i in \$(seq 60); do sleep 0.05; echo '{\"type\":\"tick\"}'; done; exit 1; fi"
 run churn 0 'VERDICT: VERIFIED'
 p=$(cat "$t/churn.pid" 2> /dev/null) && if kill -0 "$p" 2> /dev/null; then echo "FAIL churn child $p survived"; fails=$((fails + 1)); kill -KILL "$p"; fi
@@ -81,4 +81,9 @@ if python3 -c 'import PIL' 2> /dev/null; then
 else
   echo "skip bigshot (Pillow not installed)"
 fi
+# A torn line with an escaped model key (tool args) or a spaced result verdict also fails closed.
+fake tornescmodel "if [ \$resume = 1 ]; then $done_ok; else $init; printf '{\"type\":\"tool_call\",\"args\":\"{\\\\\"model\\\\\":\\\\\"claude-op'; exit 1; fi"
+run tornescmodel 1 ''
+fake tornspaceverdict "if [ \$resume = 1 ]; then $done_ok; else $init; printf '{\"type\":\"result\",\"result\": \"VERDICT: NOT VERIFIED'; exit 1; fi"
+run tornspaceverdict 1 ''
 exit $fails
