@@ -40,7 +40,7 @@ export function MathText({ text }: { text: string }) {
           displayMode
             ? 'math-block'
             : // Short formulas never break; long ones may break after a relation, as TeX does.
-              latex.length <= 24
+              latex.length <= 16
               ? 'math-inline math-nowrap'
               : 'math-inline'
         }

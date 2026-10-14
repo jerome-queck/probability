@@ -35,11 +35,3 @@ jobs:
           name: verify-evidence
           path: artifacts/smoke
           if-no-files-found: ignore
-      # TRANSITIONAL: main's evidence gate still looks for smoke-evidence until this PR merges.
-      # Remove with the transitional evidence trigger in the follow-up PR.
-      - if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: smoke-evidence
-          path: artifacts/smoke
-          if-no-files-found: ignore

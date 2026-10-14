@@ -1,0 +1,403 @@
+[
+  {
+    "id": "D01",
+    "title": "Random variables, mass functions and distribution functions",
+    "cluster": "Discrete random variables",
+    "question": "How do we turn the outcome of an experiment into a number, and how is the distribution of that number recorded?",
+    "prerequisites": [
+      "F03"
+    ],
+    "summary": "A random variable is a numerical measurement of the outcome. For a discrete random variable the probability mass function lists the probability at each value, and the cumulative distribution function stacks those probabilities up to each threshold.",
+    "intuition": "The mass function places a weight on each possible number. The distribution function tells how much weight sits at or to the left of a point, and a vertical jump is a point mass.",
+    "definition": [
+      "A random variable on a sample space \\(S\\) is a function \\(X:S\\to\\mathbb{R}\\). When the outcome is \\(s\\), the number we record is \\(X(s)\\). Statements about that number are events: \\(\\{X\\le 3\\}=\\{s\\in S:X(s)\\le 3\\}\\), and similarly for \\(\\{X=a\\}\\), \\(\\{a<X\\le b\\}\\) and the other usual sets.",
+      "\\(X\\) is discrete when its range \\(R_X=\\{X(s):s\\in S\\}\\) is finite or countably infinite. The probability mass function (pmf) is \\(p(x)=P(X=x)\\). It satisfies \\(p(x)\\ge 0\\) for every real \\(x\\), \\(p(x)=0\\) for \\(x\\notin R_X\\), and \\(\\sum_{x\\in R_X}p(x)=1\\).",
+      "The cumulative distribution function (cdf) is \\(F:\\mathbb{R}\\to[0,1]\\) given by \\(F(x)=P(X\\le x)\\). The capital letter is reserved for the cdf and the lower-case letter for the pmf. For a discrete random variable, countable additivity gives \\(F(x)=\\sum_{t\\in R_X,\\,t\\le x}p(t)\\)."
+    ],
+    "theorem": "Let \\(X\\) be any random variable with cdf \\(F\\). Then \\(F\\) is nondecreasing and right-continuous, \\(\\lim_{x\\to-\\infty}F(x)=0\\), \\(\\lim_{x\\to\\infty}F(x)=1\\), and for \\(a<b\\) \\[P(a<X\\le b)=F(b)-F(a).\\] The jump of \\(F\\) at any point \\(a\\) equals the point mass: \\[P(X=a)=F(a)-\\lim_{y\\uparrow a}F(y).\\] Equivalently, \\(P(X<a)=\\lim_{y\\uparrow a}F(y)\\) and \\(P(a\\le X\\le b)=F(b)-\\lim_{y\\uparrow a}F(y)\\). If \\(X\\) is discrete and the half-open interval \\((c,d]\\) contains no point of \\(R_X\\), then \\(F\\) is constant on \\((c,d]\\). The jump at each \\(a\\in R_X\\) is exactly \\(p(a)\\).",
+    "hypotheses": [
+      "\\(X\\) is a real-valued function on \\(S\\), and every set \\(\\{X\\le x\\}\\) is an event to which the probability axioms apply.",
+      "Countable additivity is in force, so probabilities are continuous under nested increasing unions and nested decreasing intersections.",
+      "Discreteness is needed only for the step-function picture. The monotonicity, one-sided limits, and the identity \\(P(a<X\\le b)=F(b)-F(a)\\) hold for every random variable."
+    ],
+    "proof": [
+      "If \\(x<y\\), then \\(\\{X\\le x\\}\\subseteq\\{X\\le y\\}\\). Monotonicity of \\(P\\) gives \\(F(x)\\le F(y)\\), so \\(F\\) is nondecreasing.",
+      "Right-continuity at a fixed \\(x\\): the events \\(A_n=\\{X\\le x+1/n\\}\\) decrease to \\(\\{X\\le x\\}\\), because a real number is at most \\(x+1/n\\) for every positive integer \\(n\\) exactly when it is at most \\(x\\). If \\(C_n\\downarrow C\\), write \\(C_1\\setminus C\\) as the disjoint union of \\(C_n\\setminus C_{n+1}\\). The tail of that convergent series of probabilities is \\(P(C_n)-P(C)\\), so \\(P(C_n)\\to P(C)\\). Hence \\(F(x+1/n)\\to F(x)\\). For an arbitrary sequence \\(y_k\\downarrow x\\), monotonicity squeezes \\(F(y_k)\\) between \\(F(x)\\) and \\(F(x+1/n)\\) once \\(y_k\\le x+1/n\\).",
+      "Along integers, \\(\\{X\\le n\\}\\uparrow S\\) and \\(\\{X\\le -n\\}\\downarrow\\varnothing\\). The same continuity argument, applied to an increasing union, yields \\(F(n)\\to 1\\) and \\(F(-n)\\to 0\\). For a real limit, take \\(\\varepsilon>0\\) and an integer \\(M\\) with \\(F(M)>1-\\varepsilon\\). For every \\(x\\ge M\\), monotonicity gives \\(1-\\varepsilon<F(M)\\le F(x)\\le 1\\), so \\(F(x)\\to 1\\) as \\(x\\to\\infty\\). Likewise, with an integer \\(M\\) such that \\(F(-M)<\\varepsilon\\), every \\(x\\le -M\\) has \\(0\\le F(x)\\le F(-M)<\\varepsilon\\), so \\(F(x)\\to 0\\) as \\(x\\to-\\infty\\).",
+      "The events \\(\\{X\\le a\\}\\) and \\(\\{a<X\\le b\\}\\) are disjoint and their union is \\(\\{X\\le b\\}\\). Finite additivity gives \\(F(b)=F(a)+P(a<X\\le b)\\).",
+      "Likewise \\(\\{X\\le a\\}=\\{X<a\\}\\cup\\{X=a\\}\\), a disjoint union, and \\(\\{X<a\\}=\\bigcup_n\\{X\\le a-1/n\\}\\), an increasing union. Continuity from below gives \\(P(X<a)=\\lim_n F(a-1/n)\\), which is the left-hand limit of \\(F\\) at \\(a\\). Subtracting from \\(F(a)\\) produces the jump \\(P(X=a)\\). The two-sided formula for \\(P(a\\le X\\le b)\\) is \\(F(b)\\) minus that left-hand limit.",
+      "If \\(X\\) is discrete and \\(c<x<y\\) with no point of \\(R_X\\) in \\((c,y]\\), then \\(P(x<X\\le y)=0\\), so \\(F(y)=F(x)\\). Thus between atoms the cdf is flat, while at an atom it jumps by \\(p(a)\\) and, by right-continuity, takes the higher value at the atom itself. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "A wheel returns a score \\(X\\) in \\(\\{0,2,5\\}\\) with \\(p(0)=1/2\\), \\(p(2)=1/3\\) and \\(p(5)=1/6\\). Write down \\(F\\), compute \\(P(0<X\\le 5)\\), and read \\(P(X=2)\\) off the jump of \\(F\\).",
+      "steps": [
+        "The masses sum to \\(1/2+1/3+1/6=1\\). Stacking them gives \\(F(x)=0\\) for \\(x<0\\), \\(F(x)=1/2\\) for \\(0\\le x<2\\), \\(F(x)=1/2+1/3=5/6\\) for \\(2\\le x<5\\), and \\(F(x)=1\\) for \\(x\\ge 5\\).",
+        "The interval formula uses the value of \\(F\\) at the endpoints, including the atom at the left endpoint in the amount that is subtracted: \\(P(0<X\\le 5)=F(5)-F(0)=1-1/2=1/2\\). The same number is \\(p(2)+p(5)=1/3+1/6=1/2\\).",
+        "Right-continuity puts \\(F(2)\\) at the top of the jump, and the left limit is the flat value just below \\(2\\), namely \\(1/2\\). The jump is \\(5/6-1/2=1/3\\), which equals \\(p(2)\\). In particular \\(F(1.9)=1/2\\) while \\(F(2)=5/6\\)."
+      ],
+      "conclusion": "\\(F\\) equals \\(0\\), \\(1/2\\), \\(5/6\\) and \\(1\\) on the four ranges above; \\(P(0<X\\le 5)=1/2\\); and the jump at \\(2\\) is \\(1/3\\)."
+    },
+    "practice": {
+      "prompt": "A discrete random variable has cdf \\(F(x)=0\\) for \\(x<2\\), \\(F(x)=1/4\\) for \\(2\\le x<3\\), \\(F(x)=1/2\\) for \\(3\\le x<6\\), and \\(F(x)=1\\) for \\(x\\ge 6\\). Find \\(p(2)\\), \\(p(3)\\), \\(p(6)\\) and \\(P(2<X\\le 6)\\).",
+      "hints": [
+        "The mass at a point is the jump of \\(F\\) there: the value of \\(F\\) at the point minus the limit from the left.",
+        "Use \\(P(a<X\\le b)=F(b)-F(a)\\) with \\(a=2\\) and \\(b=6\\)."
+      ],
+      "answer": "The jump at \\(2\\) is \\(1/4-0=1/4\\), the jump at \\(3\\) is \\(1/2-1/4=1/4\\), and the jump at \\(6\\) is \\(1-1/2=1/2\\). There is no other jump, and these masses sum to \\(1\\). Then \\(P(2<X\\le 6)=F(6)-F(2)=1-1/4=3/4\\), which equals \\(p(3)+p(6)\\)."
+    },
+    "caution": "\\(F(a)\\) includes the atom at \\(a\\). The height just below a jump is \\(P(X<a)\\), smaller than \\(P(X\\le a)\\) by exactly \\(P(X=a)\\). On a graph the filled dot sits at the top of the jump, because \\(F\\) is right-continuous.",
+    "bridge": "Once every value carries a probability, the next summary of the distribution is the point where that mass balances. That balance point is the expectation.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 4 (random variables)."
+  },
+  {
+    "id": "D02",
+    "title": "Expectation",
+    "cluster": "Discrete random variables",
+    "question": "What single number locates the centre of a discrete distribution, and how is it computed for a function of the variable?",
+    "prerequisites": [
+      "D01"
+    ],
+    "summary": "The expectation of a discrete random variable is the sum of each value times its probability. The same weights compute the expectation of a function of the variable, and expectation is linear under scaling and shifting.",
+    "intuition": "Expectation is the balance point of the probability masses, and it is the average value you settle on if each number \\(x\\) keeps appearing with frequency \\(p(x)\\).",
+    "definition": [
+      "Let \\(X\\) be discrete with pmf \\(p\\), and suppose \\(\\sum_x |x|p(x)<\\infty\\). The expectation, or mean, of \\(X\\) is \\[E[X]=\\sum_x x\\,p(x).\\] The sum runs over the range of \\(X\\), or over all real \\(x\\), since the extra terms are zero.",
+      "Placing mass \\(p(x)\\) at position \\(x\\) on the line, the centre of mass \\(\\mu\\) is the point where the signed moments cancel: \\(\\sum_x(x-\\mu)p(x)=0\\). That equation is exactly \\(\\mu=E[X]\\).",
+      "Long-run reading: in a large number of repetitions, suppose the value \\(x\\) appears with frequency close to \\(p(x)\\). The average of the recorded numbers is then close to \\(\\sum_x x\\,p(x)\\). This is an interpretation of the sum, not a substitute for checking that the sum converges absolutely.",
+      "If \\(g:\\mathbb{R}\\to\\mathbb{R}\\), the random variable \\(g(X)\\) has its own expectation, defined from its own pmf. The theorem below computes that expectation from \\(p\\) and \\(g\\) directly."
+    ],
+    "theorem": "Let \\(X\\) be discrete with pmf \\(p\\) and let \\(g:\\mathbb{R}\\to\\mathbb{R}\\). If \\(\\sum_x |g(x)|p(x)<\\infty\\), then \\(Y=g(X)\\) is discrete and \\[E[g(X)]=\\sum_x g(x)\\,p(x).\\] In particular, if \\(E[|X|]<\\infty\\) and \\(a,b\\) are constants, then \\(E[aX+b]=aE[X]+b\\).",
+    "hypotheses": [
+      "Absolute convergence is required. If \\(\\sum |g(x)|p(x)\\) diverges, rearranging the terms can change the sum, so the expectation is left undefined.",
+      "The constants \\(a\\) and \\(b\\) are non-random. The identity \\(E[aX+b]=aE[X]+b\\) is linearity for one random variable; sums of several random variables are a later result.",
+      "The formula applies to every real function \\(g\\). It does not require \\(g\\) to be linear, one-to-one, or positive."
+    ],
+    "proof": [
+      "The range of \\(X\\) is countable. The set of values \\(g(x)\\) with \\(p(x)>0\\) is therefore countable, so \\(Y=g(X)\\) is a discrete random variable.",
+      "Fix a possible value \\(y\\) of \\(Y\\) and write \\(A_y=\\{x:g(x)=y\\}\\). The event \\(\\{Y=y\\}\\) is the disjoint union of \\(\\{X=x\\}\\) over \\(x\\in A_y\\), so \\(P(Y=y)=\\sum_{x\\in A_y}p(x)\\).",
+      "By the definition of expectation, \\(E[Y]=\\sum_y y\\,P(Y=y)=\\sum_y y\\sum_{x\\in A_y}p(x)=\\sum_y\\sum_{x\\in A_y}g(x)\\,p(x)\\), where the substitution \\(y=g(x)\\) is legitimate on \\(A_y\\).",
+      "The sets \\(A_y\\) partition the support of \\(p\\). Absolute convergence of \\(\\sum_x |g(x)|p(x)\\) lets the double sum be rewritten as one sum over that support, and the result is \\(E[g(X)]=\\sum_x g(x)\\,p(x)\\).",
+      "Take \\(g(x)=ax+b\\). Then \\(\\sum_x(ax+b)p(x)=a\\sum_x x\\,p(x)+b\\sum_x p(x)=aE[X]+b\\). The comparison \\(|ax+b|\\le |a|\\,|x|+|b|\\) shows that \\(E[|X|]<\\infty\\) makes \\(E[|aX+b|]\\) finite. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "The random variable \\(X\\) takes the values \\(-2,-1,1,2\\) with probabilities \\(1/10\\), \\(1/5\\), \\(3/10\\) and \\(2/5\\). Compute \\(E[X]\\), compute \\(E[X^2]\\) from the function formula and again by grouping equal values of \\(X^2\\), and compute \\(E[3X-1]\\).",
+      "steps": [
+        "The probabilities sum to \\(1/10+2/10+3/10+4/10=1\\). Then \\(E[X]=(-2)(1/10)+(-1)(1/5)+(1)(3/10)+(2)(2/5)=(-2-2+3+8)/10=7/10\\).",
+        "With \\(g(x)=x^2\\), \\(E[X^2]=4(1/10)+1(1/5)+1(3/10)+4(2/5)=(4+2+3+16)/10=25/10=5/2\\).",
+        "Grouping: \\(X^2=1\\) on \\(\\{-1,1\\}\\), with probability \\(1/5+3/10=1/2\\), and \\(X^2=4\\) on \\(\\{-2,2\\}\\), with probability \\(1/10+2/5=1/2\\). So \\(E[X^2]=1\\cdot(1/2)+4\\cdot(1/2)=5/2\\), the same value. The two preimages of \\(1\\) had to be added before multiplying by the value.",
+        "Linearity gives \\(E[3X-1]=3\\cdot(7/10)-1=11/10\\). Directly, \\(3X-1\\) takes the values \\(-7,-4,2,5\\), and \\((-7)(1/10)+(-4)(1/5)+(2)(3/10)+(5)(2/5)=(-7-8+6+20)/10=11/10\\)."
+      ],
+      "conclusion": "\\(E[X]=7/10\\), \\(E[X^2]=5/2\\) by both routes, and \\(E[3X-1]=11/10\\)."
+    },
+    "practice": {
+      "prompt": "Let \\(Z\\) take the values \\(0,1,2\\) with probabilities \\(1/2\\), \\(1/3\\) and \\(1/6\\). Find \\(E[Z]\\) and \\(E[2^Z]\\).",
+      "hints": [
+        "Multiply each value by its probability and add. For \\(E[2^Z]\\), apply \\(2^Z\\) to each value of \\(Z\\) first.",
+        "The three numbers \\(2^0\\), \\(2^1\\) and \\(2^2\\) are distinct, so grouping changes nothing. The function formula still has to be used term by term."
+      ],
+      "answer": "\\(E[Z]=0\\cdot(1/2)+1\\cdot(1/3)+2\\cdot(1/6)=1/3+1/3=2/3\\). And \\(E[2^Z]=2^0\\cdot(1/2)+2^1\\cdot(1/3)+2^2\\cdot(1/6)=1/2+2/3+4/6=1/2+2/3+2/3=1/2+4/3=11/6\\). This is different from \\(2^{E[Z]}=2^{2/3}\\), since \\((11/6)^3=1331/216\\) while \\((2^{2/3})^3=4=864/216\\)."
+    },
+    "caution": "A nonlinear function cannot be pulled outside the expectation. In the practice problem \\(E[2^Z]=11/6\\), whereas \\(2^{E[Z]}=2^{2/3}\\). The same distinction appears as \\(E[X^2]\\) against \\((E[X])^2\\). Absolute convergence also has to be checked before an infinite sum is rearranged.",
+    "bridge": "The mean locates the centre of the mass. Two distributions with the same centre can still spread very differently, and variance is the measure of that spread.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 4 (expectation)."
+  },
+  {
+    "id": "D03",
+    "title": "Variance",
+    "cluster": "Discrete random variables",
+    "question": "How do we measure the spread of a discrete random variable about its mean?",
+    "prerequisites": [
+      "D02"
+    ],
+    "summary": "Variance is the expected squared distance from the mean. It equals \\(E[X^2]-(E[X])^2\\), it scales by the square of a constant factor, and its square root is the standard deviation.",
+    "intuition": "Variance is large when the probability masses sit far from the balance point, because each unit of mass is charged the square of its distance from the mean.",
+    "definition": [
+      "Let \\(X\\) be a random variable with mean \\(\\mu=E[X]\\), and suppose \\(E[(X-\\mu)^2]<\\infty\\). The variance of \\(X\\) is \\[\\operatorname{Var}(X)=E[(X-\\mu)^2].\\]",
+      "The standard deviation is the nonnegative square root \\(\\sigma=\\sqrt{\\operatorname{Var}(X)}\\). Variance carries the square of the units of \\(X\\); the standard deviation carries the same units as \\(X\\)."
+    ],
+    "theorem": "Let \\(X\\) be discrete with \\(E[X^2]<\\infty\\) and \\(\\mu=E[X]\\). Then \\[\\operatorname{Var}(X)=E[(X-\\mu)^2]=E[X^2]-(E[X])^2.\\] For any constants \\(a\\) and \\(b\\), \\[\\operatorname{Var}(aX+b)=a^2\\operatorname{Var}(X).\\] In particular \\(\\operatorname{Var}(X)\\ge 0\\), with equality if and only if \\(P(X=\\mu)=1\\).",
+    "hypotheses": [
+      "\\(E[X^2]<\\infty\\). This forces \\(E[|X|]<\\infty\\) as well, because \\(|x|\\le x^2+1\\) and therefore \\(\\sum |x|p(x)\\le \\sum x^2 p(x)+1\\).",
+      "The computational formula uses the same probability weights as \\(E[X]\\). It is an identity for one random variable, and it assumes \\(\\mu\\) is the actual mean of that variable.",
+      "In the scaling formula, \\(a\\) and \\(b\\) are constants."
+    ],
+    "proof": [
+      "By the function formula, \\(\\operatorname{Var}(X)=\\sum_x(x-\\mu)^2 p(x)\\). Expand the square: \\((x-\\mu)^2=x^2-2\\mu x+\\mu^2\\). Finiteness of \\(E[X^2]\\) gives absolute convergence of this series, because \\(|x|\\le x^2+1\\), so the sum splits: \\(\\sum_x(x^2-2\\mu x+\\mu^2)p(x)=E[X^2]-2\\mu E[X]+\\mu^2\\).",
+      "Substitute \\(E[X]=\\mu\\). The expression equals \\(E[X^2]-2\\mu^2+\\mu^2=E[X^2]-\\mu^2=E[X^2]-(E[X])^2\\).",
+      "Let \\(Y=aX+b\\). Linearity for one random variable gives \\(E[Y]=a\\mu+b\\), so \\(Y-E[Y]=a(X-\\mu)\\) and \\((Y-E[Y])^2=a^2(X-\\mu)^2\\). The function formula, together with the constant-factor case \\(E[cZ]=cE[Z]\\), yields \\(\\operatorname{Var}(Y)=a^2 E[(X-\\mu)^2]=a^2\\operatorname{Var}(X)\\). The shift \\(b\\) cancels before the square is formed.",
+      "Each term \\((x-\\mu)^2 p(x)\\) is nonnegative, so the variance is nonnegative. A sum of nonnegative terms is zero only when every term is zero, hence \\(p(x)=0\\) whenever \\(x\\ne\\mu\\). Thus \\(P(X=\\mu)=1\\). Conversely, a constant random variable has variance \\(0\\). \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "A score \\(X\\) takes the values \\(0,1,3\\) with probabilities \\(1/2\\), \\(1/3\\) and \\(1/6\\). Compute \\(\\operatorname{Var}(X)\\) from \\(E[X^2]-(E[X])^2\\), check it against \\(E[(X-\\mu)^2]\\), and find the standard deviation together with \\(\\operatorname{Var}(2X-4)\\).",
+      "steps": [
+        "\\(E[X]=0\\cdot(1/2)+1\\cdot(1/3)+3\\cdot(1/6)=1/3+1/2=5/6\\). Next \\(E[X^2]=0+1\\cdot(1/3)+9\\cdot(1/6)=1/3+3/2=11/6\\).",
+        "The shortcut gives \\(\\operatorname{Var}(X)=11/6-(5/6)^2=66/36-25/36=41/36\\).",
+        "Directly, \\((0-5/6)^2(1/2)=25/72\\), \\((1-5/6)^2(1/3)=1/108\\) and \\((3-5/6)^2(1/6)=169/216\\). Over the denominator \\(216\\) these are \\(75/216\\), \\(2/216\\) and \\(169/216\\), which add to \\(246/216=41/36\\).",
+        "The standard deviation is \\(\\sqrt{41/36}=\\sqrt{41}/6\\). Scaling by \\(2\\) and then shifting by \\(-4\\) multiplies the variance by \\(4\\): \\(\\operatorname{Var}(2X-4)=4\\cdot(41/36)=41/9\\)."
+      ],
+      "conclusion": "\\(\\operatorname{Var}(X)=41/36\\), the standard deviation is \\(\\sqrt{41}/6\\), and \\(\\operatorname{Var}(2X-4)=41/9\\)."
+    },
+    "practice": {
+      "prompt": "A wheel stops on \\(2\\), \\(4\\) or \\(6\\) with probabilities \\(1/2\\), \\(1/4\\) and \\(1/4\\). Let \\(W\\) be the number showing. Find \\(E[W]\\), \\(\\operatorname{Var}(W)\\) and \\(\\operatorname{Var}(W/2+3)\\).",
+      "hints": [
+        "Compute \\(E[W^2]\\) from the pmf and subtract \\((E[W])^2\\).",
+        "The added constant \\(3\\) drops out of the variance, and multiplication by \\(1/2\\) multiplies the variance by \\(1/4\\)."
+      ],
+      "answer": "\\(E[W]=2\\cdot(1/2)+4\\cdot(1/4)+6\\cdot(1/4)=1+1+3/2=7/2\\). Then \\(E[W^2]=4\\cdot(1/2)+16\\cdot(1/4)+36\\cdot(1/4)=2+4+9=15\\), so \\(\\operatorname{Var}(W)=15-(7/2)^2=15-49/4=11/4\\). Therefore \\(\\operatorname{Var}(W/2+3)=(1/4)\\cdot(11/4)=11/16\\)."
+    },
+    "caution": "Shifting \\(X\\) by a constant leaves the variance unchanged, and multiplying \\(X\\) by \\(a\\) multiplies the variance by \\(a^2\\). In particular \\(\\operatorname{Var}(-X)=\\operatorname{Var}(X)\\). The formula \\(\\operatorname{Var}(X+Y)=\\operatorname{Var}(X)+\\operatorname{Var}(Y)\\) needs a separate hypothesis on the pair \\((X,Y)\\) and can fail when the two variables move together. Variance is zero exactly when the variable is constant with probability \\(1\\).",
+    "bridge": "Bernoulli trials are the simplest variables these formulas apply to. Counting successes across a fixed number of them produces the binomial distribution.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 4 (variance)."
+  },
+  {
+    "id": "D04",
+    "title": "Bernoulli and binomial random variables",
+    "cluster": "Discrete random variables",
+    "question": "How do we count successes in a fixed number of independent trials that share one success probability?",
+    "prerequisites": [
+      "D03",
+      "C02",
+      "K04"
+    ],
+    "summary": "A Bernoulli random variable records success or failure on one trial. A binomial random variable counts successes in a fixed number of independent copies of that trial; its mean, variance and mode are determined by \\(n\\) and \\(p\\).",
+    "intuition": "Each trial contributes a success with probability \\(p\\), so \\(n\\) trials contribute about \\(np\\) successes. The binomial coefficient counts the orders in which those successes can arrive.",
+    "definition": [
+      "Fix \\(0\\le p\\le 1\\). A Bernoulli(\\(p\\)) random variable \\(B\\) takes the value \\(1\\) with probability \\(p\\) and the value \\(0\\) with probability \\(1-p\\). It is the indicator that a single trial is a success. Directly, \\(E[B]=p\\) and \\(E[B^2]=p\\), so \\(\\operatorname{Var}(B)=p-p^2=p(1-p)\\).",
+      "A binomial experiment consists of a fixed number \\(n\\ge 1\\) of independent trials, each of which is a success with the same probability \\(p\\) and a failure with probability \\(1-p\\). The binomial random variable \\(X\\), written \\(X\\sim\\operatorname{Bin}(n,p)\\), is the number of successes among the \\(n\\) trials. Its range is \\(\\{0,1,\\ldots,n\\}\\). The case \\(n=1\\) is Bernoulli(\\(p\\))."
+    ],
+    "theorem": "If \\(X\\sim\\operatorname{Bin}(n,p)\\), then for \\(k=0,1,\\ldots,n\\) \\[P(X=k)=\\binom{n}{k}p^k(1-p)^{n-k},\\] and these probabilities sum to \\(1\\) by the binomial theorem. The mean and variance are \\[E[X]=np,\\qquad \\operatorname{Var}(X)=np(1-p).\\] If \\(0<p<1\\), the pmf rises and then falls: \\(P(X=k)\\ge P(X=k-1)\\) if and only if \\(k\\le(n+1)p\\). Writing \\(m=\\lfloor(n+1)p\\rfloor\\), the unique mode is \\(m\\) when \\((n+1)p\\) is not an integer, and the two modes are \\(m-1\\) and \\(m\\) when \\((n+1)p=m\\) is an integer.",
+    "hypotheses": [
+      "The \\(n\\) trials are independent, and every trial has the same success probability \\(p\\). If either condition fails, the pmf formula does not apply. Sampling without replacement is the usual way the success probability changes from trial to trial.",
+      "Here \\(n\\) is a fixed positive integer and \\(0\\le p\\le 1\\). The mode description assumes \\(0<p<1\\). If \\(p=0\\) then \\(X=0\\), and if \\(p=1\\) then \\(X=n\\).",
+      "The mean and variance formulas are for the count of successes, not for a rescaled payoff attached to each success."
+    ],
+    "proof": [
+      "An outcome of the experiment is a sequence of length \\(n\\) with each entry equal to success or failure. Independence multiplies probabilities along the sequence, so any particular sequence with successes in \\(k\\) specified positions has probability \\(p^k(1-p)^{n-k}\\). The event \\(\\{X=k\\}\\) is the disjoint union of these sequences, and there are \\(\\binom{n}{k}\\) of them. Adding the probabilities gives the pmf.",
+      "The binomial theorem gives \\(\\sum_{k=0}^n\\binom{n}{k}p^k(1-p)^{n-k}=(p+(1-p))^n=1\\).",
+      "For the factorial moments, writing the binomial coefficient in factorials yields \\(k\\binom{n}{k}=n!/((k-1)!(n-k)!)=n\\binom{n-1}{k-1}\\) when \\(k\\ge 1\\), and likewise \\(k(k-1)\\binom{n}{k}=n(n-1)\\binom{n-2}{k-2}\\) when \\(k\\ge 2\\). Then \\(E[X]=\\sum_{k=1}^n k\\binom{n}{k}p^k(1-p)^{n-k}=np\\sum_{j=0}^{n-1}\\binom{n-1}{j}p^j(1-p)^{n-1-j}=np\\), after the substitution \\(j=k-1\\). The inner sum is the total mass of a \\(\\operatorname{Bin}(n-1,p)\\) distribution.",
+      "The same shift gives \\(E[X(X-1)]=\\sum_{k=2}^n k(k-1)\\binom{n}{k}p^k(1-p)^{n-k}=n(n-1)p^2\\sum_{j=0}^{n-2}\\binom{n-2}{j}p^j(1-p)^{n-2-j}=n(n-1)p^2\\). The identity \\(x^2=x(x-1)+x\\) and the function formula give \\(E[X^2]=\\sum_x\\bigl(x(x-1)+x\\bigr)p(x)=E[X(X-1)]+E[X]=n(n-1)p^2+np\\). Therefore \\(\\operatorname{Var}(X)=n(n-1)p^2+np-n^2p^2=np-np^2=np(1-p)\\).",
+      "For the mode, take \\(1\\le k\\le n\\) and \\(0<p<1\\). The consecutive-term ratio is \\[\\frac{P(X=k)}{P(X=k-1)}=\\frac{n-k+1}{k}\\cdot\\frac{p}{1-p},\\] because \\(\\binom{n}{k}/\\binom{n}{k-1}=(n-k+1)/k\\) and one factor of \\(1-p\\) cancels. The ratio is at least \\(1\\) exactly when \\((n-k+1)p\\ge k(1-p)\\). Expanding the right-hand side and cancelling \\(-kp\\) from both sides produces \\(np+p\\ge k\\), that is \\(k\\le(n+1)p\\). Equality holds exactly when \\(k=(n+1)p\\). If \\((n+1)p<1\\), every ratio with \\(k\\ge 1\\) is strictly smaller than \\(1\\), so the unique mode is \\(0\\). If \\((n+1)p>n\\), every such ratio is strictly larger than \\(1\\), so the unique mode is \\(n\\). In every case the masses strictly increase while \\(k<(n+1)p\\), are equal on the single step where \\(k=(n+1)p\\) is an integer, and strictly decrease once \\(k>(n+1)p\\). Writing \\(m=\\lfloor(n+1)p\\rfloor\\), the unique mode is \\(m\\) when \\((n+1)p\\) is not an integer, and both \\(m-1\\) and \\(m\\) are modes when \\((n+1)p=m\\). \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "Four independent items are inspected, and each is defective with probability \\(1/5\\). Let \\(X\\) be the number of defectives. Compute the pmf, check that it sums to \\(1\\), and find the mean, the variance and the mode.",
+      "steps": [
+        "\\(X\\sim\\operatorname{Bin}(4,1/5)\\), so \\(P(X=k)=\\binom{4}{k}(1/5)^k(4/5)^{4-k}\\). The five values are \\(P(X=0)=(4/5)^4=256/625\\), \\(P(X=1)=4\\cdot(1/5)\\cdot(4/5)^3=256/625\\), \\(P(X=2)=6\\cdot(1/25)\\cdot(16/25)=96/625\\), \\(P(X=3)=4\\cdot(1/125)\\cdot(4/5)=16/625\\) and \\(P(X=4)=1/625\\).",
+        "The numerators add as \\(256+256+96+16+1=625\\), so the probabilities sum to \\(1\\).",
+        "The formulas give \\(E[X]=4\\cdot(1/5)=4/5\\) and \\(\\operatorname{Var}(X)=4\\cdot(1/5)\\cdot(4/5)=16/25\\). As a check, \\(\\sum k\\,P(X=k)=(256+2\\cdot 96+3\\cdot 16+4\\cdot 1)/625=(256+192+48+4)/625=500/625=4/5\\).",
+        "Here \\((n+1)p=5\\cdot(1/5)=1\\), an integer, so the modes are \\(0\\) and \\(1\\). This matches \\(P(X=0)=P(X=1)=256/625\\), with \\(P(X=2)=96/625\\) strictly smaller. The ratio test agrees: \\(P(X=1)/P(X=0)=1\\) and \\(P(X=2)/P(X=1)=3/8<1\\)."
+      ],
+      "conclusion": "The pmf is \\((256,256,96,16,1)/625\\) on \\(\\{0,1,2,3,4\\}\\), \\(E[X]=4/5\\), \\(\\operatorname{Var}(X)=16/25\\), and the modes are \\(0\\) and \\(1\\)."
+    },
+    "practice": {
+      "prompt": "Five independent welds are made, each succeeding with probability \\(2/3\\). Let \\(X\\) be the number of successful welds. Find \\(P(X=2)\\), \\(E[X]\\), \\(\\operatorname{Var}(X)\\) and the mode or modes.",
+      "hints": [
+        "Use \\(P(X=2)=\\binom{5}{2}(2/3)^2(1/3)^3\\), and the closed forms \\(E[X]=np\\) and \\(\\operatorname{Var}(X)=np(1-p)\\).",
+        "Compute \\((n+1)p\\). If that number is an integer \\(m\\), both \\(m-1\\) and \\(m\\) are modes; compare two neighbouring masses to confirm."
+      ],
+      "answer": "\\(P(X=2)=\\binom{5}{2}(2/3)^2(1/3)^3=10\\cdot(4/9)\\cdot(1/27)=40/243\\). The mean is \\(5\\cdot(2/3)=10/3\\) and the variance is \\(5\\cdot(2/3)\\cdot(1/3)=10/9\\). Since \\((n+1)p=6\\cdot(2/3)=4\\) is an integer, the modes are \\(3\\) and \\(4\\). Indeed \\(P(X=4)=5\\cdot(16/81)\\cdot(1/3)=80/243\\) and \\(P(X=3)=10\\cdot(8/27)\\cdot(1/9)=80/243\\), while \\(P(X=5)=32/243\\) and \\(P(X=2)=40/243\\) are smaller."
+    },
+    "caution": "A common slip is to quote \\(p^k(1-p)^{n-k}\\) as \\(P(X=k)\\) and leave out \\(\\binom{n}{k}\\), which counts the sequences with those \\(k\\) successes. Another is to use the binomial pmf when the trials are draws without replacement: the success probability then changes from draw to draw, and the count is hypergeometric. Boundary values need a separate glance: at \\(p=0\\) or \\(p=1\\) the variable is constant, and when \\((n+1)p\\) is an integer there are two modes rather than one.",
+    "bridge": "If \\(n\\) becomes large while the mean \\(np\\) stays fixed, the binomial probabilities approach a one-parameter family, the Poisson distribution.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 4 (Bernoulli and binomial random variables)."
+  },
+  {
+    "id": "D05",
+    "title": "Poisson random variables",
+    "cluster": "Discrete random variables",
+    "question": "Which distribution counts rare events, and why does it appear as a limit of binomial counts?",
+    "prerequisites": [
+      "D04"
+    ],
+    "summary": "A Poisson random variable with mean \\(\\lambda\\) puts mass \\(e^{-\\lambda}\\lambda^k/k!\\) on each nonnegative integer. The same parameter is both the mean and the variance, and the distribution is the limit of binomial counts whose mean stays equal to \\(\\lambda\\).",
+    "intuition": "Many independent trials, each with a tiny success probability, produce a count that depends on the trials only through the product \\(np\\). In time, lengthening the window in which you count multiplies that mean by the same factor.",
+    "definition": [
+      "Fix \\(\\lambda>0\\). A random variable \\(X\\) has the Poisson distribution with parameter \\(\\lambda\\), written \\(X\\sim\\operatorname{Poisson}(\\lambda)\\), when \\[P(X=k)=e^{-\\lambda}\\frac{\\lambda^k}{k!}\\qquad\\text{for }k=0,1,2,\\ldots\\] and \\(P(X=k)=0\\) for every other \\(k\\).",
+      "Rare-event model: if \\(n\\) independent trials each succeed with small probability \\(p\\), and \\(\\lambda=np\\) is moderate, then the number of successes is approximately \\(\\operatorname{Poisson}(\\lambda)\\). The theorem below is the precise limit.",
+      "Counting in time: suppose events occur so that the mean number in an interval is proportional to the length of the interval, disjoint intervals carry independent counts, and two events do not occur at the same instant. Then a \\(\\operatorname{Poisson}(\\lambda)\\) count on an interval of unit length becomes a \\(\\operatorname{Poisson}(t\\lambda)\\) count on an interval of length \\(t>0\\). Doubling the window doubles the parameter. The value of one Poisson random variable, doubled, is a different distribution."
+    ],
+    "theorem": "If \\(X\\sim\\operatorname{Poisson}(\\lambda)\\) with \\(\\lambda>0\\), then \\(\\sum_{k=0}^{\\infty}P(X=k)=1\\), \\(E[X]=\\lambda\\) and \\(\\operatorname{Var}(X)=\\lambda\\). Furthermore, if \\(Y_n\\sim\\operatorname{Bin}(n,\\lambda/n)\\) for integers \\(n>\\lambda\\), then for each fixed integer \\(k\\ge 0\\) \\[\\lim_{n\\to\\infty}P(Y_n=k)=e^{-\\lambda}\\frac{\\lambda^k}{k!}.\\]",
+    "hypotheses": [
+      "The series and moment formulas need \\(\\lambda>0\\). The binomial limit takes \\(n\\to\\infty\\) through integers \\(n>\\lambda\\), with success probability \\(\\lambda/n\\), and with \\(k\\) held fixed.",
+      "The passage from a unit interval to an interval of length \\(t\\) is a modelling assumption: the mean must scale with length. Multiplying the numerical value of a \\(\\operatorname{Poisson}(\\lambda)\\) observation by \\(t\\) does not produce a \\(\\operatorname{Poisson}(t\\lambda)\\) random variable.",
+      "The limit \\((1-\\lambda/n)^n\\to e^{-\\lambda}\\) and the exponential series \\(e^{\\lambda}=\\sum_{k=0}^{\\infty}\\lambda^k/k!\\) are the calculus inputs."
+    ],
+    "proof": [
+      "The exponential series gives \\(\\sum_{k=0}^{\\infty}P(X=k)=e^{-\\lambda}\\sum_{k=0}^{\\infty}\\lambda^k/k!=e^{-\\lambda}e^{\\lambda}=1\\).",
+      "For the mean, the \\(k=0\\) term vanishes and \\(k/k!=1/(k-1)!\\), so \\(E[X]=\\sum_{k=1}^{\\infty}k\\,e^{-\\lambda}\\lambda^k/k!=\\lambda e^{-\\lambda}\\sum_{j=0}^{\\infty}\\lambda^j/j!=\\lambda\\), where \\(j=k-1\\).",
+      "For the second factorial moment, \\(k(k-1)/k!=1/(k-2)!\\) for \\(k\\ge 2\\), so \\(E[X(X-1)]=e^{-\\lambda}\\sum_{k=2}^{\\infty}\\lambda^k/(k-2)!=\\lambda^2 e^{-\\lambda}\\sum_{j=0}^{\\infty}\\lambda^j/j!=\\lambda^2\\). The identity \\(k^2=k(k-1)+k\\) splits the series, so \\(E[X^2]=E[X(X-1)]+E[X]=\\lambda^2+\\lambda\\) and \\(\\operatorname{Var}(X)=\\lambda^2+\\lambda-\\lambda^2=\\lambda\\).",
+      "Now fix \\(k\\ge 0\\) and set \\(p=\\lambda/n\\) with \\(n>\\lambda\\). The binomial pmf is \\(P(Y_n=k)=\\binom{n}{k}(\\lambda/n)^k(1-\\lambda/n)^{n-k}\\). Rewrite it as \\[\\frac{\\lambda^k}{k!}\\cdot\\left(\\prod_{j=0}^{k-1}\\left(1-\\frac{j}{n}\\right)\\right)\\cdot\\left(1-\\frac{\\lambda}{n}\\right)^n\\cdot\\left(1-\\frac{\\lambda}{n}\\right)^{-k}.\\] The product in the middle has \\(k\\) factors, each tending to \\(1\\), so the product tends to \\(1\\). The standard limit \\((1-\\lambda/n)^n\\to e^{-\\lambda}\\) handles the next factor, and \\((1-\\lambda/n)^{-k}\\to 1\\). The three varying factors therefore tend to \\(1\\cdot e^{-\\lambda}\\cdot 1=e^{-\\lambda}\\), and multiplying by the constant \\(\\lambda^k/k!\\) gives \\(P(Y_n=k)\\to e^{-\\lambda}\\lambda^k/k!\\). \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "Faults along a fibre arrive as rare events, with long-run average \\(2\\) faults per hour, independent counts in disjoint time intervals, and a mean proportional to the length of the interval. Let \\(X\\) be the number of faults in one hour and \\(Y\\) the number in a quarter of an hour. Identify the distributions, compute \\(P(X=3)\\) and \\(P(Y=0)\\), and name the distribution of the count in a two-hour window.",
+      "steps": [
+        "The modelling assumptions say that the hourly count is Poisson with mean \\(2\\), so \\(X\\sim\\operatorname{Poisson}(2)\\). In particular \\(E[X]=\\operatorname{Var}(X)=2\\).",
+        "\\(P(X=3)=e^{-2}\\cdot 2^3/3!=e^{-2}\\cdot 8/6=(4/3)e^{-2}\\).",
+        "A quarter of an hour has mean \\(2\\cdot(1/4)=1/2\\), so \\(Y\\sim\\operatorname{Poisson}(1/2)\\) and \\(P(Y=0)=e^{-1/2}\\). Over two hours the mean is \\(4\\), so that count is \\(\\operatorname{Poisson}(4)\\)."
+      ],
+      "conclusion": "\\(X\\sim\\operatorname{Poisson}(2)\\) with \\(P(X=3)=(4/3)e^{-2}\\), \\(Y\\sim\\operatorname{Poisson}(1/2)\\) with \\(P(Y=0)=e^{-1/2}\\), and the two-hour count is \\(\\operatorname{Poisson}(4)\\)."
+    },
+    "practice": {
+      "prompt": "Each of \\(400\\) independent sensors trips on a given day with probability \\(1/200\\). Let \\(X\\) be the number that trip. Name the exact distribution and the Poisson approximation, and write the approximation to \\(P(X=1)\\). Separately, sparks arrive as a Poisson process with mean \\(9\\) sparks per \\(24\\)-hour day. Let \\(Z\\) be the number of sparks in an \\(8\\)-hour period. Give the distribution of \\(Z\\) and \\(P(Z=0)\\).",
+      "hints": [
+        "The Poisson parameter is the binomial mean \\(np\\). Then \\(P(X=1)\\) is approximately \\(e^{-\\lambda}\\lambda/1!\\).",
+        "Eight hours is \\(8/24=1/3\\) of the day, so scale the daily mean by \\(1/3\\)."
+      ],
+      "answer": "Exactly, \\(X\\sim\\operatorname{Bin}(400,1/200)\\). The mean is \\(400/200=2\\), so the approximation is \\(\\operatorname{Poisson}(2)\\) and \\(P(X=1)\\approx 2e^{-2}\\). The spark count on \\(8\\) hours has mean \\(9\\cdot(1/3)=3\\), so \\(Z\\sim\\operatorname{Poisson}(3)\\) and \\(P(Z=0)=e^{-3}\\)."
+    },
+    "caution": "The Poisson limit is a statement about large \\(n\\) and small \\(p\\) with \\(np\\) held fixed. It is a poor match when \\(p\\) is not small. Scaling with time changes the parameter of the count on a longer or shorter window. Doubling a single \\(\\operatorname{Poisson}(\\lambda)\\) random variable spreads the masses onto the even numbers \\(0,2,4,\\ldots\\) and that doubled variable is not \\(\\operatorname{Poisson}(2\\lambda)\\).",
+    "bridge": "Binomial and Poisson distributions count events inside a fixed window. The geometric distribution instead records how long one waits for the first success.",
+    "lab": "binomial-poisson",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 4 (the Poisson random variable)."
+  },
+  {
+    "id": "D06",
+    "title": "Geometric random variables",
+    "cluster": "Discrete random variables",
+    "question": "How many independent trials does it take to obtain the first success, and what does a string of failures tell us about the wait that remains?",
+    "prerequisites": [
+      "D03",
+      "K04"
+    ],
+    "summary": "A geometric random variable is the trial number of the first success, so it counts that successful trial. Its tail is a pure power of the failure probability, its mean is \\(1/p\\), its variance is \\((1-p)/p^2\\), and the remaining wait after a run of failures has the same distribution as the original wait.",
+    "intuition": "Every trial is a fresh chance with the same success probability, so the number of trials you expect to need is \\(1/p\\), and failures already suffered do not bring the next success any closer.",
+    "definition": [
+      "Consider independent trials with success probability \\(p\\in(0,1]\\) on every trial. Let \\(X\\) be the trial number on which the first success occurs, so the range of \\(X\\) is \\(\\{1,2,3,\\ldots\\}\\). This is the geometric distribution with parameter \\(p\\). The successful trial is included. The number of failures before the first success is the different random variable \\(X-1\\).",
+      "The event \\(\\{X=k\\}\\) occurs exactly when the first \\(k-1\\) trials fail and trial \\(k\\) succeeds. Independence therefore gives the pmf \\[P(X=k)=(1-p)^{k-1}p,\\qquad k=1,2,3,\\ldots.\\]"
+    ],
+    "theorem": "Let \\(X\\) be geometric with parameter \\(p\\in(0,1]\\) and write \\(q=1-p\\). Then \\(\\sum_{k=1}^{\\infty}P(X=k)=1\\) and \\[P(X>n)=q^n\\qquad\\text{for every integer }n\\ge 0.\\] The mean and variance are \\[E[X]=\\frac{1}{p},\\qquad \\operatorname{Var}(X)=\\frac{1-p}{p^2}.\\] If \\(0<p<1\\) and \\(n,m\\) are nonnegative integers, the distribution is memoryless: \\[P(X>n+m\\mid X>n)=P(X>m).\\]",
+    "hypotheses": [
+      "The trials are independent and share one success probability \\(p\\in(0,1]\\). If \\(p=0\\), a first success never occurs and the probabilities above do not sum to \\(1\\).",
+      "The series argument assumes \\(0<p<1\\), so that \\(|q|<1\\). If \\(p=1\\), then \\(X=1\\) with probability \\(1\\), the mean is \\(1\\) and the variance is \\(0\\), in agreement with the formulas.",
+      "The conditional probability \\(P(X>n+m\\mid X>n)\\) requires \\(P(X>n)>0\\), which holds for every \\(n\\) when \\(p<1\\). The identity is about the remaining number of trials, and \\(X\\) itself includes the eventual success."
+    ],
+    "proof": [
+      "For \\(0<p<1\\), the geometric series \\(\\sum_{j=0}^{\\infty}q^j=1/(1-q)=1/p\\). Hence \\(\\sum_{k=1}^{\\infty}P(X=k)=p\\sum_{j=0}^{\\infty}q^j=1\\). Also \\(X>n\\) if and only if the first \\(n\\) trials all fail, which has probability \\(q^n\\). Summing the tail gives the same result: \\(\\sum_{k=n+1}^{\\infty}q^{k-1}p=pq^n\\sum_{i=0}^{\\infty}q^i=q^n\\).",
+      "Let \\(v=\\sum_{k=1}^{\\infty}k q^k\\). The coefficient of \\(q^k\\) in \\(v-qv\\) is \\(k-(k-1)=1\\), so \\(v-qv=\\sum_{k=1}^{\\infty}q^k=q/(1-q)\\). Thus \\(v=q/(1-q)^2\\) and \\(\\sum_{k=1}^{\\infty}k q^{k-1}=1/(1-q)^2\\). Therefore \\(E[X]=p/(1-q)^2=p/p^2=1/p\\).",
+      "Let \\(w=\\sum_{k=2}^{\\infty}k(k-1)q^k\\). The coefficient of \\(q^k\\) in \\(w-qw\\), for \\(k\\ge 2\\), is \\(k(k-1)-(k-1)(k-2)=2(k-1)\\). Hence \\(w-qw=\\sum_{k=2}^{\\infty}2(k-1)q^k=2q^2\\sum_{j=0}^{\\infty}(j+1)q^j\\), where \\(j=k-2\\). The inner sum equals \\(1/(1-q)^2\\) by the previous step, so \\(w(1-q)=2q^2/(1-q)^2\\) and \\(w=2q^2/(1-q)^3\\). Then \\(E[X(X-1)]=\\sum_{k=2}^{\\infty}k(k-1)q^{k-1}p=p\\,w/q=2pq/(1-q)^3\\). Since \\(1-q=p\\), this equals \\(2q/p^2\\).",
+      "Since \\(k^2=k(k-1)+k\\), splitting the series gives \\(E[X^2]=E[X(X-1)]+E[X]=2q/p^2+1/p\\), and \\(\\operatorname{Var}(X)=2q/p^2+1/p-1/p^2=(2q+p-1)/p^2\\). Since \\(p+q=1\\), the numerator is \\(2q+p-(p+q)=q\\). Thus \\(\\operatorname{Var}(X)=q/p^2=(1-p)/p^2\\).",
+      "Memorylessness is division of tails: \\(P(X>n+m\\mid X>n)=P(X>n+m)/P(X>n)=q^{n+m}/q^n=q^m=P(X>m)\\). In words, after \\(n\\) observed failures the number of further trials needed, including the eventual success, has the same distribution as \\(X\\) had at the start. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "An archer shoots until the first hit. Shots are independent and each hits with probability \\(2/5\\). Let \\(X\\) be the number of shots up to and including the first hit. Find \\(P(X=4)\\), \\(P(X>4)\\), \\(E[X]\\), \\(\\operatorname{Var}(X)\\) and \\(P(X>7\\mid X>3)\\).",
+      "steps": [
+        "Here \\(p=2/5\\) and \\(q=3/5\\), so \\(P(X=4)=q^3 p=(27/125)\\cdot(2/5)=54/625\\).",
+        "The tail formula gives \\(P(X>4)=q^4=(3/5)^4=81/625\\), the probability that the first four shots miss.",
+        "The moment formulas give \\(E[X]=1/p=5/2\\) and \\(\\operatorname{Var}(X)=q/p^2=(3/5)/(4/25)=(3/5)\\cdot(25/4)=15/4\\).",
+        "Memorylessness with \\(n=3\\) and \\(m=4\\) gives \\(P(X>7\\mid X>3)=P(X>4)=81/625\\). The same value is the ratio of tails \\(q^7/q^3=q^4=81/625\\)."
+      ],
+      "conclusion": "\\(P(X=4)=54/625\\), \\(P(X>4)=81/625\\), \\(E[X]=5/2\\), \\(\\operatorname{Var}(X)=15/4\\), and \\(P(X>7\\mid X>3)=81/625\\)."
+    },
+    "practice": {
+      "prompt": "A backup generator is tested once a day until it starts. Tests are independent and each succeeds with probability \\(1/4\\). Let \\(X\\) be the number of tests up to and including the first success. Find \\(P(X=2)\\), \\(P(X>6)\\), \\(E[X]\\), \\(\\operatorname{Var}(X)\\) and \\(P(X>10\\mid X>4)\\).",
+      "hints": [
+        "Use \\(P(X=k)=(3/4)^{k-1}(1/4)\\) and \\(P(X>n)=(3/4)^n\\).",
+        "The mean is \\(1/p\\) and the variance is \\((1-p)/p^2\\). Memorylessness replaces \\(P(X>10\\mid X>4)\\) by \\(P(X>6)\\)."
+      ],
+      "answer": "\\(P(X=2)=(3/4)\\cdot(1/4)=3/16\\). The tail is \\(P(X>6)=(3/4)^6=729/4096\\). The mean is \\(1/(1/4)=4\\) and the variance is \\((3/4)/(1/16)=12\\). Memorylessness gives \\(P(X>10\\mid X>4)=P(X>6)=729/4096\\)."
+    },
+    "caution": "Two conventions share the name geometric. In this convention \\(X\\) is at least \\(1\\) and \\(E[X]=1/p\\). The count of failures before the first success is \\(X-1\\), with mean \\((1-p)/p\\) and with masses shifted down by one. Memorylessness says \\(P(X>n+m\\mid X>n)=P(X>m)\\). It does not say that the conditional probability equals \\(P(X>n+m)\\).",
+    "bridge": "Geometric, Bernoulli and binomial models all use independent trials with a constant success probability. Drawing a sample without replacement changes that probability at every draw, and the count of marked items is hypergeometric.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 4 (geometric random variables)."
+  },
+  {
+    "id": "D07",
+    "title": "Hypergeometric random variables",
+    "cluster": "Discrete random variables",
+    "question": "How do we count marked items in a sample drawn without replacement?",
+    "prerequisites": [
+      "D04"
+    ],
+    "summary": "When \\(n\\) items are drawn without replacement from a population of size \\(N\\) containing \\(m\\) marked items, the number of marked items in the sample is hypergeometric. Its mean is \\(nm/N\\), and its variance is the binomial variance multiplied by the finite-population factor \\((N-n)/(N-1)\\).",
+    "intuition": "Each seat in the sample has the same chance \\(m/N\\) of being filled by a marked item, which fixes the mean at \\(nm/N\\). Once the sample contains more than one item, a marked item already drawn cannot appear again, so the count varies less than a with-replacement count.",
+    "definition": [
+      "A population contains \\(N\\) items, of which \\(m\\) are marked and \\(N-m\\) are unmarked, where \\(N\\ge 1\\) and \\(0\\le m\\le N\\) are integers. A sample of \\(n\\) items, with \\(0\\le n\\le N\\), is drawn uniformly without replacement: every subset of size \\(n\\) is equally likely. Let \\(X\\) be the number of marked items in the sample. Then \\(X\\) is hypergeometric with these parameters.",
+      "For an integer \\(k\\), \\[P(X=k)=\\frac{\\binom{m}{k}\\binom{N-m}{n-k}}{\\binom{N}{n}},\\] interpreted as \\(0\\) when a binomial coefficient \\(\\binom{a}{b}\\) has \\(b<0\\) or \\(b>a\\). Equivalently, the only possible values are the integers \\(k\\) with \\(\\max(0,\\,n-(N-m))\\le k\\le\\min(n,m)\\)."
+    ],
+    "theorem": "The hypergeometric probabilities sum to \\(1\\). The mean is \\[E[X]=n\\frac{m}{N}.\\] If \\(N\\ge 2\\), the variance is \\[\\operatorname{Var}(X)=n\\cdot\\frac{m}{N}\\cdot\\frac{N-m}{N}\\cdot\\frac{N-n}{N-1}.\\] The factor \\((N-n)/(N-1)\\) is the finite-population correction. If \\(n\\) stays fixed while \\(N\\to\\infty\\) and \\(m/N\\to p\\in[0,1]\\), then for each fixed \\(k\\) the hypergeometric probability tends to the binomial probability \\(\\binom{n}{k}p^k(1-p)^{n-k}\\), and the variance tends to the binomial variance \\(np(1-p)\\).",
+    "hypotheses": [
+      "\\(N\\), \\(m\\) and \\(n\\) are integers satisfying \\(N\\ge 1\\), \\(0\\le m\\le N\\) and \\(0\\le n\\le N\\), and the sample is a simple random sample: every \\(n\\)-subset has probability \\(1/\\binom{N}{n}\\).",
+      "The displayed variance has denominator \\(N-1\\), so it assumes \\(N\\ge 2\\). If \\(N=1\\), then \\(X\\) is constant and \\(\\operatorname{Var}(X)=0\\).",
+      "The binomial approximation needs \\(N\\) large relative to \\(n\\). The correction \\((N-n)/(N-1)\\) drops materially below \\(1\\) when \\(n\\ge 2\\) and \\(n\\) is a noticeable fraction of \\(N\\), and then the binomial variance overstates the spread."
+    ],
+    "proof": [
+      "Count the \\(n\\)-subsets of an \\(N\\)-set. There are \\(\\binom{N}{n}\\) of them. Partitioning according to the number \\(k\\) of marked items gives \\(\\sum_k\\binom{m}{k}\\binom{N-m}{n-k}=\\binom{N}{n}\\), because every sample has some number of marked items. Dividing by \\(\\binom{N}{n}\\) shows that the pmf sums to \\(1\\).",
+      "If \\(n=0\\) or \\(m=0\\), then \\(X=0\\) and the mean formula holds. Now assume \\(n\\ge 1\\) and \\(m\\ge 1\\). The identities \\(k\\binom{m}{k}=m\\binom{m-1}{k-1}\\) and \\(\\binom{N}{n}=(N/n)\\binom{N-1}{n-1}\\) give \\(E[X]=\\sum_k k\\binom{m}{k}\\binom{N-m}{n-k}/\\binom{N}{n}=(nm/N)\\sum_j\\binom{m-1}{j}\\binom{N-m}{(n-1)-j}/\\binom{N-1}{n-1}\\), where \\(j=k-1\\). The sum is the total mass of the hypergeometric distribution on a population of size \\(N-1\\) with \\(m-1\\) marked items and a sample of size \\(n-1\\), so it equals \\(1\\). Thus \\(E[X]=nm/N\\).",
+      "If \\(n<2\\) or \\(m<2\\), then \\(X(X-1)=0\\). Otherwise \\(k(k-1)\\binom{m}{k}=m(m-1)\\binom{m-2}{k-2}\\) and \\(\\binom{N}{n}=\\bigl(N(N-1)/(n(n-1))\\bigr)\\binom{N-2}{n-2}\\), and the same shift produces \\(E[X(X-1)]=n(n-1)m(m-1)/(N(N-1))\\). This closed form remains valid in the cases where both sides are zero.",
+      "Because \\(x^2=x(x-1)+x\\), the function formula gives \\(E[X^2]=E[X(X-1)]+E[X]\\), and the computational formula for variance becomes \\(\\operatorname{Var}(X)=E[X(X-1)]+E[X]-(E[X])^2=n(n-1)m(m-1)/(N(N-1))+nm/N-n^2m^2/N^2\\). The common denominator \\(N^2(N-1)\\) puts the numerator at \\(n(n-1)m(m-1)N+nmN(N-1)-n^2m^2(N-1)\\). Factoring out \\(nm\\) leaves the bracket \\((n-1)(m-1)N+N(N-1)-nm(N-1)\\).",
+      "Expand the bracket: \\((n-1)(m-1)N=nmN-nN-mN+N\\), \\(N(N-1)=N^2-N\\) and \\(nm(N-1)=nmN-nm\\). Adding and subtracting these gives \\(N^2-nN-mN+nm=(N-n)(N-m)\\). Hence the numerator is \\(nm(N-n)(N-m)\\), and \\(\\operatorname{Var}(X)=nm(N-n)(N-m)/(N^2(N-1))=n(m/N)((N-m)/N)((N-n)/(N-1))\\).",
+      "For the comparison, write \\[P(X=k)=\\binom{n}{k}\\frac{\\prod_{i=0}^{k-1}(m-i)\\ \\prod_{j=0}^{n-k-1}(N-m-j)}{\\prod_{t=0}^{n-1}(N-t)}\\] when the products are in range. Divide \\(k\\) factors of the numerator and denominator to obtain terms \\((m-i)/(N-t)\\), and divide the remaining \\(n-k\\) factors to obtain terms \\((N-m-j)/(N-t)\\). With \\(n\\) and \\(k\\) fixed, \\(N\\to\\infty\\) and \\(m/N\\to p\\), each of the first kind tends to \\(p\\) and each of the second kind tends to \\(1-p\\). Thus \\(P(X=k)\\to\\binom{n}{k}p^k(1-p)^{n-k}\\). Under the same limit the correction \\((N-n)/(N-1)\\to 1\\), so the variance tends to \\(np(1-p)\\). \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "A toolbox holds \\(10\\) bits, of which \\(4\\) are Phillips. A technician takes \\(3\\) bits at random without replacement. Let \\(X\\) be the number of Phillips bits taken. Find the pmf, the mean and the variance, and compare the variance with that of a \\(\\operatorname{Bin}(3,2/5)\\) count.",
+      "steps": [
+        "Here \\(N=10\\), \\(m=4\\) and \\(n=3\\), and \\(\\binom{10}{3}=120\\). Then \\(P(X=0)=\\binom{4}{0}\\binom{6}{3}/120=20/120=1/6\\), \\(P(X=1)=\\binom{4}{1}\\binom{6}{2}/120=60/120=1/2\\), \\(P(X=2)=\\binom{4}{2}\\binom{6}{1}/120=36/120=3/10\\) and \\(P(X=3)=\\binom{4}{3}\\binom{6}{0}/120=4/120=1/30\\). The numerators \\(20+60+36+4\\) sum to \\(120\\).",
+        "The mean formula gives \\(E[X]=3\\cdot 4/10=6/5\\). Directly, \\((1\\cdot 60+2\\cdot 36+3\\cdot 4)/120=144/120=6/5\\).",
+        "The variance formula gives \\(\\operatorname{Var}(X)=3\\cdot(4/10)\\cdot(6/10)\\cdot(7/9)=3\\cdot(6/25)\\cdot(7/9)=14/25\\).",
+        "A binomial count with the same \\(n\\) and the same success probability \\(m/N=2/5\\) has variance \\(3\\cdot(2/5)\\cdot(3/5)=18/25\\). The ratio of the two variances is \\((14/25)/(18/25)=7/9\\), which is exactly the finite-population factor \\((N-n)/(N-1)\\). At the single point \\(k=2\\), the hypergeometric mass \\(3/10\\) and the binomial mass \\(36/125\\) differ by \\(3/10-36/125=3/250\\)."
+      ],
+      "conclusion": "The pmf is \\(1/6\\), \\(1/2\\), \\(3/10\\), \\(1/30\\) on \\(\\{0,1,2,3\\}\\); \\(E[X]=6/5\\); \\(\\operatorname{Var}(X)=14/25\\), against a binomial variance of \\(18/25\\)."
+    },
+    "practice": {
+      "prompt": "A shipment of \\(12\\) phones contains \\(3\\) defective phones. An inspector tests \\(2\\) phones chosen at random without replacement. Let \\(X\\) be the number of defective phones in the test. Find the pmf, \\(E[X]\\) and \\(\\operatorname{Var}(X)\\), and compare the variance with the binomial variance that uses success probability \\(3/12\\).",
+      "hints": [
+        "The denominator is \\(\\binom{12}{2}\\). The mean is \\(n m/N\\).",
+        "Multiply the binomial variance \\(n(m/N)(1-m/N)\\) by \\((N-n)/(N-1)\\)."
+      ],
+      "answer": "\\(\\binom{12}{2}=66\\). Then \\(P(X=0)=\\binom{9}{2}/66=36/66=6/11\\), \\(P(X=1)=\\binom{3}{1}\\binom{9}{1}/66=27/66=9/22\\) and \\(P(X=2)=\\binom{3}{2}/66=3/66=1/22\\). These add as \\(12/22+9/22+1/22=1\\). The mean is \\(2\\cdot 3/12=1/2\\), and directly \\((27+2\\cdot 3)/66=33/66=1/2\\). The variance is \\(2\\cdot(3/12)\\cdot(9/12)\\cdot(10/11)=15/44\\). The matching binomial variance is \\(2\\cdot(1/4)\\cdot(3/4)=3/8\\), and \\((3/8)\\cdot(10/11)=15/44\\)."
+    },
+    "caution": "The legal values of \\(X\\) need not be every integer from \\(0\\) to \\(n\\). If the sample is larger than the number of unmarked items, then \\(X\\) cannot be \\(0\\); the convention \\(\\binom{a}{b}=0\\) for \\(b>a\\) enforces this automatically. The denominator is \\(\\binom{N}{n}\\), the number of unordered samples. Replacing it by \\(N^n\\) would count ordered draws with replacement and would be a different experiment. For \\(N\\ge 2\\) and \\(n=1\\), the factor \\((N-n)/(N-1)\\) equals \\(1\\), so the hypergeometric variance agrees with the binomial variance at \\(p=m/N\\). For \\(2\\le n\\le N\\) the factor is strictly smaller than \\(1\\), and the hypergeometric variance is then smaller than that binomial variance whenever the binomial variance is positive.",
+    "bridge": "The mean \\(nm/N\\) has the same shape as the binomial mean \\(np\\) with \\(p=m/N\\). Both formulas are instances of adding expectations, and that addition does not require the draws to be independent.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 4 (hypergeometric random variables)."
+  },
+  {
+    "id": "D08",
+    "title": "Expectation of a sum",
+    "cluster": "Discrete random variables",
+    "question": "Why is the mean of a sum equal to the sum of the means, even when the summands are dependent?",
+    "prerequisites": [
+      "D02",
+      "D04",
+      "D07"
+    ],
+    "summary": "On a finite or countable sample space, expectation adds over outcomes. The expectation of a sum is therefore the sum of the expectations, with no independence hypothesis. Indicators turn this into a machine for computing means of counts, including the binomial mean, the hypergeometric mean and the expected number of fixed points of a random permutation.",
+    "intuition": "Expectation averages a numerical function over outcomes. Adding two functions and then averaging is the same as averaging each function and adding the averages, whether or not the functions rise and fall together.",
+    "definition": [
+      "Throughout this lesson the sample space \\(S\\) is finite or countable, every outcome \\(\\omega\\) has a probability \\(P(\\{\\omega\\})\\), and a random variable is a real function on \\(S\\). If \\(\\sum_{\\omega\\in S}|X(\\omega)|P(\\{\\omega\\})<\\infty\\), the outcome form of the expectation is \\[E[X]=\\sum_{\\omega\\in S}X(\\omega)\\,P(\\{\\omega\\}).\\] Grouping the outcomes on which \\(X\\) takes the same value recovers \\(E[X]=\\sum_x x\\,P(X=x)\\).",
+      "The indicator of an event \\(A\\subseteq S\\) is the random variable \\(I_A\\) with \\(I_A(\\omega)=1\\) when \\(\\omega\\in A\\) and \\(I_A(\\omega)=0\\) otherwise. Then \\(E[I_A]=P(A)\\), because the outcome sum keeps the term \\(1\\) only on \\(A\\).",
+      "A count is often a sum of indicators. If \\(X=I_1+\\cdots+I_n\\), the theorem below gives \\(E[X]=E[I_1]+\\cdots+E[I_n]\\) as soon as each indicator has a finite expectation, which it always does."
+    ],
+    "theorem": "Let \\(X_1,\\ldots,X_n\\) be random variables on the same finite or countable sample space, each absolutely summable in the outcome form above. Then \\[E[X_1+\\cdots+X_n]=E[X_1]+\\cdots+E[X_n].\\] The summands may have any joint distribution on that sample space. Consequently: if \\(X\\sim\\operatorname{Bin}(n,p)\\) then \\(E[X]=np\\); if \\(X\\) is the number of marked items in a simple random sample of size \\(n\\) from a population of size \\(N\\) with \\(m\\) marked, then \\(E[X]=nm/N\\); and if \\(X\\) is the number of fixed points of a uniform random permutation of \\(n\\) objects, then \\(E[X]=1\\) for every \\(n\\ge 1\\).",
+    "hypotheses": [
+      "All of the random variables are defined on one common finite or countable sample space, and each satisfies \\(\\sum_{\\omega}|X_i(\\omega)|P(\\{\\omega\\})<\\infty\\). Those are the conditions that let the outcome sums be rearranged.",
+      "The summands may be dependent, and they need not have the same distribution. The theorem says nothing about \\(\\operatorname{Var}(X_1+\\cdots+X_n)\\), which does feel the dependence.",
+      "The permutation is uniformly distributed on the \\(n!\\) permutations. The sample in the hypergeometric count is a simple random sample of size \\(n\\)."
+    ],
+    "proof": [
+      "Absolute convergence gives \\(E[X]=\\sum_{\\omega}X(\\omega)P(\\{\\omega\\})\\). For two variables, \\(E[X+Y]=\\sum_{\\omega}(X(\\omega)+Y(\\omega))P(\\{\\omega\\})=\\sum_{\\omega}X(\\omega)P(\\{\\omega\\})+\\sum_{\\omega}Y(\\omega)P(\\{\\omega\\})=E[X]+E[Y]\\). The rearrangement is legitimate because \\(|X|+|Y|\\) is summable whenever \\(X\\) and \\(Y\\) are. Induction on \\(n\\), applying the two-variable case to \\((X_1+\\cdots+X_{n-1})+X_n\\), gives the full sum. At no step were the variables factored into independent pieces.",
+      "For an indicator, \\(E[I_A]=\\sum_{\\omega\\in A}1\\cdot P(\\{\\omega\\})=P(A)\\).",
+      "Binomial mean. Let independent trials succeed with probability \\(p\\), and let \\(I_j\\) be the indicator that trial \\(j\\) succeeds. Then \\(X=I_1+\\cdots+I_n\\) is the number of successes, so \\(X\\sim\\operatorname{Bin}(n,p)\\), and \\(E[I_j]=p\\). Linearity gives \\(E[X]=np\\). Independence was used to know that \\(X\\) is binomial, and it was not used to add the expectations.",
+      "Hypergeometric mean. From \\(N\\) items of which \\(m\\) are marked, draw a simple random sample of size \\(n\\). One model is a uniform random permutation of all \\(N\\) items, keeping the first \\(n\\) positions as the sample. Let \\(I_j\\) be the indicator that position \\(j\\) is marked, for \\(j=1,\\ldots,n\\). For each fixed item there are \\((N-1)!\\) permutations placing it in position \\(j\\), so that position is equally likely to hold any of the \\(N\\) items and \\(E[I_j]=m/N\\). The number of marked items in the sample is \\(X=I_1+\\cdots+I_n\\), and \\(E[X]=nm/N\\). The indicators are dependent whenever \\(n\\ge 2\\) and \\(0<m<N\\): revealing that position \\(1\\) is marked changes the conditional chance that position \\(2\\) is marked from \\(m/N\\) to \\((m-1)/(N-1)\\). Linearity still applies.",
+      "Fixed points. Let \\(\\pi\\) be uniformly distributed on the \\(n!\\) permutations of \\(\\{1,\\ldots,n\\}\\), and let \\(X\\) be the number of indices with \\(\\pi(j)=j\\). Let \\(I_j\\) be the indicator of \\(\\{\\pi(j)=j\\}\\). The permutations with \\(\\pi(j)\\) fixed are counted by arranging the other \\(n-1\\) objects, so \\(P(I_j=1)=(n-1)!/n!=1/n\\). Therefore \\(E[X]=\\sum_{j=1}^n 1/n=1\\). For \\(n\\ge 2\\) the indicators are dependent: \\(P(I_1=I_2=1)=(n-2)!/n!=1/(n(n-1))\\), which differs from \\(P(I_1=1)P(I_2=1)=1/n^2\\). The expectations add regardless. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "Four musicians are assigned uniformly at random to four named chairs, one musician per chair. Let \\(X\\) be the number who receive the chair with their own name. Compute \\(E[X]\\) from the distribution of \\(X\\), and again with indicators. Also compare \\(P(I_1=I_2=1)\\) with \\(P(I_1=1)P(I_2=1)\\).",
+      "steps": [
+        "There are \\(4!=24\\) equally likely assignments. Exactly one assignment fixes all four chairs. None fixes exactly three, because the remaining chair would then match as well. Exactly \\(\\binom{4}{2}=6\\) fix two chairs: the other two musicians must swap. Exactly \\(4\\cdot 2=8\\) fix one chair. There are \\(4\\) choices for the musician who sits correctly. Label the other three \\(A,B,C\\) in the order of their own chairs. Of the six seatings, \\(ABC\\) fixes all three, \\(ACB\\) fixes \\(A\\), \\(BAC\\) fixes \\(C\\) and \\(CBA\\) fixes \\(B\\), while \\(BCA\\) and \\(CAB\\) fix none. Those two derangements are the only ones. The remaining \\(24-1-6-8=9\\) assignments fix none.",
+        "Therefore \\(E[X]=(0\\cdot 9+1\\cdot 8+2\\cdot 6+4\\cdot 1)/24=(8+12+4)/24=24/24=1\\).",
+        "The indicator \\(I_j\\) that chair \\(j\\) is filled correctly has \\(P(I_j=1)=3!/4!=1/4\\). Linearity gives \\(E[X]=4\\cdot(1/4)=1\\), in agreement with the enumeration.",
+        "Dependence: \\(P(I_1=I_2=1)=2!/4!=1/12\\), while \\(P(I_1=1)P(I_2=1)=1/16\\). The two probabilities differ, and \\(E[I_1+I_2]=1/2\\) still."
+      ],
+      "conclusion": "Both methods give \\(E[X]=1\\). The seat indicators are dependent, since \\(1/12\\ne 1/16\\), and their expectations add anyway."
+    },
+    "practice": {
+      "prompt": "Seven distinct pages are stacked uniformly at random. Let \\(X\\) be the number of pages left in their original position. Find \\(E[X]\\) and the probability that the first two pages are both unmoved. Separately, a drawer holds \\(9\\) cables, of which \\(4\\) are long. Five cables are taken as a simple random sample. Use indicators to find the expected number of long cables in the sample.",
+      "hints": [
+        "The indicator that page \\(j\\) stays put has probability \\(1/7\\). There are \\(7\\) pages, and linearity applies even though the indicators are dependent.",
+        "In a random order of the drawer, each of the five sampled positions is long with probability \\(4/9\\). Add those five expectations. For the two pages, count permutations that fix both."
+      ],
+      "answer": "Each page is fixed with probability \\(1/7\\), so \\(E[X]=7\\cdot(1/7)=1\\). The probability that the first two are both fixed is \\(5!/7!=1/(7\\cdot 6)=1/42\\). This is different from \\((1/7)^2=1/49\\), so the indicators are dependent, while \\(E[I_1+I_2]=2/7\\) still holds. For the cables, the indicator of each of the five sampled positions has expectation \\(4/9\\), and the expected number of long cables is \\(5\\cdot(4/9)=20/9\\)."
+    },
+    "caution": "Linearity of expectation applies to dependent indicators, and that is why the binomial mean \\(np\\) and the hypergeometric mean \\(nm/N\\) share a proof. Variance does not add in the same automatic way. For independent Bernoulli trials the indicators are uncorrelated and the variance is \\(np(1-p)\\); for sampling without replacement they are negatively dependent and the variance carries the extra factor \\((N-n)/(N-1)\\). Absolute convergence is the other boundary: on a countable space the outcome sum must be absolutely convergent before its terms can be split.",
+    "bridge": "Indicator sums compute means quickly. Variances of the same sums need the pairwise probabilities, which is where the dependence hidden from the mean becomes visible.",
+    "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 7 (expectation of sums of random variables)."
+  }
+]
