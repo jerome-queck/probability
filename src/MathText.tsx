@@ -1,8 +1,10 @@
 import katex from 'katex';
 import { Fragment } from 'react';
 import 'katex/dist/katex.min.css';
+import { keepShortTail } from './mathBreaks';
 
-const pattern = /\\\[([\s\S]*?)\\\]|\\\(([\s\S]*?)\\\)/g;
+// Punctuation right after a formula is kept with it, so a period never wraps alone.
+const pattern = /\\\[([\s\S]*?)\\\]([.,;:]?)|\\\(([\s\S]*?)\\\)([.,;:]?)/g;
 export function MathText({ text }: { text: string }) {
   const parts: React.ReactNode[] = [];
   let from = 0;
@@ -13,16 +15,16 @@ export function MathText({ text }: { text: string }) {
         <Fragment key={`t${from}`}>{text.slice(from, match.index)}</Fragment>,
       );
     const displayMode = match[1] !== undefined;
-    const latex = match[1] ?? match[2];
+    const latex = match[1] ?? match[3];
+    const trailing = (displayMode ? match[2] : match[4]) ?? '';
     let html: string;
     try {
-      // Display formulas are typeset in display style but as breakable inline math, so a
-      // long chain of equalities wraps after a relation on a phone instead of being cut
-      // off; on a wide screen it still sits on one centred line.
+      // Display formulas keep display mode (MathML display="block"); CSS lets a long chain
+      // of equalities wrap after a relation on a phone instead of being cut off.
       html = katex.renderToString(
-        displayMode ? `\\displaystyle ${latex}` : latex,
+        `${keepShortTail(latex)}${trailing ? `\\text{${trailing}}` : ''}`,
         {
-          displayMode: false,
+          displayMode,
           throwOnError: true,
           trust: false,
           output: 'htmlAndMathml',
@@ -34,7 +36,14 @@ export function MathText({ text }: { text: string }) {
     parts.push(
       <span
         key={`m${match.index}`}
-        className={displayMode ? 'math-block' : 'math-inline'}
+        className={
+          displayMode
+            ? 'math-block'
+            : // Short formulas never break; long ones may break after a relation, as TeX does.
+              latex.length <= 16
+              ? 'math-inline math-nowrap'
+              : 'math-inline'
+        }
         // biome-ignore lint/security/noDangerouslySetInnerHtml: KaTeX runs with trust disabled; error text is escaped.
         dangerouslySetInnerHTML={{ __html: html }}
       />,

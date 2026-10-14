@@ -10,6 +10,7 @@
   {"feature": "lessons", "id": "sidebar-collapsed", "url": "/lessons/f01-sample-spaces-and-events", "viewports": ["desktop"], "actions": [{"click": {"selector": ".chapter-heading button"}}], "expectHidden": ["#chapter-0"]},
   {"feature": "lessons", "id": "search-results", "url": "/", "viewports": ["desktop"], "actions": [{"type": {"selector": "#lesson-search", "text": "F02"}}], "expect": ["1 matching lesson"]},
   {"feature": "lessons", "id": "search-empty", "url": "/", "viewports": ["desktop"], "actions": [{"type": {"selector": "#lesson-search", "text": "zebra"}}], "expect": ["No lessons found"]},
+  {"feature": "lessons", "id": "search-chapter-collapsed", "url": "/", "viewports": ["desktop"], "actions": [{"type": {"selector": "#lesson-search", "text": "F0"}}, {"click": {"selector": ".chapter-heading button"}}], "expectHidden": ["#chapter-0"]},
   {"feature": "practice", "id": "load", "url": "/practice", "expect": ["One problem per lesson", "F01 · Sample spaces and events"]},
   {"feature": "practice", "id": "answer-shown", "url": "/practice", "actions": [{"click": {"role": "button", "name": "Show answer"}}], "expect": ["Hide answer"]},
   {"feature": "reference", "id": "load", "url": "/reference", "expect": ["Every result on one page", "Foundations"]},
@@ -20,10 +21,13 @@
   {"feature": "routing", "id": "mobile-drawer-closed", "url": "/", "viewports": ["mobile"], "actions": [{"click": {"role": "button", "name": "Open lessons"}}, {"press": "Escape"}]},
   {"feature": "labs", "id": "birthday-default", "url": "/lessons/c04-counting-in-action-birthdays-and-matchings#lab", "expect": ["P(at least one shared birthday)"]},
   {"feature": "labs", "id": "birthday-moved", "url": "/lessons/c04-counting-in-action-birthdays-and-matchings#lab", "actions": [{"range": {"name": "people", "value": 40}}], "expect": ["P(at least one shared birthday)"]},
+  {"feature": "progress", "id": "studied", "url": "/lessons/f01-sample-spaces-and-events", "actions": [{"click": {"role": "button", "name": "Mark this lesson as studied"}}], "expect": ["✓ Studied"]},
+  {"feature": "progress", "id": "self-check", "url": "/lessons/f03-equally-likely-outcomes", "actions": [{"click": {"role": "button", "name": "Show answer"}}, {"click": {"role": "button", "name": "✓ I got it"}}], "expect": ["Saved. Nice work."]},
+  {"feature": "progress", "id": "home-continue", "url": "/lessons/f01-sample-spaces-and-events", "actions": [{"click": {"role": "button", "name": "Mark this lesson as studied"}}, {"click": {"role": "button", "name": "Learn"}}], "expectPath": "/", "expect": ["Continue with F02", "1 of 3 studied"]},
   {"feature": "labs", "id": "bayes-default", "url": "/lessons/k03-bayes-rule#lab", "expect": ["P(D | +)"]},
   {"feature": "labs", "id": "bayes-moved", "url": "/lessons/k03-bayes-rule#lab", "actions": [{"range": {"name": "prior", "value": 0.2}}], "expect": ["P(D | +)"]},
-  {"feature": "labs", "id": "binomial-poisson-default", "url": "/lessons/d05-poisson-random-variables#lab", "expect": ["λ = np"]},
-  {"feature": "labs", "id": "binomial-poisson-moved", "url": "/lessons/d05-poisson-random-variables#lab", "actions": [{"range": {"name": "trials", "value": 200}}], "expect": ["λ = np"]},
+  {"feature": "labs", "id": "binomial-poisson-default", "url": "/lessons/d05-poisson-random-variables#lab", "expect": ["p = λ/n = 0.0600"]},
+  {"feature": "labs", "id": "binomial-poisson-moved", "url": "/lessons/d05-poisson-random-variables#lab", "actions": [{"range": {"name": "trials", "value": 200}}], "expect": ["p = λ/n = 0.0150"]},
   {"feature": "labs", "id": "normal-approximation-default", "url": "/lessons/r05-the-normal-approximation-to-the-binomial#lab", "expect": ["P(X ="]},
   {"feature": "labs", "id": "normal-approximation-moved", "url": "/lessons/r05-the-normal-approximation-to-the-binomial#lab", "actions": [{"range": {"name": "trials", "value": 100}}], "expect": ["P(X ="]}
 ]

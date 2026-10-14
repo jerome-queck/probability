@@ -49,11 +49,23 @@ evidence in the PR.
 
 Agents may use any pstack skill when `poteto-mode` calls for it or when they judge it is
 needed (for example `interrogate` for review, `tdd`, `create-verification-skill`,
-`maintain-verification-skill`, `correct`, `show-me-your-work`). Model and effort per role come from
-`setup-pstack`: every role runs on `grok-4.7` with a per-role effort, written to
-`.grok/rules/pstack-models.md` (Grok Build loads `.grok/rules/*.md` in every session in this
-repo; the same file is installed at `~/.grok/rules/pstack-models.md` and, for Cursor,
-`~/.cursor/rules/pstack-models.mdc`). Run a role as `grok -m grok-4.7 --effort <effort>`.
+`maintain-verification-skill`, `correct`, `show-me-your-work`). Agents run on the
+Cursor CLI (`cursor-agent`, also `agent`) with pstack installed as its Cursor plugin. Models are
+`grok-4.7` tiers only (never Claude, GPT, Gemini or Composer); the tier is the effort.
+`setup-pstack` writes `~/.cursor/rules/pstack-models.mdc`: pstack's
+Task subagents accept only `grok-4.7-high`, so every pstack role uses it. The review workflow
+picks its tier per role and runs each role as a fresh headless session with
+`scripts/agent-run.sh <role> <prompt-file> <out-prefix>`, always in its own git worktree:
+
+| Role | Tier | What it does |
+|---|---|---|
+| verifier | `grok-4.7-high` | independent verifier using `verify-probability`; looks at the screenshots |
+| review | `grok-4.7-high` | `interrogate` lead; its two reviewers run `grok-4.7-high` |
+| math | `grok-4.7-high` | independent math check of lesson content against the sources |
+| chore | `grok-4.7-medium` | mechanical work: merges, baselines, PR bodies |
+
+Before each batch of sessions, check the plan usage (`/usage` in `cursor-agent`) and stop if
+on-demand spend is above $0.
 
 ## Public-content rule (hard)
 
@@ -110,7 +122,7 @@ OK. Fixing a wrong gate is its own PR.
 | Every feature state looks right at desktop and mobile widths; no unintended visual change | `scripts/control-probability.mjs` (rendering checks + pixel comparison with `.cursor/skills/verify-probability/baselines`) |
 | Every feature lists visual states that are driven and baselined | `scripts/check-drift.mjs` |
 | Same check locally and in CI | `.github/workflows/check.yml` runs `npm run check` |
-| Evidence and verdicts are in the PR | `.github/workflows/evidence.yml` + `.github/pull_request_template.md` |
+| Evidence and verdicts are in the PR | `.github/workflows/evidence.yml` (pull_request_target: the gate script comes from the base branch, never the PR head) + `.github/pull_request_template.md` |
 | Merge only on green, up-to-date heads | GitHub ruleset `main-gates` (required checks `check` and `evidence`, strict) |
 | Math reviewed independently before merge | `.github/workflows/evidence.yml` (requires a clean math-review line for content PRs) |
 
@@ -124,13 +136,23 @@ End each run with four short parts:
 - **Couldn’t do:** anything skipped or blocked, and why.
 
 Decision trails go in `.audit/<task>.tsv` (git-ignored; pstack `show-me-your-work` format)
-with these columns: `ts, phase, decision, why, evidence, result, skills, model, effort` —
+with these columns: `ts, phase, decision, why, evidence, result, skills, runner, model, session` —
 `skills` names every pstack or repo skill invoked for that step (for example
-`poteto-mode,verify-probability`), and `model`/`effort` record what ran it (`grok-4.7`, effort
-from `.grok/rules/pstack-models.md`). The PR’s “Skills used” line summarises the same. One-way-door decisions get a short record in `docs/adr/`.
+`poteto-mode,verify-probability`), `runner` is `cursor-agent`, `model` is the tier slug that ran
+it (for example `grok-4.7-high`; the tier is the effort) and `session` is the session id that
+`scripts/agent-run.sh` prints. The PR’s “Skills used” line summarises the same. One-way-door decisions get a short record in `docs/adr/`.
 
 ## Parallel agents
 
 Each worker uses its own branch or worktree and its own `--data-dir`; the driver picks a free
 port per instance, so instances run side by side. Lessons in different `part*.json` files are
 separate seams; `order.json` is shared, so edit it in one PR at a time.
+
+## Known gate gaps
+
+- The `main-gates` ruleset requires the bare status contexts `check` and `evidence` with no required
+  review, so a PR that adds a workflow with a job of the same name could satisfy them. Fixing it
+  needs a repo setting (for example a required review from Jerome, or requiring the workflow by
+  path through a ruleset `workflows` rule). Jerome decides.
+- The evidence gate checks the linked run's workflow name, path, head SHA, success and a non-empty
+  `verify-evidence` artifact, not that the PR's `check.yml` still runs `npm run check`.
