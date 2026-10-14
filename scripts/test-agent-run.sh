@@ -15,7 +15,7 @@ run() { # name, expected exit (0 or nonzero), grep pattern expected on stdout
     bash "$here/agent-run.sh" verifier "$t/p" "$t/$1.out" > "$t/$1.stdout" 2> /dev/null
   local code=$?
   if { [ "$2" = 0 ] && [ $code -ne 0 ]; } || { [ "$2" != 0 ] && [ $code -eq 0 ]; } ||
-    ! grep -qE "$3" "$t/$1.stdout"; then
+    { [ -n "$3" ] && ! grep -qE "$3" "$t/$1.stdout"; }; then
     echo "FAIL $1 (exit $code): $(cat "$t/$1.stdout")"; fails=$((fails + 1))
   else echo "ok   $1"; fi
 }
@@ -37,7 +37,12 @@ fake earlyverdict "if [ \$resume = 1 ]; then $done_ok; else $init; echo '{\"type
 run earlyverdict 0 'NOT VERIFIED'
 fake halfline "if [ \$resume = 1 ]; then $done_ok; else $init; printf '{\"type\":\"assis'; exit 1; fi"
 run halfline 0 'VERDICT: VERIFIED'
-fake orphan "$init; (sleep 300; echo late) & sleep 60"
+fake orphan "$init; (sleep 301; echo late) & echo \$! > $t/orphan.pid; setsid sleep 302 & echo \$! > $t/session.pid; sleep 60"
 run orphan 1 'NO VERDICT'
-pgrep -f "sleep 300" > /dev/null && { echo "FAIL orphan child survived"; fails=$((fails + 1)); pkill -f "sleep 300"; }
+for f in orphan session; do
+  p=$(cat "$t/$f.pid" 2> /dev/null) || continue
+  if kill -0 "$p" 2> /dev/null; then echo "FAIL $f child $p survived"; fails=$((fails + 1)); kill -KILL "$p"; fi
+done
+fake tornverdict "if [ \$resume = 1 ]; then $done_ok; else $init; printf '{\"type\":\"result\",\"result\":\"REVIEW: CHANGES NEEDED'; exit 1; fi"
+run tornverdict 1 ''
 exit $fails

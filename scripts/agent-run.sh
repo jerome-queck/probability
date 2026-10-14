@@ -29,12 +29,27 @@ stall=${AGENT_STALL_SECS:-900}
 tries=${AGENT_RESUMES:-3}
 poll=${AGENT_POLL_SECS:-15}
 pid=""
-# Kill an attempt and everything it started (it runs in its own process group).
+# All descendants of a pid, found through /proc, so children that start their own session
+# (the CLI runs shell tools detached) are stopped too.
+descendants() {
+  local kids k
+  kids=$(grep -l "^PPid:[[:space:]]*$1\$" /proc/[0-9]*/status 2> /dev/null | cut -d/ -f3 || true)
+  for k in $kids; do echo "$k"; descendants "$k"; done
+}
+# Stop an attempt and everything it started: TERM, wait up to 10s, then KILL.
 stop() {
   [ -n "$pid" ] || return 0
+  local all p
+  all="$pid $(descendants "$pid" | tr '\n' ' ')"
+  for p in $all; do kill -TERM "$p" 2> /dev/null || true; done
   kill -TERM -- "-$pid" 2> /dev/null || true
-  for _ in 1 2 3 4 5 6 7 8 9 10; do kill -0 -- "-$pid" 2> /dev/null || return 0; sleep 1; done
-  kill -KILL -- "-$pid" 2> /dev/null || true
+  for _ in 1 2 3 4 5 6 7 8 9 10; do
+    local alive=0
+    for p in $all; do kill -0 "$p" 2> /dev/null && alive=1; done
+    [ "$alive" = 1 ] || return 0
+    sleep 1
+  done
+  for p in $all; do kill -KILL "$p" 2> /dev/null || true; done
 }
 trap 'stop; exit 130' INT TERM
 trap stop EXIT
@@ -71,7 +86,13 @@ attempt() {
     if tail -n 1 "$part" | node -e 'JSON.parse(require("fs").readFileSync(0, "utf8"))' 2> /dev/null; then
       echo >> "$part"
     else
-      echo "agent-run: dropped a half-written last line from $part" >> "$out.err"
+      echo "agent-run: dropped a half-written last line from $part:" >> "$out.err"
+      tail -n 1 "$part" >> "$out.err"
+      echo >> "$out.err"
+      if tail -n 1 "$part" | grep -qE '(VERDICT|REVIEW|MATH): |"model' ; then
+        echo "agent-run: the dropped line carried a verdict or a model id; failing the run" >&2
+        exit 1
+      fi
       sed -i '$d' "$part"
     fi
   fi
@@ -90,9 +111,15 @@ done
 node -e '
 const lines = require("fs").readFileSync(process.argv[1], "utf8").split("\n").flatMap((l) => { try { return [JSON.parse(l)]; } catch { return []; } });
 const session = lines.find((l) => l.session_id)?.session_id;
-const models = [...new Set(lines.filter((l) => l.type === "system" && l.model).map((l) => l.model))];
-const verdicts = lines.filter((l) => l.type === "result").flatMap((l) => (l.result ?? "").match(/(VERDICT|REVIEW|MATH): [A-Z ]+/g) ?? []);
-console.log(`session=${session} models="${models.join(", ")}" ${verdicts.join(" ") || "NO VERDICT"}`);
+const models = new Set();
+const walk = (v, k) => {
+  if (typeof v === "string") { if (/^model(name|id|slug)?$/i.test(k)) models.add(v); }
+  else if (Array.isArray(v)) v.forEach((x) => walk(x, k));
+  else if (v && typeof v === "object") for (const [kk, vv] of Object.entries(v)) if (!(/^model/i.test(kk) && vv && typeof vv === "object" && typeof vv.description === "string")) walk(vv, kk);
+};
+lines.forEach((l) => walk(l, ""));
+const verdicts = lines.filter((l) => l.type === "result").flatMap((l) => (l.result ?? "").match(/^(VERDICT|REVIEW|MATH): [A-Z ]+$/gm) ?? []);
+console.log(`session=${session} models="${[...models].join(", ")}" ${verdicts.join(" ") || "NO VERDICT"}`);
 ' "$out.jsonl"
 # Fail the run if any model other than grok-4.7 appears anywhere in the transcript (including Task subagents).
 node "$(dirname "$0")/check-models.mjs" "$out.jsonl"
