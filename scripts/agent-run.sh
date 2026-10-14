@@ -63,7 +63,7 @@ stop() {
   remember
   local all p st
   all=$(printf '%s\n%s\n' "$(ident "$pid")" "$seen" | sort -u | sed '/^$/d')
-  while read -r p st; do [ -n "$p" ] && alive_same "$p" "$st" && kill -TERM "$p" 2> /dev/null; done <<< "$all"
+  while read -r p st; do [ -n "$p" ] && alive_same "$p" "$st" && kill -TERM "$p" 2> /dev/null || true; done <<< "$all"
   kill -TERM -- "-$pid" 2> /dev/null || true
   for _ in 1 2 3 4 5 6 7 8 9 10; do
     local alive=0
@@ -71,7 +71,7 @@ stop() {
     [ "$alive" = 1 ] || break
     sleep 1
   done
-  while read -r p st; do [ -n "$p" ] && alive_same "$p" "$st" && kill -KILL "$p" 2> /dev/null; done <<< "$all"
+  while read -r p st; do [ -n "$p" ] && alive_same "$p" "$st" && kill -KILL "$p" 2> /dev/null || true; done <<< "$all"
   kill -KILL -- "-$pid" 2> /dev/null || true
   seen=""
   return 0
@@ -118,7 +118,7 @@ attempt() {
       echo "agent-run: dropped a half-written last line from $part:" >> "$out.err"
       tail -n 1 "$part" >> "$out.err"
       echo >> "$out.err"
-      if tail -n 1 "$part" | grep -qE '(^|\\n|"result":")(VERDICT|REVIEW|MATH): |"model' ; then
+      if tail -n 1 "$part" | grep -qE '(^|\\n|"result":")(VERDICT|REVIEW|MATH): |"model(Name|Id|Slug)?"[[:space:]]*:' ; then
         echo "agent-run: the dropped line carried a verdict or a model id; failing the run" >&2
         exit 1
       fi

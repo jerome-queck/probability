@@ -36,7 +36,7 @@ npm run check
 ```
 
 It runs, in order: `check:forbidden`, `check:content`, `check:drift`, `check:rules`,
-`typecheck`, `lint`, `format:check`, `test`, `build`, `smoke`. Run any piece alone with
+`typecheck`, `lint`, `format:check`, `test:agent-run`, `test`, `build`, `smoke`. Run any piece alone with
 `npm run <name>`.
 
 ## Verify like a user
