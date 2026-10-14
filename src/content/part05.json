@@ -54,7 +54,8 @@
     "question": "How do we compute an average and a spread from a density?",
     "prerequisites": [
       "R01",
-      "D03"
+      "D03",
+      "D08"
     ],
     "summary": "The expectation of a continuous random variable is the integral of \\(x\\) against its density, and the expectation of \\(g(X)\\) is the integral of \\(g\\) against the same density. Variance is the expected square deviation from the mean, and it equals \\(E[X^2]-(E[X])^2\\).",
     "intuition": "The density marks where the probability sits, and the expectation is the balance point of that mass. Variance is the average squared distance from the balance point.",
@@ -76,7 +77,7 @@
       "The integrand is nonnegative, so expectation may pass inside the integral (Tonelli's theorem): \\(E[Y]=\\int_0^{\\infty} E[1_{\\{Y>y\\}}]\\,dy=\\int_0^{\\infty} P(Y>y)\\,dy\\). This is the tail formula. Both sides may equal \\(+\\infty\\).",
       "Now let \\(g\\ge 0\\) and set \\(Y=g(X)\\), where \\(X\\) has density \\(f\\). Then \\(P(g(X)>y)=\\int_{\\{x:g(x)>y\\}} f(x)\\,dx\\), so \\[E[g(X)]=\\int_0^{\\infty}\\int_{\\{x:g(x)>y\\}} f(x)\\,dx\\,dy.\\] The region of integration is \\(x\\in\\mathbb{R}\\) and \\(0<y<g(x)\\). Swapping the order, again because the integrand is nonnegative, gives \\(\\int_{-\\infty}^{\\infty} f(x)\\Bigl(\\int_0^{g(x)} 1\\,dy\\Bigr) dx=\\int_{-\\infty}^{\\infty} g(x) f(x)\\,dx\\).",
       "If \\(g\\) changes sign and \\(\\int |g| f<\\infty\\), write \\(g=g^+-g^-\\) with \\(g^+=\\max(g,0)\\) and \\(g^-=\\max(-g,0)\\). Both parts are nonnegative and integrable against \\(f\\). Apply the previous step to each and subtract.",
-      "Linearity for one random variable is the same integral: \\(E[aX+b]=\\int (ax+b) f(x)\\,dx=a E[X]+b\\), when \\(E[|X|]<\\infty\\). Likewise \\(E[g(X)+h(X)]=E[g(X)]+E[h(X)]\\) when both expectations on the right exist. For two random variables on one experiment, \\(E[X+Y]=E[X]+E[Y]\\) holds whenever \\(E[|X|]\\) and \\(E[|Y|]\\) are finite, without independence. It is the additivity of expectation; when a joint density exists it follows by splitting \\(\\iint(x+y)f(x,y)\\,dx\\,dy\\) into two integrals, as in the chapter on properties of expectation.",
+      "Linearity for one random variable is the same integral: \\(E[aX+b]=\\int (ax+b) f(x)\\,dx=a E[X]+b\\), when \\(E[|X|]<\\infty\\). Likewise \\(E[g(X)+h(X)]=E[g(X)]+E[h(X)]\\) when both expectations on the right exist. For two random variables on one experiment, \\(E[X+Y]=E[X]+E[Y]\\) holds whenever \\(E[|X|]\\) and \\(E[|Y|]\\) are finite, without independence. This additivity is a general property of expectation. D08 proves it for discrete variables; for continuous pairs it is stated here and proved in the chapter on properties of expectation (with a joint density, by splitting \\(\\iint(x+y)f(x,y)\\,dx\\,dy\\) into two integrals).",
       "Let \\(\\mu=E[X]\\) and assume \\(E[X^2]<\\infty\\). Expand the square and use linearity: \\(E[(X-\\mu)^2]=E[X^2-2\\mu X+\\mu^2]=E[X^2]-2\\mu E[X]+\\mu^2=E[X^2]-\\mu^2\\). For the scaling, \\(aX+b-E[aX+b]=a(X-\\mu)\\), so \\(\\operatorname{Var}(aX+b)=E[a^2(X-\\mu)^2]=a^2\\operatorname{Var}(X)\\). \\(\\square\\)"
     ],
     "example": {
@@ -210,7 +211,8 @@
     "question": "When can a normal curve stand in for a binomial count, and when is a Poisson approximation the better tool?",
     "prerequisites": [
       "R04",
-      "D04"
+      "D04",
+      "D05"
     ],
     "summary": "The De Moivre-Laplace theorem says that a binomial count, after centring at \\(np\\) and scaling by \\(\\sqrt{np(1-p)}\\), converges to the standard normal. For finite \\(n\\) one uses a continuity correction, and the practical requirement is \\(np(1-p)\\ge 10\\). A Poisson approximation is the one to use when \\(p\\) is small and that product is not large.",
     "intuition": "A binomial histogram is a stack of bars of width 1. When many bars form a nearly symmetric mound, the normal curve tracks their tops, and each bar's area is matched by the normal probability on an interval of length 1 centred at the integer.",
@@ -365,7 +367,9 @@
     "cluster": "Continuous random variables",
     "question": "If the density of \\(X\\) is known, how do we find the density of \\(Y=g(X)\\)?",
     "prerequisites": [
-      "R04"
+      "R04",
+      "R03",
+      "R06"
     ],
     "summary": "The distribution function of \\(Y=g(X)\\) is a probability statement about \\(X\\), and the density of \\(Y\\) is its derivative. When \\(g\\) is strictly monotone and differentiable, that derivative collapses to a single formula involving the inverse of \\(g\\). Squaring, affine maps, and the logarithm each illustrate the method.",
     "intuition": "Probability is pushed forward by \\(g\\), and the factor \\(|h'(y)|=1/|g'(h(y))|\\) rescales the density so the area is preserved. Where \\(g\\) is steep, a stretch of \\(y\\)-values comes from a short stretch of \\(x\\)-values, so the probability is spread thin and the density of \\(Y\\) is low. Where \\(g\\) is flat, the same stretch of \\(y\\) collects a long stretch of \\(x\\), and the density of \\(Y\\) is high.",
