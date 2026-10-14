@@ -15,3 +15,11 @@ or the lesson chapters disagree.
 | Reference view | [reference.md](reference.md) |
 | Routing and navigation | [routing.md](routing.md) |
 | Study progress and self-check | [progress.md](progress.md) |
+
+## Review tooling (not a site feature)
+
+Verifier, review and math sessions run through `scripts/agent-run.sh` (see AGENTS.md). For anyone
+driving this map from such a session: screenshots over 2000px per side that appear in the worktree
+during a run are downscaled in place by `scripts/shrink-images.py`, so read images from
+`artifacts/` after they are written, and never the full-page originals from elsewhere. Covered by
+`npm run test:agent-run` (`bigshot`, `taskwait`, `nonretriable`).

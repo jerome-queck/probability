@@ -62,4 +62,23 @@ AGENT_MAX_LOAD=0 AGENT_GATE_POLL=1 AGENT_GATE_MAX_WAIT=2 AGENT_BIN="$t/normal" \
   bash "$here/agent-run.sh" verifier "$t/p" "$t/gate.out" > /dev/null 2>&1
 code=$?
 if [ $code -eq 3 ] && [ ! -s "$t/gate.out.jsonl" ]; then echo "ok   gate"; else echo "FAIL gate (exit $code)"; fails=$((fails + 1)); fi
+# Receipt agent-run-stability-2026-10-15: each of these fails on 9252f57 and passes after the fix.
+# A lead silent while a Task subagent call is open is not a stall (resume would fail here).
+task_s='echo "{\"type\":\"tool_call\",\"subtype\":\"started\",\"call_id\":\"c1\",\"tool_call\":{\"taskToolCall\":{}}}"'
+task_c='echo "{\"type\":\"tool_call\",\"subtype\":\"completed\",\"call_id\":\"c1\",\"tool_call\":{\"taskToolCall\":{}}}"'
+fake taskwait "if [ \$resume = 1 ]; then exit 1; fi; $init; $task_s; sleep 6; $task_c; $done_ok"
+run taskwait 0 'VERDICT: VERIFIED'
+# After a NonRetriableError the next attempt is a fresh session, never --resume.
+fake nonretriable "if [ \$resume = 1 ]; then exit 1; fi; if [ -e $t/nr.once ]; then $done_ok; else touch $t/nr.once; $init; echo 'NonRetriableError: Invalid Image' >&2; exit 1; fi"
+run nonretriable 0 'VERDICT: VERIFIED'
+# A screenshot over 2000px written during the attempt is downscaled before the run ends.
+if python3 -c 'import PIL' 2> /dev/null; then
+  mkdir -p "$t/wt/artifacts"
+  fake bigshot "$init; python3 -c 'from PIL import Image; Image.new(\"RGB\", (3000, 40)).save(\"artifacts/big.png\")'; sleep 2; $done_ok"
+  (cd "$t/wt" && run bigshot 0 'VERDICT: VERIFIED')
+  w=$(python3 -c "from PIL import Image; print(max(Image.open('$t/wt/artifacts/big.png').size))")
+  if [ "$w" -le 2000 ]; then echo "ok   bigshot-size"; else echo "FAIL bigshot-size ($w px)"; fails=$((fails + 1)); fi
+else
+  echo "skip bigshot (Pillow not installed)"
+fi
 exit $fails

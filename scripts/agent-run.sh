@@ -9,9 +9,15 @@
 #   chore     grok-4.7-medium mechanical work (merges, baselines, bodies)
 # Writes <out-prefix>.jsonl (stream-json transcript) and prints the session id, every model seen,
 # and every verdict line from every attempt in order (a resume never hides an earlier verdict).
-# Stall: no transcript write for AGENT_STALL_SECS (default 900) kills the attempt's whole process
+# Stall: no transcript write for AGENT_STALL_SECS (default 1800; time while a Task subagent call is
+# open does not count, because the lead is silent while it waits) kills the attempt's whole process
 # group and every descendant recorded while it ran (also on a drop, where detached children have
 # already been reparented). A run with no result event is resumed with --resume up to AGENT_RESUMES (default 3) times.
+# A NonRetriableError (e.g. an unreadable image) cannot be resumed, so the next attempt is a fresh
+# session with the original prompt instead of --resume.
+# Screenshots: while an attempt runs, shrink-images.py rewrites any new image over AGENT_IMAGE_MAX
+# (default 2000) px per side under the worktree and AGENT_IMAGE_DIRS (receipt
+# agent-run-stability-2026-10-15).
 # Limit: a double-forked child that leaves the tree before a 0.2s/poll sample is not tracked
 # (no pid namespace here).
 # Exits non-zero if no attempt produced a result, or if check-models.mjs finds a disallowed model.
@@ -28,7 +34,7 @@ case $model in
   *) echo "refusing model outside grok-4.7-low/medium/high: $model" >&2; exit 2 ;;
 esac
 agent=${AGENT_BIN:-cursor-agent}
-stall=${AGENT_STALL_SECS:-900}
+stall=${AGENT_STALL_SECS:-1800}
 tries=${AGENT_RESUMES:-3}
 poll=${AGENT_POLL_SECS:-15}
 pid=""
@@ -78,6 +84,14 @@ stop() {
 }
 trap 'stop; exit 130' INT TERM
 trap stop EXIT
+# 0 if a Task subagent call is open (started without completed) in the transcript.
+task_open() { node -e '
+let open = 0;
+for (const l of require("fs").readFileSync(process.argv[1], "utf8").split("\n")) {
+  let e; try { e = JSON.parse(l); } catch { continue; }
+  if (e.type === "tool_call" && e.tool_call && "taskToolCall" in e.tool_call) open += e.subtype === "started" ? 1 : e.subtype === "completed" ? -1 : 0;
+}
+process.exit(open > 0 ? 0 : 1);' "$1"; }
 has_result() { node -e '
 const ok = require("fs").readFileSync(process.argv[1], "utf8").split("\n").some((l) => {
   try { return JSON.parse(l).type === "result"; } catch { return false; } });
@@ -114,8 +128,12 @@ attempt() {
   setsid "$agent" -p --trust --force --model "$model" --output-format stream-json "$@" \
     > "$part" 2>> "$out.err" &
   pid=$!
-  local started now mtime
+  local started now mtime watcher
   started=$(date +%s)
+  # shellcheck disable=SC2086
+  python3 "$(dirname "$0")/shrink-images.py" --watch "$pid" "$((started - 1))" "$PWD" ${AGENT_IMAGE_DIRS:-} \
+    2>> "$out.err" &
+  watcher=$!
   sleep 0.2
   remember
   while kill -0 "$pid" 2> /dev/null; do
@@ -124,7 +142,9 @@ attempt() {
     now=$(date +%s)
     mtime=$(stat -c %Y "$part" 2> /dev/null || echo "$started")
     [ "$mtime" -gt "$started" ] || mtime=$started
-    if [ $((now - mtime)) -ge "$stall" ]; then
+    if task_open "$part"; then
+      touch "$part" # the lead is waiting on a Task subagent: not a stall
+    elif [ $((now - mtime)) -ge "$stall" ]; then
       echo "agent-run: no transcript write for ${stall}s, stopping attempt $pid" >> "$out.err"
       stop
     fi
@@ -132,6 +152,7 @@ attempt() {
   local code=0
   wait "$pid" 2> /dev/null || code=$?
   stop
+  wait "$watcher" 2> /dev/null || true
   pid=""
   seen=""
   echo "agent-run: attempt exited with status $code" >> "$out.err"
@@ -152,14 +173,27 @@ attempt() {
   fi
 }
 : > "$out.err"
+errmark() { wc -c < "$out.err"; }
+mark=$(errmark)
 attempt "$out.jsonl" "$(cat "$prompt")"
 session=$(grep -o '"session_id":"[^"]*"' "$out.jsonl" | head -1 | cut -d'"' -f4 || true)
 n=0
 while ! has_result "$out.jsonl" && [ -n "$session" ] && [ "$n" -lt "$tries" ]; do
   n=$((n + 1))
-  echo "agent-run: no result yet, resume $n of $tries for session $session" >> "$out.err"
-  attempt "$out.resume$n.jsonl" --resume "$session" \
-    "The connection dropped. Continue the task from where you were and finish with the required final line."
+  if tail -c +"$((mark + 1))" "$out.err" | grep -q NonRetriableError; then
+    echo "agent-run: NonRetriableError; attempt $n of $tries is a fresh session, not --resume" >> "$out.err"
+    mark=$(errmark)
+    attempt "$out.resume$n.jsonl" "$(cat "$prompt")
+
+(A previous session for this task died with a non-retriable error, for example an unreadable or oversized image. Start the task again. Never read an image larger than 2000px on a side.)"
+    s2=$(grep -o '"session_id":"[^"]*"' "$out.resume$n.jsonl" | head -1 | cut -d'"' -f4 || true)
+    [ -z "$s2" ] || session=$s2
+  else
+    echo "agent-run: no result yet, resume $n of $tries for session $session" >> "$out.err"
+    mark=$(errmark)
+    attempt "$out.resume$n.jsonl" --resume "$session" \
+      "The connection dropped. Continue the task from where you were and finish with the required final line."
+  fi
   cat "$out.resume$n.jsonl" >> "$out.jsonl"
 done
 node -e '

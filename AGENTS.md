@@ -58,6 +58,12 @@ picks its tier per role and runs each role as a fresh headless session (resumed 
 `scripts/agent-run.sh <role> <prompt-file> <out-prefix>`, always in its own git worktree:
 Before each attempt it waits at a box-wide gate: at most 2 heavy runs (cursor-agent sessions plus
 Playwright smoke runs) at once and a 1-minute load below 8 (`AGENT_MAX_RUNS`, `AGENT_MAX_LOAD`).
+Receipt agent-run-stability-2026-10-15: the stall watchdog is 1800s and does not count time while a
+Task subagent call is open; after a `NonRetriableError` the next attempt is a fresh session with the
+original prompt, not `--resume`; images over 2000px per side written under the worktree (or
+`AGENT_IMAGE_DIRS`) during an attempt are downscaled in place by `scripts/shrink-images.py`
+(needs Pillow; without it the `bigshot` test is skipped). Long runs are started detached through
+Box Ops' `longrun`, never supervised from a chat turn.
 
 | Role | Tier | What it does |
 |---|---|---|
