@@ -68,7 +68,7 @@ in the PR evidence. A new feature or state needs new entries in `smoke.json`, th
 
 ## Evidence
 
-Save to `artifacts/<feature>/` (git-ignored). CI uploads `artifacts/smoke/` (screenshots, ARIA snapshots, diff images) as the `smoke-evidence`
+Save to `artifacts/<feature>/` (git-ignored). CI uploads `artifacts/smoke/` (screenshots, ARIA snapshots, diff images) as the `verify-evidence`
 artifact on every run; the PR’s “Verify evidence” line links to that run and lists the
 screenshots a human or verifier looked at. A proof shows the
 action and the resulting state: the route and heading after a click, the lab result text after a
