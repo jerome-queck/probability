@@ -167,10 +167,13 @@ function BayesLab() {
 }
 
 function BinomialPoissonLab() {
+  // The theorem fixes λ and lets n grow with p = λ/n, so the controls are λ and n.
   const [n, setN] = useState(50);
-  const [p, setP] = useState(0.06);
-  const lambda = n * p;
-  const ks = Array.from({ length: 16 }, (_, k) => k);
+  const [lambda, setLambda] = useState(3);
+  const p = lambda / n;
+  // Show k up to about λ + 5√λ (at least 15), so the window always holds the bulk of both laws.
+  const top = Math.max(15, Math.ceil(lambda + 5 * Math.sqrt(lambda)));
+  const ks = Array.from({ length: top + 1 }, (_, k) => k);
   const bin = ks.map((k) => binomialPmf(n, p, k));
   const poi = ks.map((k) => poissonPmf(lambda, k));
   const gap = Math.max(...ks.map((k) => Math.abs(bin[k] - poi[k])));
@@ -180,25 +183,25 @@ function BinomialPoissonLab() {
         label="Trials n"
         name="trials"
         value={n}
-        min={5}
+        min={20}
         max={500}
         step={5}
         onChange={setN}
       />
       <NumberField
-        label="Success probability p"
-        name="p"
-        value={p}
-        min={0.005}
-        max={0.5}
-        step={0.005}
-        onChange={setP}
+        label="Mean λ (held fixed as n grows)"
+        name="lambda"
+        value={lambda}
+        min={0.5}
+        max={10}
+        step={0.5}
+        onChange={setLambda}
       />
       <p className="result-line" data-testid="lab-result">
-        λ = np = {fmt(lambda, 2)}; largest gap over k ≤ 15 = {fmt(gap)}
+        p = λ/n = {fmt(p, 4)}; largest gap over k ≤ {top} = {fmt(gap)}
       </p>
       <Bars
-        label="Binomial (dark) against Poisson (light) probabilities for k = 0 to 15"
+        label={`Binomial(n, λ/n) (dark) against Poisson(λ) (light) probabilities for k = 0 to ${top}`}
         max={Math.max(...bin, ...poi)}
         series={[
           { name: 'binomial', values: bin, className: 'bar-primary' },

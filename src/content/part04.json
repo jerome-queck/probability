@@ -23,7 +23,7 @@
     "proof": [
       "If \\(x<y\\), then \\(\\{X\\le x\\}\\subseteq\\{X\\le y\\}\\). Monotonicity of \\(P\\) gives \\(F(x)\\le F(y)\\), so \\(F\\) is nondecreasing.",
       "Right-continuity at a fixed \\(x\\): the events \\(A_n=\\{X\\le x+1/n\\}\\) decrease to \\(\\{X\\le x\\}\\), because a real number is at most \\(x+1/n\\) for every positive integer \\(n\\) exactly when it is at most \\(x\\). If \\(C_n\\downarrow C\\), write \\(C_1\\setminus C\\) as the disjoint union of \\(C_n\\setminus C_{n+1}\\). The tail of that convergent series of probabilities is \\(P(C_n)-P(C)\\), so \\(P(C_n)\\to P(C)\\). Hence \\(F(x+1/n)\\to F(x)\\). For an arbitrary sequence \\(y_k\\downarrow x\\), monotonicity squeezes \\(F(y_k)\\) between \\(F(x)\\) and \\(F(x+1/n)\\) once \\(y_k\\le x+1/n\\).",
-      "Along integers, \\(\\{X\\le n\\}\\uparrow S\\) and \\(\\{X\\le -n\\}\\downarrow\\varnothing\\). The same continuity argument, applied to an increasing union, yields \\(F(n)\\to 1\\) and \\(F(-n)\\to 0\\). For a real limit, if \\(x\\to\\infty\\) then eventually \\(x\\ge M\\), so \\(F(x)\\ge F(M)\\), and \\(F\\le 1\\) forces the limit \\(1\\). The limit \\(0\\) at \\(-\\infty\\) is the matching argument.",
+      "Along integers, \\(\\{X\\le n\\}\\uparrow S\\) and \\(\\{X\\le -n\\}\\downarrow\\varnothing\\). The same continuity argument, applied to an increasing union, yields \\(F(n)\\to 1\\) and \\(F(-n)\\to 0\\). For a real limit, take \\(\\varepsilon>0\\) and an integer \\(M\\) with \\(F(M)>1-\\varepsilon\\). For every \\(x\\ge M\\), monotonicity gives \\(1-\\varepsilon<F(M)\\le F(x)\\le 1\\), so \\(F(x)\\to 1\\) as \\(x\\to\\infty\\). Likewise, with an integer \\(M\\) such that \\(F(-M)<\\varepsilon\\), every \\(x\\le -M\\) has \\(0\\le F(x)\\le F(-M)<\\varepsilon\\), so \\(F(x)\\to 0\\) as \\(x\\to-\\infty\\).",
       "The events \\(\\{X\\le a\\}\\) and \\(\\{a<X\\le b\\}\\) are disjoint and their union is \\(\\{X\\le b\\}\\). Finite additivity gives \\(F(b)=F(a)+P(a<X\\le b)\\).",
       "Likewise \\(\\{X\\le a\\}=\\{X<a\\}\\cup\\{X=a\\}\\), a disjoint union, and \\(\\{X<a\\}=\\bigcup_n\\{X\\le a-1/n\\}\\), an increasing union. Continuity from below gives \\(P(X<a)=\\lim_n F(a-1/n)\\), which is the left-hand limit of \\(F\\) at \\(a\\). Subtracting from \\(F(a)\\) produces the jump \\(P(X=a)\\). The two-sided formula for \\(P(a\\le X\\le b)\\) is \\(F(b)\\) minus that left-hand limit.",
       "If \\(X\\) is discrete and \\(c<x<y\\) with no point of \\(R_X\\) in \\((c,y]\\), then \\(P(x<X\\le y)=0\\), so \\(F(y)=F(x)\\). Thus between atoms the cdf is flat, while at an atom it jumps by \\(p(a)\\) and, by right-continuity, takes the higher value at the atom itself. \\(\\square\\)"
@@ -155,7 +155,8 @@
     "question": "How do we count successes in a fixed number of independent trials that share one success probability?",
     "prerequisites": [
       "D03",
-      "C02"
+      "C02",
+      "K04"
     ],
     "summary": "A Bernoulli random variable records success or failure on one trial. A binomial random variable counts successes in a fixed number of independent copies of that trial; its mean, variance and mode are determined by \\(n\\) and \\(p\\).",
     "intuition": "Each trial contributes a success with probability \\(p\\), so \\(n\\) trials contribute about \\(np\\) successes. The binomial coefficient counts the orders in which those successes can arrive.",
@@ -353,7 +354,9 @@
     "cluster": "Discrete random variables",
     "question": "Why is the mean of a sum equal to the sum of the means, even when the summands are dependent?",
     "prerequisites": [
-      "D02"
+      "D02",
+      "D04",
+      "D07"
     ],
     "summary": "On a finite or countable sample space, expectation adds over outcomes. The expectation of a sum is therefore the sum of the expectations, with no independence hypothesis. Indicators turn this into a machine for computing means of counts, including the binomial mean, the hypergeometric mean and the expected number of fixed points of a random permutation.",
     "intuition": "Expectation averages a numerical function over outcomes. Adding two functions and then averaging is the same as averaging each function and adding the averages, whether or not the functions rise and fall together.",
