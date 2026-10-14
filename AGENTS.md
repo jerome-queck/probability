@@ -56,6 +56,8 @@ Cursor CLI (`cursor-agent`, also `agent`) with pstack installed as its Cursor pl
 Task subagents accept only `grok-4.7-high`, so every pstack role uses it. The review workflow
 picks its tier per role and runs each role as a fresh headless session (resumed with --resume if it stalls or drops) with
 `scripts/agent-run.sh <role> <prompt-file> <out-prefix>`, always in its own git worktree:
+Before each attempt it waits at a box-wide gate: at most 2 heavy runs (cursor-agent sessions plus
+Playwright smoke runs) at once and a 1-minute load below 8 (`AGENT_MAX_RUNS`, `AGENT_MAX_LOAD`).
 
 | Role | Tier | What it does |
 |---|---|---|

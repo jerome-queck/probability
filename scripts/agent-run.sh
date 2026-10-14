@@ -82,9 +82,34 @@ has_result() { node -e '
 const ok = require("fs").readFileSync(process.argv[1], "utf8").split("\n").some((l) => {
   try { return JSON.parse(l).type === "result"; } catch { return false; } });
 process.exit(ok ? 0 : 1);' "$1"; }
+# Box-wide gate: at most AGENT_MAX_RUNS (default 2) heavy runs at once (cursor-agent sessions plus
+# Playwright smoke runs) and a 1-minute load below AGENT_MAX_LOAD (default 8). Waits, checking every
+# AGENT_GATE_POLL seconds; AGENT_GATE_MAX_WAIT (seconds, default 0 = forever) exits 3 instead.
+heavy_runs() {
+  local a b
+  a=$(pgrep -fc 'cursor-agent.* -p ' 2> /dev/null || true)
+  b=$(pgrep -fc 'control-probability.mjs smoke' 2> /dev/null || true)
+  echo $((${a:-0} + ${b:-0}))
+}
+gate() {
+  local max=${AGENT_MAX_RUNS:-2} maxload=${AGENT_MAX_LOAD:-8} waited=0 runs load
+  while :; do
+    runs=$(heavy_runs)
+    load=$(cut -d' ' -f1 /proc/loadavg)
+    if [ "$runs" -lt "$max" ] && awk -v l="$load" -v m="$maxload" 'BEGIN { exit !(l < m) }'; then return 0; fi
+    if [ "${AGENT_GATE_MAX_WAIT:-0}" -gt 0 ] && [ "$waited" -ge "${AGENT_GATE_MAX_WAIT}" ]; then
+      echo "agent-run: gate still closed after ${waited}s (runs=$runs load=$load)" >&2
+      exit 3
+    fi
+    echo "agent-run: waiting at gate (runs=$runs/$max load=$load/$maxload)" >> "$out.err"
+    sleep "${AGENT_GATE_POLL:-30}"
+    waited=$((waited + ${AGENT_GATE_POLL:-30}))
+  done
+}
 attempt() {
   local part=$1
   shift
+  gate
   : > "$part"
   setsid "$agent" -p --trust --force --model "$model" --output-format stream-json "$@" \
     > "$part" 2>> "$out.err" &

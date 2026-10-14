@@ -11,7 +11,7 @@ fake() { # name, body (bash; "$resume" is 1 on a --resume call)
   chmod +x "$t/$1"
 }
 run() { # name, expected exit (0 or nonzero), grep pattern expected on stdout
-  AGENT_BIN="$t/$1" AGENT_STALL_SECS=3 AGENT_POLL_SECS=1 AGENT_RESUMES=2 \
+  AGENT_MAX_LOAD=1000 AGENT_MAX_RUNS=1000 AGENT_BIN="$t/$1" AGENT_STALL_SECS=3 AGENT_POLL_SECS=1 AGENT_RESUMES=2 \
     bash "$here/agent-run.sh" verifier "$t/p" "$t/$1.out" > "$t/$1.stdout" 2> /dev/null
   local code=$?
   if { [ "$2" = 0 ] && [ $code -ne 0 ]; } || { [ "$2" != 0 ] && [ $code -eq 0 ]; } ||
@@ -57,4 +57,9 @@ fake tornid "if [ \$resume = 1 ]; then $done_ok; else $init; printf '{\"type\":\
 run tornid 0 'VERDICT: VERIFIED'
 fake tornmodel "if [ \$resume = 1 ]; then $done_ok; else $init; printf '{\"type\":\"assistant\",\"model\":\"claude-op'; exit 1; fi"
 run tornmodel 1 ''
+# Gate closed (load limit 0): exits 3 after the max wait without starting the agent.
+AGENT_MAX_LOAD=0 AGENT_GATE_POLL=1 AGENT_GATE_MAX_WAIT=2 AGENT_BIN="$t/normal" \
+  bash "$here/agent-run.sh" verifier "$t/p" "$t/gate.out" > /dev/null 2>&1
+code=$?
+if [ $code -eq 3 ] && [ ! -s "$t/gate.out.jsonl" ]; then echo "ok   gate"; else echo "FAIL gate (exit $code)"; fails=$((fails + 1)); fi
 exit $fails
