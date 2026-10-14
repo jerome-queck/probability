@@ -151,9 +151,11 @@ separate seams; `order.json` is shared, so edit it in one PR at a time.
 ## Known gate gaps
 
 - The `main-gates` ruleset requires `check` and `evidence` from the GitHub Actions app
-  (integration 15368, pinned 2026-10-14), so a commit status or another app can no longer satisfy
-  them. A PR that adds its own workflow with a job named `check` or `evidence` still reports
-  through GitHub Actions and could satisfy them, because nothing requires a review. Closing that
-  needs a required review or a ruleset `workflows` rule. Jerome decides.
+  (integration 15368, pinned 2026-10-14), so another app can no longer satisfy them. Every Actions
+  job and every workflow `GITHUB_TOKEN` is that same app, so a branch in this repo whose PR adds a
+  workflow with a job named `check` or `evidence`, or one that posts a commit status with
+  `statuses: write`, could still satisfy them. Narrowed, not closed. This is a user-owned repo, so
+  organization "required workflows" rules are not available; a required review would add a human
+  check but would not bind the context to `.github/workflows/evidence.yml`. Jerome decides.
 - The evidence gate checks the linked run's workflow name, path, head SHA, success and a non-empty
   `verify-evidence` artifact, not that the PR's `check.yml` still runs `npm run check`.
