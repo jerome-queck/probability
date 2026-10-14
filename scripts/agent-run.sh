@@ -10,7 +10,10 @@
 # Writes <out-prefix>.jsonl (stream-json transcript) and prints the session id, every model seen,
 # and every verdict line from every attempt in order (a resume never hides an earlier verdict).
 # Stall: no transcript write for AGENT_STALL_SECS (default 900) kills the attempt's whole process
-# group. A run with no result event is resumed with --resume up to AGENT_RESUMES (default 3) times.
+# group and every descendant recorded while it ran (also on a drop, where detached children have
+# already been reparented). A run with no result event is resumed with --resume up to AGENT_RESUMES (default 3) times.
+# Limit: a double-forked child that leaves the tree before a 0.2s/poll sample is not tracked
+# (no pid namespace here).
 # Exits non-zero if no attempt produced a result, or if check-models.mjs finds a disallowed model.
 # Run it in its own git worktree: a session must never share a working tree with other work.
 set -euo pipefail
@@ -36,20 +39,36 @@ descendants() {
   kids=$(grep -l "^PPid:[[:space:]]*$1\$" /proc/[0-9]*/status 2> /dev/null | cut -d/ -f3 || true)
   for k in $kids; do echo "$k"; descendants "$k"; done
 }
-# Stop an attempt and everything it started: TERM, wait up to 10s, then KILL.
+# "pid starttime" of a live process (starttime guards against pid reuse).
+ident() { local st; st=$(cut -d' ' -f22 "/proc/$1/stat" 2> /dev/null) && echo "$1 $st"; }
+# Every descendant ever seen while the attempt ran: a child the agent started in its own session
+# is reparented to init when the agent exits, so stop() also needs the ones recorded earlier.
+seen=""
+remember() {
+  [ -n "$pid" ] || return 0
+  local d
+  for d in $(descendants "$pid"); do seen="$seen
+$(ident "$d")"; done
+}
+alive_same() { [ "$(ident "$1")" = "$1 $2" ]; }
+# Stop an attempt and everything it started: TERM, wait up to 10s, then KILL (group included).
 stop() {
   [ -n "$pid" ] || return 0
-  local all p
-  all="$pid $(descendants "$pid" | tr '\n' ' ')"
-  for p in $all; do kill -TERM "$p" 2> /dev/null || true; done
+  remember
+  local all p st
+  all=$(printf '%s\n%s\n' "$(ident "$pid")" "$seen" | sort -u | sed '/^$/d')
+  while read -r p st; do [ -n "$p" ] && alive_same "$p" "$st" && kill -TERM "$p" 2> /dev/null; done <<< "$all"
   kill -TERM -- "-$pid" 2> /dev/null || true
   for _ in 1 2 3 4 5 6 7 8 9 10; do
     local alive=0
-    for p in $all; do kill -0 "$p" 2> /dev/null && alive=1; done
-    [ "$alive" = 1 ] || return 0
+    while read -r p st; do [ -n "$p" ] && alive_same "$p" "$st" && alive=1; done <<< "$all"
+    [ "$alive" = 1 ] || break
     sleep 1
   done
-  for p in $all; do kill -KILL "$p" 2> /dev/null || true; done
+  while read -r p st; do [ -n "$p" ] && alive_same "$p" "$st" && kill -KILL "$p" 2> /dev/null; done <<< "$all"
+  kill -KILL -- "-$pid" 2> /dev/null || true
+  seen=""
+  return 0
 }
 trap 'stop; exit 130' INT TERM
 trap stop EXIT
@@ -66,8 +85,11 @@ attempt() {
   pid=$!
   local started now mtime
   started=$(date +%s)
+  sleep 0.2
+  remember
   while kill -0 "$pid" 2> /dev/null; do
     sleep "$poll"
+    remember
     now=$(date +%s)
     mtime=$(stat -c %Y "$part" 2> /dev/null || echo "$started")
     [ "$mtime" -gt "$started" ] || mtime=$started
@@ -80,6 +102,7 @@ attempt() {
   wait "$pid" 2> /dev/null || code=$?
   stop
   pid=""
+  seen=""
   echo "agent-run: attempt exited with status $code" >> "$out.err"
   # Only a last line that is not valid JSON counts as half-written; anything parseable is kept.
   if [ -s "$part" ] && [ -n "$(tail -c 1 "$part")" ]; then
@@ -89,7 +112,7 @@ attempt() {
       echo "agent-run: dropped a half-written last line from $part:" >> "$out.err"
       tail -n 1 "$part" >> "$out.err"
       echo >> "$out.err"
-      if tail -n 1 "$part" | grep -qE '(VERDICT|REVIEW|MATH): |"model' ; then
+      if tail -n 1 "$part" | grep -qE '(^|\\n|"result":")(VERDICT|REVIEW|MATH): |"model' ; then
         echo "agent-run: the dropped line carried a verdict or a model id; failing the run" >&2
         exit 1
       fi

@@ -45,4 +45,9 @@ for f in orphan session; do
 done
 fake tornverdict "if [ \$resume = 1 ]; then $done_ok; else $init; printf '{\"type\":\"result\",\"result\":\"REVIEW: CHANGES NEEDED'; exit 1; fi"
 run tornverdict 1 ''
+fake droporphan "if [ \$resume = 1 ]; then $done_ok; else $init; setsid sleep 303 & echo \$! > $t/drop.pid; sleep 2; exit 1; fi"
+run droporphan 0 'VERDICT: VERIFIED'
+p=$(cat "$t/drop.pid" 2> /dev/null) && if kill -0 "$p" 2> /dev/null; then echo "FAIL droporphan child $p survived"; fails=$((fails + 1)); kill -KILL "$p"; fi
+fake proseverdict "if [ \$resume = 1 ]; then $done_ok; else $init; printf '{\"type\":\"assistant\",\"text\":\"The VERDICT: comes later'; exit 1; fi"
+run proseverdict 0 'VERDICT: VERIFIED'
 exit $fails
