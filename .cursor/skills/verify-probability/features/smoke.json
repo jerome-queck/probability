@@ -27,5 +27,7 @@
   {"feature": "labs", "id": "bayes-default", "url": "/lessons/k03-bayes-rule#lab", "expect": ["P(D | +)"]},
   {"feature": "labs", "id": "bayes-moved", "url": "/lessons/k03-bayes-rule#lab", "actions": [{"range": {"name": "prior", "value": 0.2}}], "expect": ["P(D | +)"]},
   {"feature": "labs", "id": "binomial-poisson-default", "url": "/lessons/d05-poisson-random-variables#lab", "expect": ["p = λ/n = 0.0600"]},
-  {"feature": "labs", "id": "binomial-poisson-moved", "url": "/lessons/d05-poisson-random-variables#lab", "actions": [{"range": {"name": "trials", "value": 200}}], "expect": ["p = λ/n = 0.0150"]}
+  {"feature": "labs", "id": "binomial-poisson-moved", "url": "/lessons/d05-poisson-random-variables#lab", "actions": [{"range": {"name": "trials", "value": 200}}], "expect": ["p = λ/n = 0.0150"]},
+  {"feature": "labs", "id": "normal-approximation-default", "url": "/lessons/r05-the-normal-approximation-to-the-binomial#lab", "expect": ["P(X = 20)"]},
+  {"feature": "labs", "id": "normal-approximation-moved", "url": "/lessons/r05-the-normal-approximation-to-the-binomial#lab", "actions": [{"range": {"name": "trials", "value": 100}}], "expect": ["P(X = 50)"]}
 ]
