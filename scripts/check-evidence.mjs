@@ -59,8 +59,8 @@ if (touchesFeatures) {
   const verify = field('Verify evidence');
   const runId = /actions\/runs\/(\d+)/.exec(verify)?.[1];
   if (runId) {
-    // The repository is public, so the run and its artifacts are read without a token:
-    // the evidence job's token has no Actions permission.
+    // The repository is public, so the run and its artifacts are read without a token.
+    // (works with or without Actions permission on the job token).
     const repo =
       process.env.GITHUB_REPOSITORY ||
       gh(
@@ -76,12 +76,24 @@ if (touchesFeatures) {
       const [run, listed] = await Promise.all(
         [api, `${api}/artifacts`].map(async (url) => {
           const res = await fetch(url, {
-            headers: { accept: 'application/vnd.github+json' },
+            headers: {
+              accept: 'application/vnd.github+json',
+              ...(process.env.GH_TOKEN
+                ? { authorization: `Bearer ${process.env.GH_TOKEN}` }
+                : {}),
+            },
           });
           if (!res.ok) throw new Error(`${url} answered ${res.status}`);
           return res.json();
         }),
       );
+      if (
+        run.name !== 'check' ||
+        !String(run.path).endsWith('.github/workflows/check.yml')
+      )
+        errors.push(
+          `feature change: run ${runId} is “${run.name}” (${run.path}), not the check workflow`,
+        );
       if (run.head_sha !== head)
         errors.push(
           `feature change: run ${runId} is for ${String(run.head_sha).slice(0, 7)}, not the PR head ${head.slice(0, 7)}`,
@@ -93,11 +105,11 @@ if (touchesFeatures) {
       if (
         !listed.artifacts.some(
           (a) =>
-            a.name === 'smoke-evidence' && !a.expired && a.size_in_bytes > 0,
+            a.name === 'verify-evidence' && !a.expired && a.size_in_bytes > 0,
         )
       )
         errors.push(
-          `feature change: run ${runId} has no smoke-evidence artifact (screenshots)`,
+          `feature change: run ${runId} has no verify-evidence artifact (screenshots)`,
         );
     } catch (error) {
       errors.push(
@@ -107,7 +119,7 @@ if (touchesFeatures) {
   }
   if (!runId || !/\.png\b/.test(verify))
     errors.push(
-      'feature change: “Verify evidence:” must link the CI run (…/actions/runs/<id>, artifact smoke-evidence with the driver run) and name the screenshots inspected (*.png)',
+      'feature change: “Verify evidence:” must link the CI run (…/actions/runs/<id>, artifact verify-evidence with the driver run) and name the screenshots inspected (*.png)',
     );
   if (!/grok-4\.7/i.test(field('Review')))
     errors.push(
@@ -117,7 +129,11 @@ if (touchesFeatures) {
 if (
   !/verify-probability/.test(field('Skills used')) ||
   !/grok-4\.7/.test(field('Skills used')) ||
-  !/effort/i.test(field('Skills used'))
+  !/grok-4\.7-(low|medium|high)(?![-\w])/.test(field('Skills used')) ||
+  // Every tier named must be an allowed one (no xhigh, no -fast variants).
+  (field('Skills used').match(/grok-4\.7[-\w.]*/g) ?? []).some(
+    (t) => !/^grok-4\.7-(low|medium|high)$/.test(t),
+  )
 )
   errors.push(
     '“Skills used:” must list the skills used (at least verify-probability) with model and effort',

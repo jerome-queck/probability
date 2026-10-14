@@ -37,6 +37,7 @@ const opt = (name, fallback) => {
   const i = args.indexOf(`--${name}`);
   return i >= 0 ? args[i + 1] : fallback;
 };
+let keptLog = null; // where smoke keeps the server log after its temp dir goes
 let dataDir = resolve(
   opt(
     'data-dir',
@@ -127,9 +128,7 @@ async function launch() {
     process.kill(-child.pid, 'SIGTERM');
   } catch {}
   rmSync(statePathOf(), { force: true });
-  throw new Error(
-    `server did not answer on ${url}; the server log is kept as server.log next to the screenshots (smoke) or at ${log} (launch)`,
-  );
+  throw new Error(`server did not answer on ${url}; see ${keptLog ?? log}`);
 }
 
 function alive(pid) {
@@ -387,6 +386,7 @@ async function smoke() {
   const update = args.includes('--update-baselines');
   const only = opt('only');
   const out = resolve(opt('artifacts', join(root, 'artifacts/smoke')));
+  keptLog = join(out, 'server.log');
   const fx = JSON.parse(
     readFileSync(
       join(root, '.cursor/skills/verify-probability/features/smoke.json'),
