@@ -39,6 +39,7 @@ Each state is screenshotted at the listed widths, checked for overflow, KaTeX, f
 - `sidebar-collapsed` (desktop)
 - `search-results` (desktop)
 - `search-empty` (desktop)
+- `search-chapter-collapsed` (desktop) — a matching chapter collapsed while a search is active
 
 ## Gotchas
 

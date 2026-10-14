@@ -1,18 +1,30 @@
 name: evidence
 
+# pull_request_target runs this workflow and the gate script from the BASE branch, so a PR
+# cannot edit this job. The PR head is never checked out or executed here.
+# The main-gates ruleset requires `check` and `evidence` from the GitHub Actions app (integration
+# 15368). Another PR workflow with a job of the same name is also GitHub Actions, so that gap is
+# narrowed, not closed (see AGENTS.md, "Known gate gaps").
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened, edited]
 
 permissions:
   contents: read
   pull-requests: read
+  actions: read
 
 jobs:
   evidence:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - name: PR body carries verdicts for this exact head
         env:
           GH_TOKEN: ${{ github.token }}
