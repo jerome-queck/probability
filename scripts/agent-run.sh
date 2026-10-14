@@ -40,7 +40,13 @@ descendants() {
   for k in $kids; do echo "$k"; descendants "$k"; done
 }
 # "pid starttime" of a live process (starttime guards against pid reuse).
-ident() { local st; st=$(cut -d' ' -f22 "/proc/$1/stat" 2> /dev/null) && echo "$1 $st"; }
+# Never fails: a child that exits mid-scan must not abort the runner under set -e.
+ident() {
+  local st
+  st=$(cut -d' ' -f22 "/proc/$1/stat" 2> /dev/null) || return 0
+  [ -z "$st" ] || echo "$1 $st"
+  return 0
+}
 # Every descendant ever seen while the attempt ran: a child the agent started in its own session
 # is reparented to init when the agent exits, so stop() also needs the ones recorded earlier.
 seen=""
