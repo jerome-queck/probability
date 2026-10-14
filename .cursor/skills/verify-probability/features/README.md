@@ -14,3 +14,4 @@ or the lesson chapters disagree.
 | Practice view | [practice.md](practice.md) |
 | Reference view | [reference.md](reference.md) |
 | Routing and navigation | [routing.md](routing.md) |
+| Study progress and self-check | [progress.md](progress.md) |

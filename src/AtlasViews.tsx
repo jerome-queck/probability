@@ -1,6 +1,8 @@
+import { useSyncExternalStore } from 'react';
 import { lessons } from './content/lessons';
 import { Practice } from './LessonPage';
 import { MathText } from './MathText';
+import { nextUnstudied, progressStore } from './progress';
 import type { View } from './routes';
 import { studyStore } from './state';
 
@@ -13,6 +15,19 @@ export function AtlasViews({
   view: View;
   open: (id: string) => void;
 }) {
+  const progress = useSyncExternalStore(
+    progressStore.subscribe,
+    progressStore.getSnapshot,
+  );
+  const rank = (id: string) =>
+    progress.practice[id] === 'review'
+      ? 0
+      : progress.practice[id] === 'got-it'
+        ? 2
+        : 1;
+  const order = lessons.map((l) => l.id);
+  const started = order.some((id) => progress.studied.includes(id));
+  const continueId = started ? nextUnstudied(order, progress) : undefined;
   if (view === 'practice')
     return (
       <div className="overview-shell">
@@ -22,9 +37,11 @@ export function AtlasViews({
           <p>Try each problem before opening the hints.</p>
         </header>
         <div className="practice-list">
-          {lessons.map((lesson) => (
-            <Practice key={lesson.id} lesson={lesson} embedded />
-          ))}
+          {[...lessons]
+            .sort((a, b) => rank(a.id) - rank(b.id))
+            .map((lesson) => (
+              <Practice key={lesson.id} lesson={lesson} embedded />
+            ))}
         </div>
       </div>
     );
@@ -78,9 +95,18 @@ export function AtlasViews({
             example, and tried in an experiment you can control.
           </p>
           <div className="hero-actions">
-            <button type="button" onClick={() => open(lessons[0].id)}>
-              Begin at the beginning <span aria-hidden="true">→</span>
-            </button>
+            {continueId ? (
+              <button type="button" onClick={() => open(continueId)}>
+                Continue with {continueId} <span aria-hidden="true">→</span>
+              </button>
+            ) : (
+              <button type="button" onClick={() => open(lessons[0].id)}>
+                {started
+                  ? 'Every lesson studied: start again'
+                  : 'Begin at the beginning'}{' '}
+                <span aria-hidden="true">→</span>
+              </button>
+            )}
             <button
               type="button"
               className="secondary"
@@ -108,6 +134,12 @@ export function AtlasViews({
                   </span>
                   {cluster}
                 </h3>
+                <ChapterProgress
+                  done={
+                    items.filter((l) => progress.studied.includes(l.id)).length
+                  }
+                  total={items.length}
+                />
                 <ul>
                   {items.map((lesson) => (
                     <li key={lesson.id}>
@@ -176,5 +208,26 @@ function HeroFigure() {
         theorem predicts.
       </figcaption>
     </figure>
+  );
+}
+
+function ChapterProgress({ done, total }: { done: number; total: number }) {
+  return (
+    <div className="chapter-progress">
+      <div
+        className="chapter-progress-bar"
+        role="progressbar"
+        aria-label="Lessons studied"
+        aria-valuemin={0}
+        aria-valuemax={total}
+        aria-valuenow={done}
+        aria-valuetext={`${done} of ${total} studied`}
+      >
+        <span style={{ width: `${(100 * done) / total}%` }} />
+      </div>
+      <small>
+        {done} of {total} studied
+      </small>
+    </div>
   );
 }

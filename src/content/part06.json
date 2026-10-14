@@ -13,7 +13,7 @@
     "definition": [
       "The joint cumulative distribution function of random variables \\(X\\) and \\(Y\\) is \\(F(a,b)=P(X\\le a,\\, Y\\le b)\\), defined for all real \\(a\\) and \\(b\\). It is the probability that the random point \\((X,Y)\\) lands in the southwest quadrant with corner \\((a,b)\\).",
       "If \\(X\\) and \\(Y\\) are discrete, their joint probability mass function is \\(p(x,y)=P(X=x,\\, Y=y)\\). The marginal pmfs are obtained by summing out the other variable: \\(p_X(x)=\\sum_y p(x,y)\\) and \\(p_Y(y)=\\sum_x p(x,y)\\). Both sums include every value the omitted variable can take, and each marginal sums to 1.",
-      "\\(X\\) and \\(Y\\) are jointly continuous when there is a nonnegative function \\(f\\), the joint density, such that \\(P((X,Y)\\in C)=\\iint_C f(x,y)\\,dx\\,dy\\) for every region \\(C\\) for which the integral is defined, and \\(\\iint_{\\mathbb{R}^2} f=1\\). Then \\(F(a,b)=\\int_{-\\infty}^{a}\\int_{-\\infty}^{b} f(u,v)\\,dv\\,du\\), and \\(f(a,b)=\\partial^2 F/\\partial a\\,\\partial b\\) at points where the mixed partial exists. The marginal densities are \\(f_X(x)=\\int_{-\\infty}^{\\infty} f(x,y)\\,dy\\) and \\(f_Y(y)=\\int_{-\\infty}^{\\infty} f(x,y)\\,dx\\).",
+      "\\(X\\) and \\(Y\\) are jointly continuous when there is a nonnegative function \\(f\\), the joint density, such that \\(P((X,Y)\\in C)=\\iint_C f(x,y)\\,dx\\,dy\\) for every region \\(C\\) for which the integral is defined, and \\(\\iint_{\\mathbb{R}^2} f=1\\). Then \\(F(a,b)=\\int_{-\\infty}^{a}\\int_{-\\infty}^{b} f(u,v)\\,dv\\,du\\), and \\(f(a,b)=\\partial^2 F/\\partial a\\,\\partial b\\) at every point \\((a,b)\\) where \\(f\\) is continuous. The marginal densities are \\(f_X(x)=\\int_{-\\infty}^{\\infty} f(x,y)\\,dy\\) and \\(f_Y(y)=\\int_{-\\infty}^{\\infty} f(x,y)\\,dx\\).",
       "For random variables \\(X_1,\\dots,X_n\\) the joint cdf is \\(F(a_1,\\dots,a_n)=P(X_1\\le a_1,\\dots,X_n\\le a_n)\\). In the discrete case the joint pmf is \\(p(x_1,\\dots,x_n)=P(X_1=x_1,\\dots,X_n=x_n)\\), and a marginal pmf is a sum over the unwanted coordinates. In the jointly continuous case a nonnegative joint density on \\(\\mathbb{R}^n\\) satisfies \\(P((X_1,\\dots,X_n)\\in C)=\\int_C f\\), and the marginal density of one coordinate is the integral of \\(f\\) over the other \\(n-1\\) coordinates."
     ],
     "theorem": "For all real \\(a_1<a_2\\) and \\(b_1<b_2\\), \\[P(a_1<X\\le a_2,\\, b_1<Y\\le b_2)=F(a_2,b_2)-F(a_1,b_2)-F(a_2,b_1)+F(a_1,b_1).\\] The marginal cdfs are limits of the joint cdf: \\(F_X(a)=\\lim_{b\\to\\infty} F(a,b)\\) and \\(F_Y(b)=\\lim_{a\\to\\infty} F(a,b)\\). The same alternating pattern gives orthant-corner probabilities in higher dimensions. For three variables, \\[P(a_1<X\\le a_2,\\, b_1<Y\\le b_2,\\, c_1<Z\\le c_2)\\] equals \\(F(a_2,b_2,c_2)-F(a_1,b_2,c_2)-F(a_2,b_1,c_2)-F(a_2,b_2,c_1)+F(a_1,b_1,c_2)+F(a_1,b_2,c_1)+F(a_2,b_1,c_1)-F(a_1,b_1,c_1)\\).",
@@ -58,9 +58,10 @@
     "question": "When does one random variable carry no information about another?",
     "prerequisites": [
       "J01",
-      "K04"
+      "K04",
+      "R03"
     ],
-    "summary": "Random variables are independent when every event defined by one of them is independent of every event defined by the other. Equivalently the joint cdf factors, and for discrete or jointly continuous variables the joint pmf or density is the product of the marginals. A density that factors as a function of \\(x\\) times a function of \\(y\\) everywhere on the plane forces independence; if the set where the density is positive is not a product set \\(A\\times B\\), such as a triangle, no such factorisation exists and the variables are dependent.",
+    "summary": "Random variables are independent when every event defined by one of them is independent of every event defined by the other. Equivalently the joint cdf factors, and for discrete or jointly continuous variables the joint pmf or density is the product of the marginals. A density that factors as a function of \\(x\\) times a function of \\(y\\) everywhere on the plane forces independence; if no version of the density (densities may be changed on a set of zero area) is positive exactly on a product set \\(A\\times B\\), as with a triangle, no such factorisation exists and the variables are dependent.",
     "intuition": "Independence means the plane’s probability is a product of a horizontal profile and a vertical profile. If the allowed shape of \\(y\\) changes with \\(x\\), each coordinate is still telling you something about the other.",
     "definition": [
       "Random variables \\(X\\) and \\(Y\\) are independent when \\(P(X\\in A,\\, Y\\in B)=P(X\\in A)P(Y\\in B)\\) for all choices of \\(A\\) and \\(B\\) from the collections of events used for random variables (intervals, and their usual limits and Boolean combinations). Equivalently, the events \\(\\{X\\in A\\}\\) and \\(\\{Y\\in B\\}\\) are independent events.",
@@ -69,8 +70,8 @@
     ],
     "theorem": "Discrete random variables \\(X\\) and \\(Y\\) are independent if and only if \\(p(x,y)=p_X(x)p_Y(y)\\) for every \\(x\\) and \\(y\\). Jointly continuous random variables are independent if and only if \\(f(x,y)=f_X(x)f_Y(y)\\) for almost every \\((x,y)\\). Factorisation criterion: if \\(f(x,y)=g(x)h(y)\\) for nonnegative integrable \\(g\\) and \\(h\\) and for almost every point of the plane, then \\(X\\) and \\(Y\\) are independent. In particular, if \\(f\\) vanishes outside a rectangle \\((a,b)\\times(c,d)\\) and equals \\(g(x)h(y)\\) on that rectangle, the criterion applies. If no version of \\(f\\) agreeing almost everywhere is positive exactly on a product set, then no such factorisation exists, and \\(X\\) and \\(Y\\) are not independent.",
     "hypotheses": [
-      "The event definition must be checked for a generating class of sets, not for a single pair of events. The cdf identity has to hold at every \\((a,b)\\), and the pmf or density identity at every point, not merely at most points of a table.",
-      "The factorisation \\(f(x,y)=g(x)h(y)\\) is required on the whole plane, including the region where \\(f=0\\). Writing a product formula only on a triangular support does not meet the criterion.",
+      "The event definition must be checked for a generating class of sets, not for a single pair of events. The cdf identity has to hold at every \\((a,b)\\) and the pmf identity at every point. The density identity is an almost-everywhere statement: changing a density on a set of zero area changes nothing, but a failure on a set of positive area means dependence.",
+      "The factorisation \\(f(x,y)=g(x)h(y)\\) is required almost everywhere on the whole plane, including the region where \\(f=0\\). Writing a product formula only on a triangular support does not meet the criterion.",
       "Identical distributions are not required for independence, and independence is not implied by having the same distribution. The two conditions are separate."
     ],
     "proof": [
@@ -78,7 +79,7 @@
       "If \\(X\\) and \\(Y\\) are discrete and \\(p(x,y)=p_X(x)p_Y(y)\\) for every pair, then for any sets \\(A\\) and \\(B\\) \\[P(X\\in A,\\, Y\\in B)=\\sum_{x\\in A}\\sum_{y\\in B} p_X(x)p_Y(y)=P(X\\in A)P(Y\\in B).\\] Conversely, singleton sets recover \\(p(x,y)=p_X(x)p_Y(y)\\).",
       "If a joint density equals the product of the marginal densities, integrating over \\(A\\times B\\) gives the event definition. Conversely, independence gives \\(F(a,b)=F_X(a)F_Y(b)\\), and differentiating both sides where the densities are continuous produces \\(f(x,y)=f_X(x)f_Y(y)\\).",
       "Suppose \\(f(x,y)=g(x)h(y)\\) almost everywhere, with \\(G=\\int g\\) and \\(H=\\int h\\). Then \\(GH=\\iint f=1\\), \\(f_X(x)=g(x)H\\) and \\(f_Y(y)=G h(y)\\), so \\(f_X(x)f_Y(y)=g(x)h(y)=f(x,y)\\). The previous step yields independence. If the positive set of \\(f\\) is contained in a rectangle and \\(f\\) factors there, multiply \\(g\\) and \\(h\\) by the indicators of the two sides: the product still equals \\(f\\) off the rectangle, where both sides are zero.",
-      "Suppose there were \\(g\\) and \\(h\\) with \\(f=g h\\) everywhere and with \\(f>0\\) on a non-product set. Whenever \\(g(x_1), g(x_2), h(y_1), h(y_2)\\) are all positive, all four points \\((x_i,y_j)\\) would lie in the support. A support that contains \\((x_1,y_1)\\) and \\((x_2,y_2)\\) but excludes \\((x_1,y_2)\\) cannot arise this way. The open triangle \\(x>0\\), \\(y>0\\), \\(x+y<1\\) contains \\((0.2,0.7)\\) and \\((0.7,0.2)\\), since both coordinate sums equal \\(0.9\\), but it excludes \\((0.7,0.7)\\). A product support containing the first two points would contain the third. Hence a density that is positive exactly on that triangle does not factor, and the coordinates are not independent. \\(\\square\\)"
+      "Now let \\(f\\) be positive exactly on the open triangle \\(T=\\{x>0,\\ y>0,\\ x+y<1\\}\\). The event \\(\\{X\\ge 1/2,\\ Y\\ge 1/2\\}\\) lies outside \\(T\\), so it has probability \\(0\\), while \\(P(X\\ge 1/2)P(Y\\ge 1/2)>0\\) since \\(T\\cap\\{x>1/2\\}\\) and \\(T\\cap\\{y>1/2\\}\\) also have positive area. The event definition fails on a pair of events of positive probability, so no almost-everywhere factorisation exists and the coordinates are not independent. \\(\\square\\)"
     ],
     "example": {
       "prompt": "Two maintenance drones are each launched at a time chosen independently and uniformly from a 30-minute window. Their radio handshake succeeds only when the launch times differ by at most 6 minutes. Find the probability of a successful handshake.",
@@ -109,7 +110,9 @@
     "question": "What is the distribution of the sum of two independent random variables?",
     "prerequisites": [
       "J02",
-      "R07"
+      "R07",
+      "R03",
+      "R04"
     ],
     "summary": "Independence turns the law of a sum into a convolution. Poisson rates add, binomial counts with a shared success probability add, gamma shapes with a shared rate add, the sum of two independent uniform random variables has a triangular density, and independent normals add in both mean and variance.",
     "intuition": "A sum can land at a value in many ways, one for each way of splitting that value between the two summands. Independence makes those splits multiply, and adding the splits is convolution.",
@@ -117,7 +120,7 @@
       "The convolution of pmfs \\(p_X\\) and \\(p_Y\\) is \\((p_X\\ast p_Y)(k)=\\sum_j p_X(j)p_Y(k-j)\\), summed over every integer \\(j\\) at which the summand can be nonzero. The convolution of densities is \\((f_X\\ast f_Y)(a)=\\int_{-\\infty}^{\\infty} f_X(a-y)f_Y(y)\\,dy\\).",
       "Write \\(X\\sim\\mathrm{Poisson}(\\lambda)\\) for the pmf \\(e^{-\\lambda}\\lambda^k/k!\\) on \\(k=0,1,2,\\dots\\). Write \\(X\\sim\\mathrm{Bin}(n,p)\\) for \\(\\binom{n}{k}p^k(1-p)^{n-k}\\). The gamma density with shape \\(\\alpha>0\\) and rate \\(\\lambda>0\\) is \\(\\lambda e^{-\\lambda x}(\\lambda x)^{\\alpha-1}/\\Gamma(\\alpha)\\) for \\(x>0\\), where \\(\\Gamma(\\alpha)=\\int_0^{\\infty} t^{\\alpha-1}e^{-t}\\,dt\\). An exponential random variable of rate \\(\\lambda\\) is gamma\\((1,\\lambda)\\). A normal random variable \\(N(\\mu,\\sigma^2)\\) has density \\((2\\pi\\sigma^2)^{-1/2}\\exp\\big(-(x-\\mu)^2/(2\\sigma^2)\\big)\\)."
     ],
-    "theorem": "If \\(X\\) and \\(Y\\) are independent and discrete, then \\(P(X+Y=k)=\\sum_j p_X(j)p_Y(k-j)\\). If they are independent and have densities, then \\[f_{X+Y}(a)=\\int_{-\\infty}^{\\infty} f_X(a-y)f_Y(y)\\,dy,\\] provided the integral is continuous at \\(a\\), which holds for the densities used below. Consequently: if \\(X\\sim\\mathrm{Poisson}(\\lambda_1)\\) and \\(Y\\sim\\mathrm{Poisson}(\\lambda_2)\\) are independent, then \\(X+Y\\sim\\mathrm{Poisson}(\\lambda_1+\\lambda_2)\\); if \\(X\\sim\\mathrm{Bin}(n,p)\\) and \\(Y\\sim\\mathrm{Bin}(m,p)\\) are independent with the same \\(p\\), then \\(X+Y\\sim\\mathrm{Bin}(n+m,p)\\); if \\(X\\sim\\mathrm{gamma}(\\alpha,\\lambda)\\) and \\(Y\\sim\\mathrm{gamma}(\\beta,\\lambda)\\) are independent with the same rate, then \\(X+Y\\sim\\mathrm{gamma}(\\alpha+\\beta,\\lambda)\\); if \\(X\\) and \\(Y\\) are independent and uniform on \\((0,1)\\), then \\(f_{X+Y}(a)=a\\) for \\(0<a\\le 1\\), \\(f_{X+Y}(a)=2-a\\) for \\(1<a<2\\), and \\(f_{X+Y}(a)=0\\) otherwise; if \\(X\\sim N(\\mu_1,\\sigma_1^2)\\) and \\(Y\\sim N(\\mu_2,\\sigma_2^2)\\) are independent, then \\(X+Y\\sim N(\\mu_1+\\mu_2,\\,\\sigma_1^2+\\sigma_2^2)\\).",
+    "theorem": "If \\(X\\) and \\(Y\\) are independent and discrete, then \\(P(X+Y=k)=\\sum_j p_X(j)p_Y(k-j)\\). If they are independent and have densities, then \\[f_{X+Y}(a)=\\int_{-\\infty}^{\\infty} f_X(a-y)f_Y(y)\\,dy,\\] provided the integral is continuous at \\(a\\), which holds for the densities used below. Consequently: if \\(X\\sim\\mathrm{Poisson}(\\lambda_1)\\) and \\(Y\\sim\\mathrm{Poisson}(\\lambda_2)\\) are independent, then \\(X+Y\\sim\\mathrm{Poisson}(\\lambda_1+\\lambda_2)\\); if \\(X\\sim\\mathrm{Bin}(n,p)\\) and \\(Y\\sim\\mathrm{Bin}(m,p)\\) are independent with the same \\(p\\), then \\(X+Y\\sim\\mathrm{Bin}(n+m,p)\\); if \\(X\\sim\\mathrm{gamma}(\\alpha,\\lambda)\\) and \\(Y\\sim\\mathrm{gamma}(\\beta,\\lambda)\\) are independent with the same rate, then \\(X+Y\\sim\\mathrm{gamma}(\\alpha+\\beta,\\lambda)\\); if \\(X\\) and \\(Y\\) are independent and uniform on \\((0,1)\\), then \\(f_{X+Y}(a)=a\\) for \\(0<a\\le 1\\), \\(f_{X+Y}(a)=2-a\\) for \\(1<a<2\\), and \\(f_{X+Y}(a)=0\\) otherwise; if \\(X\\sim N(\\mu_1,\\sigma_1^2)\\) and \\(Y\\sim N(\\mu_2,\\sigma_2^2)\\) are independent, then \\[X+Y\\sim N(\\mu_1+\\mu_2,\\,\\sigma_1^2+\\sigma_2^2).\\]",
     "hypotheses": [
       "Every closure statement assumes independence. The convolution formulas also assume that one is using the marginal pmf or density of each summand.",
       "The binomial sum requires one common success probability. The gamma sum requires one common rate. Shapes add only when the rates agree, and counts add in the binomial family only when the success probabilities agree.",
@@ -163,7 +166,9 @@
     "question": "How does the distribution of one random variable change once another is observed?",
     "prerequisites": [
       "J01",
-      "K01"
+      "K01",
+      "J02",
+      "J03"
     ],
     "summary": "The conditional pmf or density of \\(X\\) given \\(Y=y\\) is the joint divided by the marginal of \\(Y\\). Averaging those conditional probabilities against the marginal of \\(Y\\) returns the marginal of \\(X\\). Independence is exactly the case in which the conditional distribution equals the marginal. For independent Poissons, the conditional law of one of them given their sum is binomial.",
     "intuition": "Conditioning on \\(Y=y\\) slices the joint distribution along that horizontal line and rescales the slice so that it is a distribution in \\(x\\). Mixing those slices back together with the probabilities of the lines rebuilds \\(X\\).",
@@ -181,7 +186,7 @@
     "proof": [
       "Sum the conditional pmf in \\(x\\): \\(\\sum_x p(x,y)/p_Y(y)=p_Y(y)/p_Y(y)=1\\). Nonnegativity is inherited from \\(p\\). Thus \\(p_{X\\mid Y}(\\,\\cdot\\mid y)\\) is a pmf. In the continuous case, \\(\\int_{-\\infty}^{\\infty} f(x,y)/f_Y(y)\\,dx=f_Y(y)/f_Y(y)=1\\).",
       "If \\(X\\) and \\(Y\\) are independent, \\(p(x,y)=p_X(x)p_Y(y)\\), so the ratio defining the conditional pmf equals \\(p_X(x)\\). In the jointly continuous case the same cancellation gives \\(f_{X\\mid Y}(x\\mid y)=f_X(x)\\). Conversely, if the conditional pmf equals the marginal for every \\(y\\) with \\(p_Y(y)>0\\), the multiplication rule says \\(p(x,y)=p_X(x)p_Y(y)\\), which is independence.",
-      "Discrete total probability is the multiplication rule summed over \\(j\\): \\(\\sum_j P(X=i\\mid Y=j)P(Y=j)=\\sum_j P(X=i,\\, Y=j)=P(X=i)\\). In the continuous case, wherever \\(f_Y(y)>0\\) the product \\(f_{X\\mid Y}(x\\mid y)f_Y(y)\\) equals \\(f(x,y)\\), and \\(\\{y:f_Y(y)=0\\}\\) does not contribute to \\(\\int f(x,y)\\,dy\\). Hence \\(\\int_{-\\infty}^{\\infty} f_{X\\mid Y}(x\\mid y)f_Y(y)\\,dy=f_X(x)\\).",
+      "Discrete total probability is the multiplication rule summed over \\(j\\): \\(\\sum_j P(X=i\\mid Y=j)P(Y=j)=\\sum_j P(X=i,\\, Y=j)=P(X=i)\\). In the continuous case, wherever \\(f_Y(y)>0\\) the product \\(f_{X\\mid Y}(x\\mid y)f_Y(y)\\) equals \\(f(x,y)\\), and \\(\\{y:f_Y(y)=0\\}\\) does not contribute to \\(\\int f(x,y)\\,dy\\). Hence \\[\\int_{-\\infty}^{\\infty} f_{X\\mid Y}(x\\mid y)f_Y(y)\\,dy=f_X(x).\\]",
       "Let \\(X\\sim\\mathrm{Poisson}(\\lambda_1)\\) and \\(Y\\sim\\mathrm{Poisson}(\\lambda_2)\\) be independent, and fix \\(n\\ge 0\\) and \\(k\\in\\{0,\\dots,n\\}\\). Independence gives \\(P(X=k,\\, X+Y=n)=P(X=k,\\, Y=n-k)=P(X=k)P(Y=n-k)\\). Therefore \\[P(X=k\\mid X+Y=n)=\\frac{e^{-\\lambda_1}\\lambda_1^k/k!\\cdot e^{-\\lambda_2}\\lambda_2^{n-k}/(n-k)!}{e^{-(\\lambda_1+\\lambda_2)}(\\lambda_1+\\lambda_2)^n/n!}.\\] The exponential factors cancel. What remains is \\[\\binom{n}{k}\\frac{\\lambda_1^k\\lambda_2^{n-k}}{(\\lambda_1+\\lambda_2)^n}=\\binom{n}{k}\\Big(\\frac{\\lambda_1}{\\lambda_1+\\lambda_2}\\Big)^k\\Big(\\frac{\\lambda_2}{\\lambda_1+\\lambda_2}\\Big)^{n-k}.\\] That is the \\(\\mathrm{Bin}\\big(n,\\, \\lambda_1/(\\lambda_1+\\lambda_2)\\big)\\) pmf. \\(\\square\\)"
     ],
     "example": {
@@ -213,7 +218,8 @@
     "question": "How are the smallest and largest values in an iid sample distributed?",
     "prerequisites": [
       "J02",
-      "R03"
+      "R03",
+      "R06"
     ],
     "summary": "For iid random variables the cdf of the maximum is the common cdf raised to the \\(n\\)th power, and the cdf of the minimum is one minus the \\(n\\)th power of the common survival function. The minimum of independent exponentials is exponential with rate equal to the sum of the rates. The joint density of the minimum and the maximum is explicit, and for \\(n\\) independent uniforms on \\([0,1]\\) the expected range is \\((n-1)/(n+1)\\).",
     "intuition": "The maximum is at most \\(u\\) only when every sample point is at most \\(u\\), and independence turns that into a product. The minimum has failed to exceed \\(u\\) as soon as any one sample point has done so.",
