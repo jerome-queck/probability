@@ -16,8 +16,8 @@ case $role in
   *) echo "unknown role $role" >&2; exit 2 ;;
 esac
 case $model in
-  grok-4.7-*) ;;
-  *) echo "refusing non grok-4.7 model $model" >&2; exit 2 ;;
+  grok-4.7-low | grok-4.7-medium | grok-4.7-high) ;;
+  *) echo "refusing model outside grok-4.7-low/medium/high: $model" >&2; exit 2 ;;
 esac
 agent=${AGENT_BIN:-cursor-agent}
 "$agent" -p --trust --force --model "$model" --output-format stream-json "$(cat "$prompt")" \

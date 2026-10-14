@@ -76,7 +76,12 @@ if (touchesFeatures) {
       const [run, listed] = await Promise.all(
         [api, `${api}/artifacts`].map(async (url) => {
           const res = await fetch(url, {
-            headers: { accept: 'application/vnd.github+json' },
+            headers: {
+              accept: 'application/vnd.github+json',
+              ...(process.env.GH_TOKEN
+                ? { authorization: `Bearer ${process.env.GH_TOKEN}` }
+                : {}),
+            },
           });
           if (!res.ok) throw new Error(`${url} answered ${res.status}`);
           return res.json();
@@ -125,7 +130,10 @@ if (
   !/verify-probability/.test(field('Skills used')) ||
   !/grok-4\.7/.test(field('Skills used')) ||
   !/grok-4\.7-(low|medium|high)(?![-\w])/.test(field('Skills used')) ||
-  /xhigh/i.test(field('Skills used'))
+  // Every tier named must be an allowed one (no xhigh, no -fast variants).
+  (field('Skills used').match(/grok-4\.7[-\w.]*/g) ?? []).some(
+    (t) => !/^grok-4\.7-(low|medium|high)$/.test(t),
+  )
 )
   errors.push(
     '“Skills used:” must list the skills used (at least verify-probability) with model and effort',

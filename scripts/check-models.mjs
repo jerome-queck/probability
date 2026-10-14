@@ -22,7 +22,11 @@ function collect(value, key, out) {
   } else if (Array.isArray(value)) for (const v of value) collect(v, key, out);
   else if (value && typeof value === 'object') {
     // A tool schema that describes a model parameter is not a model choice.
-    if (modelKey.test(key) && ('description' in value || 'type' in value))
+    if (
+      modelKey.test(key) &&
+      typeof value.description === 'string' &&
+      !('id' in value || 'name' in value || 'slug' in value)
+    )
       return;
     for (const [k, v] of Object.entries(value))
       collect(v, modelKey.test(key) ? key : k, out);
