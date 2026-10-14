@@ -54,7 +54,7 @@ Cursor CLI (`cursor-agent`, also `agent`) with pstack installed as its Cursor pl
 `grok-4.7` tiers only (never Claude, GPT, Gemini or Composer); the tier is the effort.
 `setup-pstack` writes `~/.cursor/rules/pstack-models.mdc`: pstack's
 Task subagents accept only `grok-4.7-high`, so every pstack role uses it. The review workflow
-picks its tier per role and runs each role as a fresh headless session with
+picks its tier per role and runs each role as a fresh headless session (resumed with --resume if it stalls or drops) with
 `scripts/agent-run.sh <role> <prompt-file> <out-prefix>`, always in its own git worktree:
 
 | Role | Tier | What it does |
