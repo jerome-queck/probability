@@ -2,16 +2,11 @@ name: evidence
 
 # pull_request_target runs this workflow and the gate script from the BASE branch, so a PR
 # cannot edit this job. The PR head is never checked out or executed here.
-# Known gap: the main-gates ruleset requires the bare context names `check` and `evidence`, so a
-# PR that adds another workflow with a job of the same name could satisfy it. Closing that needs a
-# ruleset or review change on the repo (see AGENTS.md, "Known gate gaps").
+# The main-gates ruleset requires `check` and `evidence` from the GitHub Actions app (integration
+# 15368). Another PR workflow with a job of the same name is also GitHub Actions, so that gap is
+# narrowed, not closed (see AGENTS.md, "Known gate gaps").
 on:
   pull_request_target:
-    types: [opened, synchronize, reopened, edited]
-  # Transitional, for the PR that introduces pull_request_target only (the base branch has no
-  # pull_request_target workflow yet). It still checks out the base commit, never the PR head.
-  # Removed in the follow-up PR: a pull_request workflow comes from the PR's own tree, so a later PR could edit it.
-  pull_request:
     types: [opened, synchronize, reopened, edited]
 
 permissions:
