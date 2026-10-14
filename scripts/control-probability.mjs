@@ -9,6 +9,7 @@ import {
   mkdirSync,
   mkdtempSync,
   openSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -36,6 +37,7 @@ const opt = (name, fallback) => {
   const i = args.indexOf(`--${name}`);
   return i >= 0 ? args[i + 1] : fallback;
 };
+let keptLog = null; // where smoke keeps the server log after its temp dir goes
 let dataDir = resolve(
   opt(
     'data-dir',
@@ -126,7 +128,7 @@ async function launch() {
     process.kill(-child.pid, 'SIGTERM');
   } catch {}
   rmSync(statePathOf(), { force: true });
-  throw new Error(`server did not answer on ${url}; see ${log}`);
+  throw new Error(`server did not answer on ${url}; see ${keptLog ?? log}`);
 }
 
 function alive(pid) {
@@ -233,6 +235,15 @@ async function renderingProblems(page) {
       if (el.getClientRects().length && el.scrollWidth > el.clientWidth + 1)
         problems.push(
           `clipped display math: ${el.scrollWidth}px formula in a ${el.clientWidth}px box (“${el.textContent.slice(0, 40)}”)`,
+        );
+    }
+    // A wrapped inline formula must not leave a scrap (one symbol and its period) alone
+    // on the next line.
+    for (const el of document.querySelectorAll('.math-inline .katex-html')) {
+      const rects = [...el.getClientRects()].filter((r) => r.width > 0);
+      if (rects.length > 1 && rects[rects.length - 1].width < 40)
+        problems.push(
+          `orphaned formula fragment: “${el.textContent.slice(-20)}” wraps alone onto a new line`,
         );
     }
     if (document.querySelector('.math-error'))
@@ -374,7 +385,8 @@ async function smoke() {
   dataDir = base;
   const update = args.includes('--update-baselines');
   const only = opt('only');
-  const out = resolve(opt('artifacts', join(root, 'artifacts/visual')));
+  const out = resolve(opt('artifacts', join(root, 'artifacts/smoke')));
+  keptLog = join(out, 'server.log');
   const fx = JSON.parse(
     readFileSync(
       join(root, '.cursor/skills/verify-probability/features/smoke.json'),
@@ -435,8 +447,11 @@ async function smoke() {
             if (!text.includes(want))
               failures.push(`${label}: expected “${want}” on ${path}`);
           for (const sel of step.expectHidden ?? [])
-            if (await page.locator(sel).isVisible())
-              failures.push(`${label}: expected ${sel} to be hidden`);
+            if (
+              (await page.locator(sel).count()) === 0 ||
+              (await page.locator(sel).isVisible())
+            )
+              failures.push(`${label}: expected ${sel} to exist and be hidden`);
           if (step.expectPath && path !== step.expectPath)
             failures.push(
               `${label}: expected path ${step.expectPath}, got ${path}`,
@@ -484,11 +499,74 @@ async function smoke() {
         }
       }
     }
+    // Sweep: every lesson at both widths gets the rendering checks, so a clipped or
+    // orphaned formula on a page that has no smoke state still fails.
+    if (!only) {
+      const contentDir = join(root, 'src/content');
+      const slug = (t) =>
+        t
+          .normalize('NFKD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '');
+      const all = readdirSync(contentDir)
+        .filter((f) => /^part\d+\.json$/.test(f))
+        .flatMap((f) => JSON.parse(readFileSync(join(contentDir, f), 'utf8')));
+      const routes = [
+        ...all.map((l) => `/lessons/${l.id.toLowerCase()}-${slug(l.title)}`),
+        '/practice',
+        '/reference',
+      ];
+      const sweepWidths = {
+        ...viewports,
+        w600: { width: 600, height: 900 },
+        w860: { width: 860, height: 900 },
+      };
+      for (const vp of Object.keys(sweepWidths)) {
+        const page = await browserApp.newPage({
+          viewport: sweepWidths[vp],
+          deviceScaleFactor: 1,
+          reducedMotion: 'reduce',
+        });
+        try {
+          for (const route of routes) {
+            await page.goto(url + route, { waitUntil: 'networkidle' });
+            if (
+              (await page.locator('h1').first().innerText()) ===
+              'Page not found'
+            )
+              failures.push(`sweep ${route}@${vp}: page not found`);
+            // Open answers and hints too, so their maths is checked as well.
+            const show = page.getByRole('button', {
+              name: /^Show (answer|a hint|another hint)/,
+            });
+            for (let n = 0; n < 60 && (await show.count()); n++)
+              await show.first().click();
+            for (const p of await renderingProblems(page))
+              failures.push(`sweep ${route}@${vp}: ${p}`);
+          }
+        } finally {
+          await page.close();
+        }
+      }
+      console.log(
+        `sweep: ${routes.length} pages checked at ${Object.keys(sweepWidths).length} widths`,
+      );
+    }
   } finally {
-    await browserApp?.close();
+    try {
+      await browserApp?.close();
+    } catch {}
     try {
       await stop();
     } catch {}
+    // Keep the preview server log with the screenshots before the temp dir goes.
+    const log = join(base, 'server.log');
+    if (existsSync(log)) {
+      mkdirSync(out, { recursive: true });
+      writeFileSync(join(out, 'server.log'), readFileSync(log));
+    }
     rmSync(base, { recursive: true, force: true });
   }
   if (failures.length) {
