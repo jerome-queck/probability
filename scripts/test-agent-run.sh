@@ -65,6 +65,14 @@ fake tornmodel "$init; printf '{\"type\":\"assistant\",\"model\":\"claude-op'; e
 check tornmodel "$(call tornmodel)" 1 ''
 fake tornescmodel "$init; printf '{\"type\":\"tool_call\",\"args\":\"{\\\\\"model\\\\\":\\\\\"claude-op'; exit 1"
 check tornescmodel "$(call tornescmodel)" 1 ''
+# A complete last line with no newline is kept, not cut (PR #23 verifier r1, 78a1ac7f).
+fake nlverdict "$init; printf '{\"type\":\"result\",\"result\":\"VERDICT: VERIFIED\",\"session_id\":\"s1\"}'"
+check nlverdict "$(call nlverdict)" 0 'VERDICT: VERIFIED'
+fake nlmodel "$init; $done_ok; printf '{\"type\":\"assistant\",\"model\":\"claude-opus-4-5\"}'"
+check nlmodel "$(call nlmodel)" 1 'claude-opus-4-5'
+fake nlresume "if [ \$resume = 1 ]; then $done_ok; else $init; printf '{\"type\":\"result\",\"result\":\"REVIEW: CHANGES NEEDED\",\"session_id\":\"s1\"}'; fi"
+call nlresume > /dev/null
+check nlresume "$(call nlresume --resume s1)" 0 'REVIEW: CHANGES NEEDED'
 # ...but a torn line without either is dropped and the retry finishes.
 fake tornid "if [ \$resume = 1 ]; then $done_ok; else $init; printf '{\"type\":\"assistant\",\"text\":\"hi\",\"model_call_id\":\"abc'; exit 1; fi"
 call tornid > /dev/null

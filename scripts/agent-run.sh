@@ -59,10 +59,15 @@ python3 "$(dirname "$0")/shrink-images.py" --watch "$pipe" "$((started - 1))" "$
 watcher=$!
 wait "$pipe" || code=$?
 wait "$watcher" 2> /dev/null || true
-# A half-written last line (a killed session): fail closed if it carried a verdict or a model id.
-if [ -n "$(tail -c 1 "$out.jsonl" 2> /dev/null)" ]; then
-  if ! tail -n 1 "$out.jsonl" | node -e 'JSON.parse(require("fs").readFileSync(0, "utf8"))' 2> /dev/null &&
-    tail -n 1 "$out.jsonl" | grep -qE '(VERDICT|REVIEW|MATH):|"model(Name|Id|Slug)?\\*"[[:space:]]*:'; then
+# A last line with no newline: if it is complete JSON, keep it (end the line). If it is half-written
+# (a killed session), fail closed when it carried a verdict or a model id, else cut it.
+if [ -n "$(tail -c 1 "$out.jsonl" 2> /dev/null)" ] &&
+  tail -n 1 "$out.jsonl" | node -e 'JSON.parse(require("fs").readFileSync(0, "utf8"))' 2> /dev/null; then
+  echo >> "$out.jsonl"
+  echo # the streamed copy on stdout lacks it too; the summary starts its own line
+elif [ -n "$(tail -c 1 "$out.jsonl" 2> /dev/null)" ]; then
+  echo
+  if tail -n 1 "$out.jsonl" | grep -qE '(VERDICT|REVIEW|MATH):|"model(Name|Id|Slug)?\\*"[[:space:]]*:'; then
     echo "agent-run: a half-written last line carried a verdict or a model id; failing the run" >&2
     echo >> "$out.jsonl"
     exit 1
