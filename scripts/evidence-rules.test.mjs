@@ -42,3 +42,25 @@ test('an entry without a model fails', () => {
     /must name its model/,
   );
 });
+
+test('PR #20 verifier r1: a silent or timed-out reviewer fails even beside CLEAN', () => {
+  for (const e of ['CLEAN (silent)', 'CLEAN (timed-out)', 'CLEAN, timeout'])
+    assert.match(
+      reviewerErrors(`R1 grok-4.7-high CLEAN (a1); R2 grok-4.7-high ${e}`).join(
+        '\n',
+      ),
+      /has no reported verdict/,
+      e,
+    );
+});
+
+test('PR #20 verifier r1: -fast and xhigh tiers fail', () => {
+  for (const t of ['grok-4.7-high-fast', 'grok-4.7-xhigh'])
+    assert.match(
+      reviewerErrors(`R1 grok-4.7-high CLEAN (a1); R2 ${t} CLEAN (b2)`).join(
+        '\n',
+      ),
+      /must name its model/,
+      t,
+    );
+});

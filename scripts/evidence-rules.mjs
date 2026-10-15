@@ -6,7 +6,7 @@
 export const MIN_REVIEWERS = 2;
 const VERDICT = /\b(CLEAN|CHANGES NEEDED)\b/;
 const MISSING =
-  /\b(dropped|timed? ?out|no report|not report|never reported|did not return|pending|missing|n\/a)\b/i;
+  /\b(dropped|timed?[- ]?out|timeout|silent|no verdict|no report|not report|never reported|did not return|pending|missing|n\/a)\b/i;
 
 export function reviewerErrors(line) {
   const entries = (line ?? '')
@@ -23,9 +23,14 @@ export function reviewerErrors(line) {
       errors.push(
         `“Reviewer verdicts:” entry “${e}” has no reported verdict (CLEAN or CHANGES NEEDED); rerun that reviewer`,
       );
-    else if (!/grok-4\.7-(low|medium|high)\b/.test(e))
+    else if (
+      !/grok-4\.7-(low|medium|high)(?![-\w.])/.test(e) ||
+      (e.match(/grok-4\.7[-\w.]*/g) ?? []).some(
+        (t) => !/^grok-4\.7-(low|medium|high)$/.test(t),
+      )
+    )
       errors.push(
-        `“Reviewer verdicts:” entry “${e}” must name its model (grok-4.7-<tier>)`,
+        `“Reviewer verdicts:” entry “${e}” must name its model as grok-4.7-low, -medium or -high (no -fast, no xhigh)`,
       );
   }
   return errors;
