@@ -91,7 +91,14 @@ export function mathReviewErrors(line) {
 // compare: GitHub's compare of <sha>...<head> ({ status, files: [filename] }); prFiles: the
 // PR's changed files. Fails when the checked commit is not an ancestor of the head, or when a
 // lesson file the PR changes differs between them.
+// GitHub's compare lists at most this many files; a full list may be truncated.
+export const COMPARE_FILE_CAP = 300;
+
 export function staleMathErrors(sha, compare, prFiles) {
+  if (compare.files.length >= COMPARE_FILE_CAP)
+    return [
+      `content changed: the compare of the math check's commit ${sha} with the head lists ${compare.files.length} files, GitHub's cap, so it may be incomplete; ${MATH_RERUN}`,
+    ];
   if (!['ahead', 'identical'].includes(compare.status))
     return [
       `content changed: the math check's commit ${sha} is not an ancestor of the head (compare status “${compare.status}”); ${MATH_RERUN}`,
@@ -103,4 +110,20 @@ export function staleMathErrors(sha, compare, prFiles) {
         `content changed after the math check on ${sha}: ${changed.join(', ')}; ${MATH_RERUN}`,
       ]
     : [];
+}
+
+// A compare that could not run (gh exited non-zero). stderr carries GitHub's own error line.
+export function compareFailedErrors(sha, stderr) {
+  const reason =
+    String(stderr ?? '')
+      .split('\n')
+      .map((l) => l.trim())
+      .find((l) => l.startsWith('gh:')) ?? 'no error from gh';
+  return /HTTP (404|422)\b/.test(reason)
+    ? [
+        `content changed: the math check's commit ${sha} was not found on GitHub (${reason}); push it, or ${MATH_RERUN}`,
+      ]
+    : [
+        `could not compare the math check's commit ${sha} with the head (${reason}); re-run the evidence job`,
+      ];
 }

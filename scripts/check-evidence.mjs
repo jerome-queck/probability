@@ -5,6 +5,7 @@
 // Run in CI by .github/workflows/evidence.yml; locally: PR=<n> node scripts/check-evidence.mjs
 import { execFileSync } from 'node:child_process';
 import {
+  compareFailedErrors,
   mathReviewErrors,
   reviewerErrors,
   staleMathErrors,
@@ -74,7 +75,10 @@ if (files.some((f) => f.startsWith('src/content/'))) {
       errors.push(...staleMathErrors(math.sha, compare, files));
     } catch (error) {
       errors.push(
-        `content changed: could not compare the math check's commit ${math.sha} with the head (${error.message.split('\n')[0]})`,
+        ...compareFailedErrors(
+          math.sha,
+          `${error.stderr ?? ''}\n${error.message}`,
+        ),
       );
     }
   }

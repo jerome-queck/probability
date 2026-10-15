@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import {
+  COMPARE_FILE_CAP,
+  compareFailedErrors,
   EXAMPLE,
   MATH_EXAMPLE,
   mathReviewErrors,
@@ -226,4 +228,30 @@ test('malformed math reviews fail', () => {
     'clean — grok-4.7-high (session 74c693ac) on 7b6bf0c, then edited',
   ])
     assert.ok(mathReviewErrors(bad).errors.length > 0, bad);
+});
+
+// PR #22 reviewer 1 (7c821cb5): a failed compare named neither GitHub's error nor the fix, and a
+// truncated compare list could hide a changed lesson.
+test('a compare that GitHub cannot resolve names its error and the fix', () => {
+  const stderr = 'gh: Not Found (HTTP 404)\n';
+  assert.match(
+    compareFailedErrors('0000000', stderr).join('\n'),
+    /commit 0000000 was not found on GitHub \(gh: Not Found \(HTTP 404\)\); push it, or run the math check on the head/,
+  );
+  assert.match(
+    compareFailedErrors('7b6bf0c', 'gh: Service Unavailable (HTTP 503)').join(
+      '\n',
+    ),
+    /could not compare .*\(gh: Service Unavailable \(HTTP 503\)\); re-run the evidence job/,
+  );
+});
+
+test("a compare list at GitHub's file cap fails closed", () => {
+  const files = Array.from({ length: COMPARE_FILE_CAP }, (_, i) => `f${i}`);
+  assert.match(
+    staleMathErrors('daf7a37', { status: 'ahead', files }, pr13.prFiles).join(
+      '\n',
+    ),
+    /lists 300 files, GitHub's cap, so it may be incomplete/,
+  );
 });
