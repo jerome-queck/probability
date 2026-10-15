@@ -74,8 +74,13 @@ run nonretriable 0 'VERDICT: VERIFIED'
 # A screenshot over 2000px written during the attempt is downscaled before the run ends.
 if python3 -c 'import PIL' 2> /dev/null; then
   mkdir -p "$t/wt/artifacts"
+  # Written, then left to settle (AGENT_IMAGE_SETTLE=0.5 here) before the attempt ends.
   fake bigshot "$init; python3 -c 'from PIL import Image; Image.new(\"RGB\", (3000, 40)).save(\"artifacts/big.png\")'; sleep 2; $done_ok"
-  (cd "$t/wt" && run bigshot 0 'VERDICT: VERIFIED')
+  (cd "$t/wt" && AGENT_IMAGE_SETTLE=0.5 run bigshot 0 'VERDICT: VERIFIED')
+  # A fresh screenshot is not rewritten before a reader (smoke's compare) can use it.
+  fake freshshot "$init; python3 -c 'from PIL import Image; Image.new(\"RGB\", (3000, 40)).save(\"artifacts/fresh.png\")'; sleep 2; python3 -c 'from PIL import Image; print(max(Image.open(\"artifacts/fresh.png\").size))' > $t/fresh.size; $done_ok"
+  (cd "$t/wt" && AGENT_IMAGE_SETTLE=5 run freshshot 0 'VERDICT: VERIFIED')
+  if [ "$(cat "$t/fresh.size" 2> /dev/null)" = 3000 ]; then echo "ok   freshshot-size"; else echo "FAIL freshshot-size ($(cat "$t/fresh.size" 2> /dev/null))"; fails=$((fails + 1)); fi
   w=$(python3 -c "from PIL import Image; print(max(Image.open('$t/wt/artifacts/big.png').size))")
   if [ "$w" -le 2000 ]; then echo "ok   bigshot-size"; else echo "FAIL bigshot-size ($w px)"; fails=$((fails + 1)); fi
 else

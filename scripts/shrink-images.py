@@ -11,10 +11,31 @@ exits 0 (agent-run.sh then also tells the model the limit in its prompt).
 import os, sys, time
 
 MAX = int(os.environ.get("AGENT_IMAGE_MAX", "2000"))
+# A file must be unchanged this long before it is rewritten, so a smoke run can compare its fresh
+# screenshot first; and nothing under a directory where control-probability is running is touched.
+SETTLE = float(os.environ.get("AGENT_IMAGE_SETTLE", "10"))
 EXT = (".png", ".jpg", ".jpeg", ".webp")
 
+def smoke_cwds():
+    out = []
+    for pid in os.listdir("/proc"):
+        if not pid.isdigit():
+            continue
+        try:
+            cmd = open(f"/proc/{pid}/cmdline", "rb").read().decode(errors="replace")
+            if "control-probability" in cmd:
+                out.append(os.path.realpath(os.readlink(f"/proc/{pid}/cwd")))
+        except OSError:
+            pass
+    return out
+
 def one_pass(since, dirs, Image):
+    busy = smoke_cwds()
+    now = time.time()
     for d in dirs:
+        rd = os.path.realpath(d)
+        if any(b == rd or b.startswith(rd + "/") or rd.startswith(b + "/") for b in busy):
+            continue  # a smoke run is comparing screenshots here
         for root, _, files in os.walk(d):
             for f in files:
                 if not f.lower().endswith(EXT):
@@ -23,7 +44,8 @@ def one_pass(since, dirs, Image):
                     continue  # visual baselines are compared at full size
                 p = os.path.join(root, f)
                 try:
-                    if os.path.getmtime(p) < since:
+                    m = os.path.getmtime(p)
+                    if m < since or now - m < SETTLE:
                         continue
                     with Image.open(p) as im:
                         if max(im.size) <= MAX:
@@ -49,7 +71,6 @@ def main():
             try:
                 os.kill(pid, 0)
             except OSError:
-                one_pass(since, dirs, Image)
                 return
             time.sleep(0.5)
     elif a and a[0] == "--once":
