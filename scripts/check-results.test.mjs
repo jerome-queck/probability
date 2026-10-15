@@ -73,3 +73,35 @@ test('a curly apostrophe does not hide an unregistered name (PR #19 verifier r1)
   assert.match(errors, /Boole’s inequality/);
   assert.match(errors, /Vandermonde’s identity/);
 });
+
+test("main's E05 named Wald's equation, unproved, with no marker (PR #19 verifier r2)", () => {
+  const old = JSON.parse(
+    readFileSync('scripts/fixtures/e05-wald-unmarked.json', 'utf8'),
+  );
+  const all = structuredClone(lessons());
+  all.find((l) => l.id === old.id)[old.field] = old.text;
+  assert.match(
+    checkResults(all, results).join('\n'),
+    /E05 caution: wald is quoted, not proved/,
+  );
+  // Before this round the scanner never looked at “equation”, “law”, “rule” or “formula”.
+  const unregistered = results.filter((r) => r.id !== 'wald');
+  assert.match(
+    checkResults(all, unregistered).join('\n'),
+    /"Wald's equation" is not in src\/content\/results\.json/,
+  );
+});
+
+test('accented names and law/rule/formula titles are scanned', () => {
+  const all = structuredClone(lessons());
+  all[0].caution +=
+    ' Hölder’s inequality, Little’s law, Bayes rule aside, Kac’s formula and Bienaymé’s identity.';
+  const errors = checkResults(all, results).join('\n');
+  for (const name of [
+    'Hölder’s inequality',
+    'Little’s law',
+    'Kac’s formula',
+    'Bienaymé’s identity',
+  ])
+    assert.match(errors, new RegExp(`"${name}" is not in`), name);
+});

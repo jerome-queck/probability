@@ -8,10 +8,11 @@
 export const MARKER =
   /\b(quoted|stated)( here)? without proof|\bnot proved here|\bdo not reprove|\btaken as known|\bis assumed\b|\bassumes the\b|\bassumed through\b/i;
 
-// An eponymous or titled result: "Name's theorem" (straight or curly apostrophe), "Name–Name inequality". Each match must be
+// An eponymous or titled result: "Name's theorem" (straight or curly apostrophe), "Name–Name
+// inequality", "Wald's equation", "De Morgan's laws", accented names such as "Hölder's inequality". Each match must be
 // covered by a registry pattern.
 const NAMED =
-  /\b(?:De )?[A-Z][a-z]+(?:[-–][A-Z][a-z]+)*(?:['’]s?)? (?:theorem|inequality|identity|expansion|approximation|lemma|bound)\b/g;
+  /(?<!\p{L})(?:De )?\p{Lu}\p{Ll}+(?:[-–]\p{Lu}\p{Ll}+)*(?:['’]s?)? (?:theorem|inequality|identity|expansion|approximation|lemma|bound|laws?|formula|rule|equation|principle|paradox|fallacy)(?!\p{L})/gu;
 // Capitalised words that start ordinary phrases ("The bound", "Normal approximation").
 const NOT_A_NAME = new Set(
   'The This That Then These Those Both Each Every Same Such Its Our An A Upper Lower Tail Product Normal Poisson Binomial Multinomial Continuity Weak Strong Central Exact General'.split(
