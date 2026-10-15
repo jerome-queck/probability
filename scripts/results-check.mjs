@@ -12,7 +12,7 @@
 
 // A marker that tells the reader the result is used without a proof on this site.
 export const MARKER =
-  /\b(quoted|stated)( here)? without proof|\bnot proved here|\bdo not reprove|\btaken as known|\bis assumed\b|\bassumes the\b|\bassumed through\b/i;
+  /\b(quoted|stated)( here)? without proof|\bnot proved here|\bdo not reprove|\btaken as known|\bassumed through\b/i;
 
 export const strings = (value, path = '') =>
   typeof value === 'string'
@@ -42,8 +42,10 @@ export function checkResults(lessons, results) {
     res: (r.names ?? []).map(nameRegExp),
   }));
   for (const r of registry) {
-    if (!r.res.length)
-      errors.push(`results.json ${r.id}: list at least one name in "names"`);
+    if (!r.res.length || (r.names ?? []).some((n) => !String(n).trim()))
+      errors.push(
+        `results.json ${r.id}: list at least one name in "names", none of them blank`,
+      );
     if (!['proved', 'quoted', 'background'].includes(r.status))
       errors.push(
         `results.json ${r.id}: status must be proved, quoted or background`,

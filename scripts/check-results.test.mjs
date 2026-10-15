@@ -76,18 +76,33 @@ test('a quoted name matches exactly: curly apostrophe, en dash and case', () => 
   assert.equal(inject(' Wald’s equation, quoted without proof.'), '');
 });
 
+// PR #19 reviewer 1 (4f1408d4): an ordinary hypothesis is not a marker.
+test('an incidental "is assumed" or "assumes the" does not mark a quoted result', () => {
+  for (const t of [
+    ' The fourth moment is assumed finite, so the Edgeworth expansion is the next term.',
+    ' This assumes the density is continuous; the Edgeworth expansion follows.',
+  ])
+    assert.match(inject(t), /edgeworth is quoted, not proved/, t);
+});
+
 test('only whole words match', () => {
   assert.equal(inject(' Edgeworthian and strong lawn.'), '');
+  assert.equal(inject(' xEdgeworth and astrong law.'), '');
 });
 
 test('a row needs names, a known status and a home lesson', () => {
   const bad = [
     { id: 'x', names: [], status: 'proved', in: 'F01' },
+    { id: 'w', names: ['probability', ' '], status: 'proved', in: 'F01' },
     { id: 'y', names: ['y'], status: 'shown', in: 'F01' },
     { id: 'z', names: ['z'], status: 'quoted', in: 'Q99' },
   ];
   const errors = checkResults(lessons(), bad).join('\n');
   assert.match(errors, /x: list at least one name/);
+  assert.match(
+    errors,
+    /w: list at least one name in "names", none of them blank/,
+  );
   assert.match(errors, /y: status must be proved, quoted or background/);
   assert.match(errors, /z: "in" must name the lesson/);
 });
