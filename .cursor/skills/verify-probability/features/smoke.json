@@ -29,5 +29,9 @@
   {"feature": "labs", "id": "binomial-poisson-default", "url": "/lessons/d05-poisson-random-variables#lab", "expect": ["p = λ/n = 0.0600"]},
   {"feature": "labs", "id": "binomial-poisson-moved", "url": "/lessons/d05-poisson-random-variables#lab", "actions": [{"range": {"name": "trials", "value": 200}}], "expect": ["p = λ/n = 0.0150"]},
   {"feature": "labs", "id": "normal-approximation-default", "url": "/lessons/r05-the-normal-approximation-to-the-binomial#lab", "expect": ["P(X = 20)"]},
-  {"feature": "labs", "id": "normal-approximation-moved", "url": "/lessons/r05-the-normal-approximation-to-the-binomial#lab", "actions": [{"range": {"name": "trials", "value": 100}}], "expect": ["P(X = 50)"]}
+  {"feature": "labs", "id": "normal-approximation-moved", "url": "/lessons/r05-the-normal-approximation-to-the-binomial#lab", "actions": [{"range": {"name": "trials", "value": 100}}], "expect": ["P(X = 50)"]},
+  {"feature": "labs", "id": "law-of-large-numbers-default", "url": "/lessons/l02-the-weak-law-of-large-numbers#lab", "expect": ["Proportion of heads"]},
+  {"feature": "labs", "id": "law-of-large-numbers-moved", "url": "/lessons/l02-the-weak-law-of-large-numbers#lab", "actions": [{"range": {"name": "tosses", "value": 5000}}], "expect": ["Proportion of heads"]},
+  {"feature": "labs", "id": "central-limit-default", "url": "/lessons/l04-the-central-limit-theorem#lab", "expect": ["Largest gap"]},
+  {"feature": "labs", "id": "central-limit-moved", "url": "/lessons/l04-the-central-limit-theorem#lab", "actions": [{"range": {"name": "n", "value": 12}}], "expect": ["Largest gap"]}
 ]
