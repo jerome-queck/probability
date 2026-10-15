@@ -200,7 +200,9 @@
       "edgeworth",
       "berry-esseen",
       "taylor",
-      "central-limit-finite-variance"
+      "central-limit-finite-variance",
+      "markov",
+      "chebyshev"
     ],
     "summary": "For iid random variables with mean \\(\\mu\\) and variance \\(\\sigma^2\\), the distribution function of \\((S_n-n\\mu)/(\\sigma\\sqrt{n})\\) converges to the standard normal distribution function \\(\\Phi\\). The argument below assumes a moment generating function near \\(0\\) and uses the continuity theorem; in practice the limit is an approximation whose error depends on skewness.",
     "intuition": "A sum is a crowd of small independent nudges. After centering and scaling, the moment generating function of that crowd retains the mean and the variance and forgets every other detail of the summands.",

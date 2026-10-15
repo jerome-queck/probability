@@ -166,7 +166,9 @@
     "prerequisites": [
       "R02"
     ],
-    "results": [],
+    "results": [
+      "linearity-of-expectation"
+    ],
     "summary": "The normal family \\(N(\\mu,\\sigma^2)\\) is a location-scale family built on the standard normal density. An affine function of a normal random variable is normal, standardisation reduces every probability to the standard distribution function \\(\\Phi\\), and the parameters \\(\\mu\\) and \\(\\sigma^2\\) are the mean and the variance.",
     "intuition": "The standard bell curve is symmetric about 0 and has spread 1. Shifting it by \\(\\mu\\) and stretching it by \\(\\sigma\\) moves the centre and the width without changing the shape, which is why one table serves the whole family.",
     "definition": [

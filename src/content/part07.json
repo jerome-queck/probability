@@ -70,7 +70,8 @@
     ],
     "results": [
       "linearity-of-expectation",
-      "covariance-bilinearity"
+      "covariance-bilinearity",
+      "expectation-product-rule"
     ],
     "summary": "Covariance is the expected product of the deviations of two random variables from their means, and it equals \\(E[XY]-E[X]E[Y]\\). It is bilinear, so the variance of a sum is the sum of the variances plus twice every pairwise covariance; independence forces covariance to vanish, but a vanishing covariance does not force independence.",
     "intuition": "Covariance records whether the deviations of \\(X\\) and \\(Y\\) from their own means tend to share a sign. Once that joint movement is measured, the variance of a sum is the sum of the variances plus twice every pairwise covariance.",

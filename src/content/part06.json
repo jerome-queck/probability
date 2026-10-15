@@ -9,7 +9,8 @@
       "R01"
     ],
     "results": [
-      "inclusion-exclusion"
+      "inclusion-exclusion",
+      "continuity-of-probability"
     ],
     "summary": "The joint distribution records how random variables behave together. A joint cdf turns rectangle probabilities into arithmetic, a joint pmf or density is summed or integrated to recover each marginal, and the probability of a region is an integral of the joint density over that region.",
     "intuition": "One random variable spreads probability along a line. Two random variables spread it over the plane, and the marginal of either one is what remains after you collapse that plane onto a single axis.",
@@ -238,7 +239,9 @@
       "R03",
       "R06"
     ],
-    "results": [],
+    "results": [
+      "linearity-of-expectation"
+    ],
     "summary": "For iid random variables the cdf of the maximum is the common cdf raised to the \\(n\\)th power, and the cdf of the minimum is one minus the \\(n\\)th power of the common survival function. The minimum of independent exponentials is exponential with rate equal to the sum of the rates. The joint density of the minimum and the maximum is explicit, and for \\(n\\) independent uniforms on \\([0,1]\\) the expected range is \\((n-1)/(n+1)\\).",
     "intuition": "The maximum is at most \\(u\\) only when every sample point is at most \\(u\\), and independence turns that into a product. The minimum has failed to exceed \\(u\\) as soon as any one sample point has done so.",
     "definition": [

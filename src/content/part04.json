@@ -114,7 +114,9 @@
     "prerequisites": [
       "D02"
     ],
-    "results": [],
+    "results": [
+      "linearity-of-expectation"
+    ],
     "summary": "Variance is the expected squared distance from the mean. It equals \\(E[X^2]-(E[X])^2\\), it scales by the square of a constant factor, and its square root is the standard deviation.",
     "intuition": "Variance is large when the probability masses sit far from the balance point, because each unit of mass is charged the square of its distance from the mean.",
     "definition": [

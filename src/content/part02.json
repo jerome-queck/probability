@@ -62,7 +62,8 @@
     ],
     "results": [
       "binomial-theorem",
-      "pascal"
+      "pascal",
+      "stars-and-bars"
     ],
     "summary": "The binomial coefficient \\(\\binom{n}{k}\\) counts the \\(k\\)-element subsets of an \\(n\\)-element set. Pascal's identity builds these numbers from smaller ones, the binomial theorem expands \\((x+y)^n\\), and adding every coefficient shows that an \\(n\\)-element set has \\(2^n\\) subsets.",
     "intuition": "An unordered selection is an ordered one with the internal order forgotten, so divide the permutation count by \\(k!\\).",
