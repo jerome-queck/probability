@@ -32,7 +32,8 @@ inequality, strong law, ...) with the lesson that proves it, or status `quoted` 
 `background` (calculus tools the site assumes). `npm run check:results` scans every lesson string for
 two kinds of title: a capitalised name before a title word ("Wald's equation", "Binomial theorem",
 "Berry–Esseen bound"), and lowercase titles ("the central limit theorem", "the cdf criterion", "the
-multiplication principle", "the strong law", "the law of total probability", inclusion–exclusion).
+multiplication principle", "the strong law", "the law of total probability", inclusion–exclusion),
+also as a heading or sentence start without "the" ("Central limit theorem.").
 After "the", only "theorem", "criterion" and "principle" count as titles, so a result called
 "the … formula" or "the … rule" is not found and must be registered by hand, as must a result stated
 without a title (MGF uniqueness). The check fails when a scanned title is not registered, or when a

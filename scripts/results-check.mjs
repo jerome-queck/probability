@@ -32,7 +32,11 @@ const ORDINARY =
 // "the variance formula" or "the chain rule" are ordinary words, so those must be registered
 // by hand (see AGENTS.md).
 const TITLED =
-  /(?<!\p{L})(?:[Tt]he ((?:\p{L}[\p{L}'’–-]* ){1,3})(?:theorem|criterion|principle)|(?:strong|weak) laws?|laws? of (?:total \p{L}+|large numbers|the unconscious statistician)|inclusion[-–]exclusion)(?!\p{L})/gu;
+  /(?<!\p{L})(?:[Tt]he ((?:\p{L}[\p{L}'’–-]* ){1,3})(?:theorem|criterion|principle)|(?:[Ss]trong|[Ww]eak) laws?|[Ll]aws? of (?:total \p{L}+|large numbers|the unconscious statistician)|[Ii]nclusion[-–]exclusion)(?!\p{L})/gu;
+// The same titles as a heading or at the start of a sentence, with no "the": "Central limit
+// theorem.", "Basic counting principle." (PR #19 verifier r5).
+const HEADING =
+  /(?:^|[.!?:]\s+)((?:\p{Lu}[\p{L}'’–-]*)(?: \p{L}[\p{L}'’–-]*){0,2} (?:theorem|criterion|principle))(?!\p{L})/gu;
 // Words after "the" that make an ordinary reference, not a title ("the same theorem").
 const NOT_A_TITLE =
   /^(?:same|previous|above|next|following|last|first|second|general|stated|proposed|whole|main|key|preceding|earlier|later) /i;
@@ -85,6 +89,11 @@ export function checkResults(lessons, results) {
       }
       for (const m of text.matchAll(TITLED))
         if (!NOT_A_TITLE.test(m[1] ?? '')) names.push(m[0]);
+      for (const m of text.matchAll(HEADING)) {
+        const first = m[1].split(/[\s'’]/)[0];
+        if (!NOT_A_NAME.has(first) && !NOT_A_TITLE.test(`${m[1]} `))
+          names.push(m[1]);
+      }
       for (const name of names)
         if (!registry.some((r) => r.res.some((re) => re.test(name))))
           errors.push(

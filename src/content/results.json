@@ -4,7 +4,7 @@
   { "id": "multinomial-theorem", "patterns": ["multinomial theorem"], "status": "proved", "in": "C03" },
   { "id": "boole", "patterns": ["Boole's inequality"], "status": "proved", "in": "F02" },
   { "id": "de-morgan", "patterns": ["De Morgan's laws?"], "status": "proved", "in": "F01" },
-  { "id": "counting-principle", "patterns": ["Basic principle", "Generalized rule", "multiplication principle"], "status": "proved", "in": "C01" },
+  { "id": "counting-principle", "patterns": ["Basic (counting )?principle", "Generalized rule", "multiplication principle"], "status": "proved", "in": "C01" },
   { "id": "inclusion-exclusion", "patterns": ["inclusion[-–]exclusion"], "status": "proved", "in": "F02" },
   { "id": "multiplication-rule", "patterns": ["Multiplication rule"], "status": "proved", "in": "K01" },
   { "id": "total-probability", "patterns": ["law of total probability"], "status": "proved", "in": "K02" },

@@ -180,3 +180,27 @@ test('lowercase titles are scanned: theorem, criterion, principle, strong/weak l
   ])
     assert.match(errors, new RegExp(`"${name}" is not in`), name);
 });
+
+test('headings and sentence starts without "the" are scanned (PR #19 verifier r5)', () => {
+  const all = structuredClone(lessons());
+  all[0].caution +=
+    ' Central limit theorem. Law of total probability holds. Basic counting principle: multiply.';
+  const errors = checkResults(
+    all,
+    results.filter(
+      (r) =>
+        !['central-limit', 'total-probability', 'counting-principle'].includes(
+          r.id,
+        ),
+    ),
+  ).join('\n');
+  for (const name of [
+    'Central limit theorem',
+    'Law of total probability',
+    'Basic counting principle',
+  ])
+    assert.match(errors, new RegExp(`"${name}" is not in`), name);
+  const plain = structuredClone(lessons());
+  plain[0].caution += ' Same theorem. This principle. The theorem holds.';
+  assert.deepEqual(checkResults(plain, results), []);
+});
