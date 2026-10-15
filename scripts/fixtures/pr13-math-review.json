@@ -1,0 +1,17 @@
+{
+  "source": "PR #13 as merged (head 6b07caf): its Math review line, its changed files, and GitHub's compare of the math-checked commit daf7a37 with that head",
+  "mathReview": "clean by an independent grok-4.7-high math checker on cursor-agent (session c2b59ec2-c4a2-4af6-a4ec-435f15363ca7) on daf7a37; every E01–E05 value recomputed. The only later change is the E03 display of the b<0 correlation and a citation of D01 continuity, reviewed clean below. Earlier rounds fixed the E01 tail-sum and monotonicity proofs, E03 almost-sure step, E04 ties, E05 integrability, and E03's ±1 statement for constant X",
+  "head": "6b07caf",
+  "prFiles": [
+    "src/content/order.json",
+    "src/content/part07.json"
+  ],
+  "compare": {
+    "files": [
+      ".cursor/skills/verify-probability/baselines/labs/normal-approximation-default.desktop.png",
+      ".cursor/skills/verify-probability/baselines/progress/home-continue.mobile.png",
+      "src/content/part07.json"
+    ],
+    "status": "ahead"
+  }
+}

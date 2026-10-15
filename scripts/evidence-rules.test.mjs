@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import { EXAMPLE, reviewerErrors } from './evidence-rules.mjs';
+import {
+  EXAMPLE,
+  MATH_EXAMPLE,
+  mathReviewErrors,
+  reviewerErrors,
+  staleMathErrors,
+} from './evidence-rules.mjs';
 
 // PR #18's merged body: the review line says both second-opinion sessions dropped, and there
 // was no per-reviewer record. That merge should not have passed.
@@ -150,4 +156,74 @@ test('duplicate number and fake id errors name the correction', () => {
     ).join('\n'),
     /session= id agent-run\.sh printed/,
   );
+});
+
+// PR #13 merged with its math check on daf7a37 and E03 (src/content/part07.json) edited after it.
+const pr13 = JSON.parse(
+  readFileSync('scripts/fixtures/pr13-math-review.json', 'utf8'),
+);
+
+test('PR #13: free-text math review fails the fixed form', () => {
+  assert.match(
+    mathReviewErrors(pr13.mathReview).errors.join('\n'),
+    /must read “clean — grok-4\.7-high \(session 74c693ac\) on 7b6bf0c/,
+  );
+});
+
+test('PR #13: lesson text changed after the math check fails', () => {
+  assert.match(
+    staleMathErrors('daf7a37', pr13.compare, pr13.prFiles).join('\n'),
+    /content changed after the math check on daf7a37: src\/content\/part07\.json; run the math check on the head/,
+  );
+});
+
+test('the example and a math check on the head pass', () => {
+  assert.deepEqual(mathReviewErrors(MATH_EXAMPLE), {
+    errors: [],
+    sha: '7b6bf0c',
+  });
+  assert.deepEqual(
+    mathReviewErrors(
+      'clean - grok-4.7-high (session c2b59ec2-c4a2-4af6-a4ec-435f15363ca7) on daf7a37',
+    ).errors,
+    [],
+  );
+  assert.deepEqual(
+    staleMathErrors(
+      '7b6bf0c',
+      { status: 'identical', files: [] },
+      pr13.prFiles,
+    ),
+    [],
+  );
+});
+
+test('only lesson files this PR changes count; a non-ancestor commit fails', () => {
+  const compare = {
+    status: 'ahead',
+    files: ['src/content/part03.json', 'scripts/x.mjs', 'baseline.png'],
+  };
+  assert.deepEqual(staleMathErrors('daf7a37', compare, pr13.prFiles), []);
+  assert.match(
+    staleMathErrors(
+      'daf7a37',
+      { status: 'diverged', files: [] },
+      pr13.prFiles,
+    ).join('\n'),
+    /not an ancestor of the head/,
+  );
+});
+
+test('malformed math reviews fail', () => {
+  for (const bad of [
+    'clean',
+    'clean — grok-4.7-high on 7b6bf0c',
+    'clean — grok-4.7-xhigh (session 74c693ac) on 7b6bf0c',
+    'clean — grok-4.7-high (session 74c693ac) on 7b6bf0cz',
+    'clean — grok-4.7-high (session 74C693AC) on 7b6bf0c',
+    'CHANGES NEEDED — grok-4.7-high (session 74c693ac) on 7b6bf0c',
+    'clean — grok-4.7-high (session 00000000) on 7b6bf0c',
+    'clean — grok-4.7-high (session 74c693ac) on 7b6bf0c, then edited',
+  ])
+    assert.ok(mathReviewErrors(bad).errors.length > 0, bad);
 });

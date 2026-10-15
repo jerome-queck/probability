@@ -1,9 +1,14 @@
 #!/usr/bin/env node
 // Merge gate: the PR body must carry an independent verifier verdict and a clean review for
-// the current head SHA, plus evidence. Content PRs also need a clean math review.
+// the current head SHA, plus evidence. Content PRs also need a clean math check of the lesson
+// text at the head.
 // Run in CI by .github/workflows/evidence.yml; locally: PR=<n> node scripts/check-evidence.mjs
 import { execFileSync } from 'node:child_process';
-import { reviewerErrors } from './evidence-rules.mjs';
+import {
+  mathReviewErrors,
+  reviewerErrors,
+  staleMathErrors,
+} from './evidence-rules.mjs';
 
 const pr = process.env.PR;
 const gh = (...a) => execFileSync('gh', a, { encoding: 'utf8' });
@@ -42,16 +47,38 @@ if (field('Evidence').length < 10)
   errors.push(
     '“Evidence:” must point at the proof (CI run, smoke drives, artifacts)',
   );
-if (
-  files.some((f) => f.startsWith('src/content/')) &&
-  !(
-    /^clean\b/i.test(field('Math review')) &&
-    /grok-4\.7/i.test(field('Math review'))
-  )
-)
-  errors.push(
-    'content changed: “Math review:” must start with “clean” and name the independent reviewer',
-  );
+// Content PRs need a clean math check of the lesson text as it is at the head.
+if (files.some((f) => f.startsWith('src/content/'))) {
+  const math = mathReviewErrors(field('Math review'));
+  errors.push(...math.errors);
+  if (math.sha) {
+    try {
+      const repo =
+        process.env.GITHUB_REPOSITORY ||
+        gh(
+          'repo',
+          'view',
+          '--json',
+          'nameWithOwner',
+          '-q',
+          '.nameWithOwner',
+        ).trim();
+      const compare = JSON.parse(
+        gh(
+          'api',
+          `repos/${repo}/compare/${math.sha}...${head}`,
+          '--jq',
+          '{status, files: [.files[].filename]}',
+        ),
+      );
+      errors.push(...staleMathErrors(math.sha, compare, files));
+    } catch (error) {
+      errors.push(
+        `content changed: could not compare the math check's commit ${math.sha} with the head (${error.message.split('\n')[0]})`,
+      );
+    }
+  }
+}
 
 // Feature changes need the verify-skill run (driver + screenshots looked at) and a named
 // independent reviewer, and every PR lists the skills used with model and effort.
