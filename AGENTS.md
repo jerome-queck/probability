@@ -70,7 +70,7 @@ Box Ops' `longrun`, never supervised from a chat turn.
 |---|---|---|
 | verifier | `grok-4.7-high` | independent verifier using `verify-probability`; looks at the screenshots |
 | review | `grok-4.7-high` | one `interrogate` reviewer per session, no Task subagents; each PR gets two such sessions (R1, R2), started one at a time, each with its own prompt |
-| math | `grok-4.7-high` | independent math check of lesson content against the sources |
+| math | `grok-4.7-high` | independent math check of lesson content against the sources, at authoring time (before the verifier and reviewers) and again after any lesson edit |
 | chore | `grok-4.7-medium` | mechanical work: merges, baselines, PR bodies |
 
 Before each batch of sessions, check the plan usage (`/usage` in `cursor-agent`) and stop if
@@ -91,6 +91,13 @@ Every content PR records, in the PR body: (1) the source check — each lesson c
 the source material and the textbook, (2) an independent review by a separate session or model
 that did not write the content, with its verdict, and (3) any corrections made. A lesson whose
 review is not clean does not merge.
+
+The math check runs at authoring time: run `scripts/agent-run.sh math <prompt> <out>` on the
+changed lessons before the verifier and reviewers, fix what it finds, and run it again after any
+later edit to the lesson text. The PR body's “Math review:” records the last clean run in a fixed
+form, `clean — grok-4.7-high (session <id>) on <sha>; notes`, where `<sha>` is the commit it
+checked; the evidence job fails if a lesson file the PR changes differs between `<sha>` and the
+head, or if `<sha>` is not an ancestor of the head.
 
 ## Merge gates (auto-merge)
 
@@ -143,7 +150,7 @@ OK. Fixing a wrong gate is its own PR.
 | Evidence and verdicts are in the PR | `.github/workflows/evidence.yml` (pull_request_target: the gate script comes from the base branch, never the PR head) + `.github/pull_request_template.md` |
 | Merge only on green, up-to-date heads | GitHub ruleset `main-gates` (required checks `check` and `evidence`, strict) |
 | Every review session reported (no merge on a lead-only review after a reviewer dropped) | `scripts/evidence-rules.mjs` via `.github/workflows/evidence.yml` (“Reviewer verdicts:”) + `scripts/evidence-rules.test.mjs` (fails on PR #18's body) |
-| Math reviewed independently before merge | `.github/workflows/evidence.yml` (requires a clean math-review line for content PRs) |
+| Math checked independently on the lesson text as merged | `.github/workflows/evidence.yml` + `scripts/evidence-rules.mjs` (content PRs: “Math review:” in the fixed form, no lesson file the PR changes edited after the checked commit) + `scripts/evidence-rules.test.mjs` (fails on PR #13, merged with E03 edited after its math check) |
 
 ## Run log (every agent run)
 
