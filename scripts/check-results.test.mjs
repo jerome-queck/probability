@@ -58,3 +58,18 @@ test('a proved result whose home lesson never names it fails', () => {
     /markov: lesson F01 never names it/,
   );
 });
+
+test('a curly apostrophe does not hide an unregistered name (PR #19 verifier r1)', () => {
+  const all = structuredClone(lessons());
+  all[0].caution += ' By Hoeffding’s inequality the bound is sharper.';
+  assert.match(
+    checkResults(all, results).join('\n'),
+    /Hoeffding’s inequality" is not in src\/content\/results\.json/,
+  );
+  const unregistered = results.filter(
+    (r) => !['boole', 'vandermonde'].includes(r.id),
+  );
+  const errors = checkResults(lessons(), unregistered).join('\n');
+  assert.match(errors, /Boole’s inequality/);
+  assert.match(errors, /Vandermonde’s identity/);
+});

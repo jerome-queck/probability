@@ -8,10 +8,10 @@
 export const MARKER =
   /\b(quoted|stated)( here)? without proof|\bnot proved here|\bdo not reprove|\btaken as known|\bis assumed\b|\bassumes the\b|\bassumed through\b/i;
 
-// An eponymous or titled result: "Name's theorem", "Name–Name inequality". Each match must be
+// An eponymous or titled result: "Name's theorem" (straight or curly apostrophe), "Name–Name inequality". Each match must be
 // covered by a registry pattern.
 const NAMED =
-  /\b(?:De )?[A-Z][a-z]+(?:[-–][A-Z][a-z]+)*(?:'s?)? (?:theorem|inequality|identity|expansion|approximation|lemma|bound)\b/g;
+  /\b(?:De )?[A-Z][a-z]+(?:[-–][A-Z][a-z]+)*(?:['’]s?)? (?:theorem|inequality|identity|expansion|approximation|lemma|bound)\b/g;
 // Capitalised words that start ordinary phrases ("The bound", "Normal approximation").
 const NOT_A_NAME = new Set(
   'The This That Then These Those Both Each Every Same Such Its Our An A Upper Lower Tail Product Normal Poisson Binomial Multinomial Continuity Weak Strong Central Exact General'.split(
@@ -33,7 +33,8 @@ export const strings = (value, path = '') =>
 const compile = (results) =>
   results.map((r) => ({
     ...r,
-    res: r.patterns.map((p) => new RegExp(p, 'i')),
+    // A straight apostrophe in a pattern also matches the curly one the lessons often use.
+    res: r.patterns.map((p) => new RegExp(p.replace(/'/g, "['’]"), 'i')),
   }));
 
 // Returns error strings, each naming the lesson, field and fix.
