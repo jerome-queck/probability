@@ -129,7 +129,7 @@ OK. Fixing a wrong gate is its own PR.
 |---|---|
 | No course, institution, lecturer or handout identifiers anywhere | `scripts/check-forbidden.mjs` (tree, history, branch, PR text) + `scripts/check-forbidden.test.mjs` |
 | Lessons are complete, IDs unique, prerequisites earlier, math renders | `scripts/check-content.mjs` |
-| Every named result in `src/content/results.json` (exact names, matched case-insensitively as whole words) is used in the lesson that proves it, and a quoted result says so ("quoted without proof") in an entry that names it, in every lesson that names it; new results are added to the registry by hand | `scripts/check-results.mjs` + `src/content/results.json` + `scripts/check-results.test.mjs` (fails on PR #14's text before math round 1) |
+| Every named result a lesson names or states is tagged in its `results` list; every tag is registered in `src/content/results.json`, every registered result is tagged by some lesson, and a proved or quoted result's home lesson tags it. No prose is scanned; tag completeness is the math review's job (docs/root-cause/19.md) | `scripts/check-results.mjs` + `src/content/results.json` + `scripts/check-results.test.mjs` (deleting any row fails) |
 | Feature map, verify skill, smoke drives, labs, chapters and tests stay in sync | `scripts/check-drift.mjs` |
 | Every rule here names an enforcer that exists | `scripts/check-rule-table.mjs` |
 | Probability helpers behave correctly | `src/math/counting.test.ts`, `src/math/distributions.test.ts`, `src/math/simulation.test.ts` |

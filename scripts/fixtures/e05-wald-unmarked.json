@@ -1,6 +1,0 @@
-{
-  "source": "src/content/part07.json on main at fd0c1c3 (before PR #19 round 3)",
-  "id": "E05",
-  "field": "caution",
-  "text": "The term \\((E[X])^2\\operatorname{Var}(N)\\) is the part of \\(\\operatorname{Var}(S)\\) that comes from not knowing how many summands there will be. Omitting it is correct only when the term genuinely vanishes: when \\(\\mu=0\\), or when \\(N\\) is almost surely constant so that \\(\\operatorname{Var}(N)=0\\). The formula also requires \\(N\\) to be independent of every \\(X_i\\). If \\(N\\) is a stopping time built from the \\(X_i\\), the conditional law of the summands given \\(N=n\\) is no longer the original i.i.d. law, and the conditional identities \\(E[S\\mid N=n]=n\\mu\\) and \\(\\operatorname{Var}(S\\mid N=n)=n\\sigma^2\\) can fail. The mean formula \\(E[S]=E[N]\\mu\\) still holds when \\(E[N]\\) and \\(E[|X_1|]\\) are finite (Wald's equation), but the variance formula can fail: for steps of 1 or 2 with probability \\(\\tfrac12\\) each, stopped once the total reaches 2, the formula gives \\(\\tfrac{15}{16}\\) while the true variance is \\(\\tfrac{3}{16}\\). Finally \\(E[\\operatorname{Var}(X\\mid Y)]\\) is a number, whereas \\(\\operatorname{Var}(X\\mid Y)\\) is a random variable."
-}

@@ -7,6 +7,7 @@
     "prerequisites": [
       "D01"
     ],
+    "results": [],
     "summary": "A continuous random variable is described by a density: a nonnegative function that integrates to 1. Probabilities are areas under that curve, the distribution function is the running area from the left, and every single point has probability 0.",
     "intuition": "Probability is area under the density. The height \\(f(x)\\) records how tightly that area is packed near \\(x\\), so the height itself need not be smaller than 1.",
     "definition": [
@@ -56,6 +57,10 @@
       "R01",
       "D03",
       "D08"
+    ],
+    "results": [
+      "lotus",
+      "fubini-tonelli"
     ],
     "summary": "The expectation of a continuous random variable is the integral of \\(x\\) against its density, and the expectation of \\(g(X)\\) is the integral of \\(g\\) against the same density. Variance is the expected square deviation from the mean, and it equals \\(E[X^2]-(E[X])^2\\).",
     "intuition": "The density marks where the probability sits, and the expectation is the balance point of that mass. Variance is the average squared distance from the balance point.",
@@ -110,6 +115,7 @@
     "prerequisites": [
       "R02"
     ],
+    "results": [],
     "summary": "The uniform distribution on an interval \\((a,b)\\) has constant density \\(1/(b-a)\\). Probabilities are ratios of lengths, the mean is the midpoint, and the variance is \\((b-a)^2/12\\).",
     "intuition": "If the value is spread evenly, probability is just the fraction of the interval that the event occupies. The centre of mass sits at the midpoint, and a longer interval spreads the mass further.",
     "definition": [
@@ -158,6 +164,7 @@
     "prerequisites": [
       "R02"
     ],
+    "results": [],
     "summary": "The normal family \\(N(\\mu,\\sigma^2)\\) is a location-scale family built on the standard normal density. An affine function of a normal random variable is normal, standardisation reduces every probability to the standard distribution function \\(\\Phi\\), and the parameters \\(\\mu\\) and \\(\\sigma^2\\) are the mean and the variance.",
     "intuition": "The standard bell curve is symmetric about 0 and has spread 1. Shifting it by \\(\\mu\\) and stretching it by \\(\\sigma\\) moves the centre and the width without changing the shape, which is why one table serves the whole family.",
     "definition": [
@@ -214,6 +221,12 @@
       "D04",
       "D05"
     ],
+    "results": [
+      "poisson-limit",
+      "de-moivre-laplace",
+      "stirling",
+      "taylor"
+    ],
     "summary": "The De Moivre-Laplace theorem says that a binomial count, after centring at \\(np\\) and scaling by \\(\\sqrt{np(1-p)}\\), converges to the standard normal. For finite \\(n\\) one uses a continuity correction, and the practical requirement is \\(np(1-p)\\ge 10\\). A Poisson approximation is the one to use when \\(p\\) is small and that product is not large.",
     "intuition": "A binomial histogram is a stack of bars of width 1. When many bars form a nearly symmetric mound, the normal curve tracks their tops, and each bar's area is matched by the normal probability on an interval of length 1 centred at the integer.",
     "definition": [
@@ -268,6 +281,7 @@
       "R02",
       "D05"
     ],
+    "results": [],
     "summary": "The exponential distribution with rate \\(\\lambda\\) has density \\(\\lambda e^{-\\lambda x}\\) on the positive line, mean \\(1/\\lambda\\) and variance \\(1/\\lambda^2\\). It is memoryless, it is the only continuous memoryless law, and it is the waiting time until the first event of a Poisson process of rate \\(\\lambda\\).",
     "intuition": "A constant hazard means the process has no ageing: surviving up to time \\(s\\) does not change the law of the remaining wait. That is exactly the gap before the next event when events arrive at a steady rate.",
     "definition": [
@@ -318,6 +332,7 @@
     "prerequisites": [
       "R06"
     ],
+    "results": [],
     "summary": "The gamma function normalises a two-parameter density on the positive line. A gamma random variable with shape \\(\\alpha\\) and rate \\(\\lambda\\) has mean \\(\\alpha/\\lambda\\) and variance \\(\\alpha/\\lambda^2\\). When the shape is an integer \\(n\\), this is the waiting time until the \\(n\\)th event of a Poisson process of rate \\(\\lambda\\), and the exponential law is the case \\(n=1\\).",
     "intuition": "Each new event adds another exponential wait of mean \\(1/\\lambda\\). After \\(n\\) events the means have added to \\(n/\\lambda\\), and the gamma density is the law of that total wait.",
     "definition": [
@@ -371,6 +386,7 @@
       "R03",
       "R06"
     ],
+    "results": [],
     "summary": "The distribution function of \\(Y=g(X)\\) is a probability statement about \\(X\\), and the density of \\(Y\\) is its derivative. When \\(g\\) is strictly monotone and differentiable, that derivative collapses to a single formula involving the inverse of \\(g\\). Squaring, affine maps, and the logarithm each illustrate the method.",
     "intuition": "Probability is pushed forward by \\(g\\), and the factor \\(|h'(y)|=1/|g'(h(y))|\\) rescales the density so the area is preserved. Where \\(g\\) is steep, a stretch of \\(y\\)-values comes from a short stretch of \\(x\\)-values, so the probability is spread thin and the density of \\(Y\\) is low. Where \\(g\\) is flat, the same stretch of \\(y\\) collects a long stretch of \\(x\\), and the density of \\(Y\\) is high.",
     "definition": [

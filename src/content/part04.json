@@ -7,6 +7,7 @@
     "prerequisites": [
       "F03"
     ],
+    "results": [],
     "summary": "A random variable is a numerical measurement of the outcome. For a discrete random variable the probability mass function lists the probability at each value, and the cumulative distribution function stacks those probabilities up to each threshold.",
     "intuition": "The mass function places a weight on each possible number. The distribution function tells how much weight sits at or to the left of a point, and a vertical jump is a point mass.",
     "definition": [
@@ -57,6 +58,7 @@
     "prerequisites": [
       "D01"
     ],
+    "results": [],
     "summary": "The expectation of a discrete random variable is the sum of each value times its probability. The same weights compute the expectation of a function of the variable, and expectation is linear under scaling and shifting.",
     "intuition": "Expectation is the balance point of the probability masses, and it is the average value you settle on if each number \\(x\\) keeps appearing with frequency \\(p(x)\\).",
     "definition": [
@@ -108,6 +110,7 @@
     "prerequisites": [
       "D02"
     ],
+    "results": [],
     "summary": "Variance is the expected squared distance from the mean. It equals \\(E[X^2]-(E[X])^2\\), it scales by the square of a constant factor, and its square root is the standard deviation.",
     "intuition": "Variance is large when the probability masses sit far from the balance point, because each unit of mass is charged the square of its distance from the mean.",
     "definition": [
@@ -158,6 +161,9 @@
       "C02",
       "K04"
     ],
+    "results": [
+      "binomial-theorem"
+    ],
     "summary": "A Bernoulli random variable records success or failure on one trial. A binomial random variable counts successes in a fixed number of independent copies of that trial; its mean, variance and mode are determined by \\(n\\) and \\(p\\).",
     "intuition": "Each trial contributes a success with probability \\(p\\), so \\(n\\) trials contribute about \\(np\\) successes. The binomial coefficient counts the orders in which those successes can arrive.",
     "definition": [
@@ -206,6 +212,9 @@
     "question": "Which distribution counts rare events, and why does it appear as a limit of binomial counts?",
     "prerequisites": [
       "D04"
+    ],
+    "results": [
+      "poisson-limit"
     ],
     "summary": "A Poisson random variable with mean \\(\\lambda\\) puts mass \\(e^{-\\lambda}\\lambda^k/k!\\) on each nonnegative integer. The same parameter is both the mean and the variance, and the distribution is the limit of binomial counts whose mean stays equal to \\(\\lambda\\).",
     "intuition": "Many independent trials, each with a tiny success probability, produce a count that depends on the trials only through the product \\(np\\). In time, lengthening the window in which you count multiplies that mean by the same factor.",
@@ -257,6 +266,7 @@
       "D03",
       "K04"
     ],
+    "results": [],
     "summary": "A geometric random variable is the trial number of the first success, so it counts that successful trial. Its tail is a pure power of the failure probability, its mean is \\(1/p\\), its variance is \\((1-p)/p^2\\), and the remaining wait after a run of failures has the same distribution as the original wait.",
     "intuition": "Every trial is a fresh chance with the same success probability, so the number of trials you expect to need is \\(1/p\\), and failures already suffered do not bring the next success any closer.",
     "definition": [
@@ -306,6 +316,7 @@
     "prerequisites": [
       "D04"
     ],
+    "results": [],
     "summary": "When \\(n\\) items are drawn without replacement from a population of size \\(N\\) containing \\(m\\) marked items, the number of marked items in the sample is hypergeometric. Its mean is \\(nm/N\\), and its variance is the binomial variance multiplied by the finite-population factor \\((N-n)/(N-1)\\).",
     "intuition": "Each seat in the sample has the same chance \\(m/N\\) of being filled by a marked item, which fixes the mean at \\(nm/N\\). Once the sample contains more than one item, a marked item already drawn cannot appear again, so the count varies less than a with-replacement count.",
     "definition": [
@@ -358,6 +369,7 @@
       "D04",
       "D07"
     ],
+    "results": [],
     "summary": "On a finite or countable sample space, expectation adds over outcomes. The expectation of a sum is therefore the sum of the expectations, with no independence hypothesis. Indicators turn this into a machine for computing means of counts, including the binomial mean, the hypergeometric mean and the expected number of fixed points of a random permutation.",
     "intuition": "Expectation averages a numerical function over outcomes. Adding two functions and then averaging is the same as averaging each function and adding the averages, whether or not the functions rise and fall together.",
     "definition": [

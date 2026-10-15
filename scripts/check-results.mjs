@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Runs scripts/results-check.mjs on every lesson. Fix: correct the row's "names" or "in" in
-// src/content/results.json, or mark a quoted result "quoted without proof" where it is named.
+// Runs scripts/results-check.mjs on every lesson. Fix: correct a lesson's "results" tags or the
+// row in src/content/results.json, as the error says.
 import { readdirSync, readFileSync } from 'node:fs';
 import { checkResults } from './results-check.mjs';
 

@@ -7,6 +7,10 @@
     "prerequisites": [
       "F03"
     ],
+    "results": [
+      "multiplication-rule",
+      "total-probability"
+    ],
     "summary": "If \\(F\\) has positive probability, \\(P(E\\mid F)\\) is the probability of \\(E\\) recomputed inside \\(F\\). The set function \\(E\\mapsto P(E\\mid F)\\) is itself a probability, and the multiplication rule rebuilds a joint probability as a chain of one-step conditionals.",
     "intuition": "Learning that \\(F\\) occurred throws away every outcome outside \\(F\\) and rescales the probability that remains so that it totals 1.",
     "definition": [
@@ -56,6 +60,11 @@
     "prerequisites": [
       "K01"
     ],
+    "results": [
+      "multiplication-rule",
+      "total-probability",
+      "bayes"
+    ],
     "summary": "If the sample space is cut into disjoint pieces that cover every outcome, \\(P(E)\\) is the sum, over the pieces, of the probability of passing through that piece and then through \\(E\\).",
     "intuition": "Average the conditional probabilities of \\(E\\), using each piece's probability as its weight. A tree diagram is that average drawn as successive branches.",
     "definition": [
@@ -102,6 +111,11 @@
     "question": "Given that an effect was observed, how should the probability of each possible cause be updated?",
     "prerequisites": [
       "K02"
+    ],
+    "results": [
+      "multiplication-rule",
+      "total-probability",
+      "bayes"
     ],
     "summary": "Bayes' rule turns the conditional probabilities of the evidence given each piece of a partition into the conditional probabilities of the pieces given the evidence. The numbers \\(P(F_i)\\) are the prior probabilities; the numbers \\(P(F_i\\mid E)\\) are the posterior probabilities.",
     "intuition": "The posterior is proportional to prior times likelihood. A cause that was rare before the observation can remain unlikely afterwards when most of the observations are produced by the large complementary group.",
@@ -153,6 +167,10 @@
     "question": "When does learning that one event occurred leave the probability of another event unchanged?",
     "prerequisites": [
       "K01"
+    ],
+    "results": [
+      "binomial-theorem",
+      "inclusion-exclusion"
     ],
     "summary": "Two events are independent when the probability of both equals the product of the probabilities. For three or more events the product formula is required on every subcollection, and in independent repeated trials the probability of at least one success in \\(n\\) trials is \\(1-(1-p)^n\\).",
     "intuition": "Independent events neither help nor hinder each other. Probability 0 means almost never, and probability 1 means almost surely; in a continuous sample space an outcome can still land in a set of probability 0.",

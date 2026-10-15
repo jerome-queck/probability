@@ -8,6 +8,9 @@
       "D01",
       "R01"
     ],
+    "results": [
+      "inclusion-exclusion"
+    ],
     "summary": "The joint distribution records how random variables behave together. A joint cdf turns rectangle probabilities into arithmetic, a joint pmf or density is summed or integrated to recover each marginal, and the probability of a region is an integral of the joint density over that region.",
     "intuition": "One random variable spreads probability along a line. Two random variables spread it over the plane, and the marginal of either one is what remains after you collapse that plane onto a single axis.",
     "definition": [
@@ -61,6 +64,10 @@
       "K04",
       "R03"
     ],
+    "results": [
+      "factorisation-criterion",
+      "cdf-criterion"
+    ],
     "summary": "Random variables are independent when every event defined by one of them is independent of every event defined by the other. Equivalently the joint cdf factors, and for discrete or jointly continuous variables the joint pmf or density is the product of the marginals. A density that factors as a function of \\(x\\) times a function of \\(y\\) everywhere on the plane forces independence; if no version of the density (densities may be changed on a set of zero area) is positive exactly on a product set \\(A\\times B\\), as with a triangle, no such factorisation exists and the variables are dependent.",
     "intuition": "Independence means the plane’s probability is a product of a horizontal profile and a vertical profile. If the allowed shape of \\(y\\) changes with \\(x\\), each coordinate is still telling you something about the other.",
     "definition": [
@@ -113,6 +120,11 @@
       "R07",
       "R03",
       "R04"
+    ],
+    "results": [
+      "binomial-theorem",
+      "vandermonde",
+      "fundamental-theorem-calculus"
     ],
     "summary": "Independence turns the law of a sum into a convolution. Poisson rates add, binomial counts with a shared success probability add, gamma shapes with a shared rate add, the sum of two independent uniform random variables has a triangular density, and independent normals add in both mean and variance.",
     "intuition": "A sum can land at a value in many ways, one for each way of splitting that value between the two summands. Independence makes those splits multiply, and adding the splits is convolution.",
@@ -170,6 +182,11 @@
       "J02",
       "J03"
     ],
+    "results": [
+      "multiplication-rule",
+      "total-probability",
+      "poisson-slice"
+    ],
     "summary": "The conditional pmf or density of \\(X\\) given \\(Y=y\\) is the joint divided by the marginal of \\(Y\\). Averaging those conditional probabilities against the marginal of \\(Y\\) returns the marginal of \\(X\\). Independence is exactly the case in which the conditional distribution equals the marginal. For independent Poissons, the conditional law of one of them given their sum is binomial.",
     "intuition": "Conditioning on \\(Y=y\\) slices the joint distribution along that horizontal line and rescales the slice so that it is a distribution in \\(x\\). Mixing those slices back together with the probabilities of the lines rebuilds \\(X\\).",
     "definition": [
@@ -221,6 +238,7 @@
       "R03",
       "R06"
     ],
+    "results": [],
     "summary": "For iid random variables the cdf of the maximum is the common cdf raised to the \\(n\\)th power, and the cdf of the minimum is one minus the \\(n\\)th power of the common survival function. The minimum of independent exponentials is exponential with rate equal to the sum of the rates. The joint density of the minimum and the maximum is explicit, and for \\(n\\) independent uniforms on \\([0,1]\\) the expected range is \\((n-1)/(n+1)\\).",
     "intuition": "The maximum is at most \\(u\\) only when every sample point is at most \\(u\\), and independence turns that into a product. The minimum has failed to exceed \\(u\\) as soon as any one sample point has done so.",
     "definition": [

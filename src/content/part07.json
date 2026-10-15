@@ -8,6 +8,7 @@
       "D08",
       "J02"
     ],
+    "results": [],
     "summary": "The expectation of a function of two jointly distributed random variables is a double sum or a double integral against the joint distribution. Sums split by linearity with no independence assumption, while a product of a function of each variable splits when the variables are independent, and those two facts yield the mean of a sample average, the coupon collector's waiting time, and the expected number of runs.",
     "intuition": "A sum splits inside an average no matter how the variables move together, because averaging is linear. A product of a function of \\(X\\) and a function of \\(Y\\) splits when the joint distribution factors into marginals.",
     "definition": [
@@ -64,6 +65,7 @@
       "E01",
       "D03"
     ],
+    "results": [],
     "summary": "Covariance is the expected product of the deviations of two random variables from their means, and it equals \\(E[XY]-E[X]E[Y]\\). It is bilinear, so the variance of a sum is the sum of the variances plus twice every pairwise covariance; independence forces covariance to vanish, but a vanishing covariance does not force independence.",
     "intuition": "Covariance records whether the deviations of \\(X\\) and \\(Y\\) from their own means tend to share a sign. Once that joint movement is measured, the variance of a sum is the sum of the variances plus twice every pairwise covariance.",
     "definition": [
@@ -118,6 +120,9 @@
     "prerequisites": [
       "E02"
     ],
+    "results": [
+      "cauchy-schwarz"
+    ],
     "summary": "The correlation of two non-degenerate random variables is their covariance divided by the product of their standard deviations. The Cauchy-Schwarz inequality forces this ratio to lie in \\([-1,1]\\), and, for non-constant \\(X\\), the value \\(\\pm 1\\) occurs exactly when one variable is almost surely an affine function of the other with slope of that same sign.",
     "intuition": "Correlation rescales covariance by the two standard deviations, so it has no units and must lie between \\(-1\\) and \\(1\\). It detects straight-line agreement and can miss a strong curved relationship.",
     "definition": [
@@ -170,6 +175,10 @@
       "E01",
       "J04"
     ],
+    "results": [
+      "total-expectation",
+      "fubini-tonelli"
+    ],
     "summary": "The conditional expectation \\(E[X\\mid Y=y]\\) is an ordinary mean under the conditional distribution of \\(X\\) given \\(Y=y\\), and \\(E[X\\mid Y]\\) is the random variable obtained by putting \\(Y\\) back in place of \\(y\\). The law of total expectation says that averaging this random variable returns \\(E[X]\\), and the same identity computes probabilities by conditioning.",
     "intuition": "Conditional expectation is an ordinary mean computed inside the slice where the conditioning variable is held fixed. Averaging those slice-wise means, with weights given by the distribution of the conditioner, returns the unconditional mean.",
     "definition": [
@@ -220,6 +229,11 @@
     "prerequisites": [
       "E04",
       "E02"
+    ],
+    "results": [
+      "total-expectation",
+      "wald",
+      "total-variance"
     ],
     "summary": "The conditional variance is the ordinary variance computed inside the conditional distribution, viewed afterwards as a random variable. The law of total variance writes \\(\\operatorname{Var}(X)\\) as the mean of that conditional variance plus the variance of the conditional mean, and applying it to a random sum produces both the mean \\(E[N]E[X]\\) and the variance \\(E[N]\\operatorname{Var}(X)+(E[X])^2\\operatorname{Var}(N)\\).",
     "intuition": "Variance splits into the average leftover noise after \\(Y\\) is known and the variance of the conditional mean as \\(Y\\) varies. A random sum is noisy both because each summand is random and because the number of summands is random.",

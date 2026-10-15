@@ -12,6 +12,8 @@ export type Lesson = {
   cluster: string;
   question: string;
   prerequisites: string[];
+  /** ids from results.json of the named results this lesson names or states (not rendered). */
+  results: string[];
   summary: string;
   intuition: string;
   definition: string[];

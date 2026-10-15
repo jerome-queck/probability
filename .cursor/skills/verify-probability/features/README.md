@@ -27,11 +27,11 @@ fresh screenshot. Covered by `npm run test:agent-run` (`bigshot`, `freshshot`, `
 
 ## Named results (content gate, not a site feature)
 
-`src/content/results.json` registers the named results the lessons use (binomial theorem, Chebyshev's
-inequality, strong law, ...): the exact names each goes by, and the lesson that proves it, or status
-`quoted` (used without proof) or `background` (calculus tools the site assumes). `npm run
-check:results` matches those names exactly (case-insensitive, whole words; a curly apostrophe equals a
-straight one and an en dash a hyphen). It fails when a proved result's home lesson never uses its
-names, or when a lesson names a quoted result without a marker such as "quoted without proof" in an
-entry that names it. It does not search for names missing from the registry: adding a lesson that
-proves or quotes a new result means adding its row here first.
+Each lesson lists in `results` the ids of the named results it names or states (binomial theorem,
+Chebyshev's inequality, strong law, ...); the field is not rendered. `src/content/results.json`
+registers each id with its name and status: proved in the lesson named by `in`, `quoted` (used
+without proof, introduced in `in`), or `background` (calculus tools the site assumes). `npm run
+check:results` reads only the tags, never the prose: it fails on a tag that is not registered, a
+registered result no lesson tags, and a proved or quoted result its home lesson does not tag.
+Adding a lesson: tag every named result it uses, and add a row here for any new one; the math
+review confirms nothing named was left untagged.

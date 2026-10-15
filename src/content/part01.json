@@ -5,6 +5,9 @@
     "cluster": "Foundations",
     "question": "How do we describe an uncertain experiment precisely enough to reason about it?",
     "prerequisites": [],
+    "results": [
+      "de-morgan"
+    ],
     "summary": "An experiment is modelled by the set \\(S\\) of all its possible outcomes. Events are subsets of \\(S\\), so the language of sets becomes the language of “or”, “and” and “not”.",
     "intuition": "Before asking how likely something is, write down everything that could happen. Each question about the experiment then picks out a subset of that list.",
     "definition": [
@@ -52,6 +55,10 @@
     "prerequisites": [
       "F01"
     ],
+    "results": [
+      "boole",
+      "inclusion-exclusion"
+    ],
     "summary": "Three axioms (non-negativity, total mass one, countable additivity) are enough to derive the complement rule, monotonicity and inclusion–exclusion.",
     "intuition": "Think of probability as one unit of mass spread over the sample space. Mass is never negative, it all lies somewhere in \\(S\\), and the mass of disjoint pieces adds up.",
     "definition": [
@@ -97,6 +104,9 @@
     "question": "When every outcome is equally likely, how does probability become a counting problem?",
     "prerequisites": [
       "F02"
+    ],
+    "results": [
+      "counting-principle"
     ],
     "summary": "If \\(S\\) is finite and each outcome has the same probability, then \\(P(E)=|E|/|S|\\). The hard part moves to counting \\(E\\) and \\(S\\) in the same way.",
     "intuition": "With \\(N\\) equally likely outcomes, each carries mass \\(1/N\\). An event’s probability is just the share of outcomes it contains.",
