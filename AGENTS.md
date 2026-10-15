@@ -35,8 +35,8 @@ There is no deployment from this repo.
 npm run check
 ```
 
-It runs, in order: `check:forbidden`, `check:content`, `check:drift`, `check:rules`,
-`typecheck`, `lint`, `format:check`, `test`, `build`, `smoke`. Run any piece alone with
+It runs, in order: `check:forbidden`, `check:content`, `check:results`, `check:drift`,
+`check:rules`, `typecheck`, `lint`, `format:check`, `test`, `build`, `smoke`. Run any piece alone with
 `npm run <name>`.
 
 ## Verify like a user
@@ -113,6 +113,7 @@ OK. Fixing a wrong gate is its own PR.
 |---|---|
 | No course, institution, lecturer or handout identifiers anywhere | `scripts/check-forbidden.mjs` (tree, history, branch, PR text) + `scripts/check-forbidden.test.mjs` |
 | Lessons are complete, IDs unique, prerequisites earlier, math renders | `scripts/check-content.mjs` |
+| Every named result is registered with the lesson that proves it; a result used without proof says so ("quoted without proof") where it is named | `scripts/check-results.mjs` + `src/content/results.json` + `scripts/check-results.test.mjs` (fails on PR #14's text before math round 1) |
 | Feature map, verify skill, smoke drives, labs, chapters and tests stay in sync | `scripts/check-drift.mjs` |
 | Every rule here names an enforcer that exists | `scripts/check-rule-table.mjs` |
 | Probability helpers behave correctly | `src/math/counting.test.ts`, `src/math/distributions.test.ts`, `src/math/simulation.test.ts` |

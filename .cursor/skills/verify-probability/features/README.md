@@ -15,3 +15,11 @@ or the lesson chapters disagree.
 | Reference view | [reference.md](reference.md) |
 | Routing and navigation | [routing.md](routing.md) |
 | Study progress and self-check | [progress.md](progress.md) |
+
+## Named results (content gate, not a site feature)
+
+`src/content/results.json` registers every named result the lessons use (binomial theorem, Chebyshev's
+inequality, strong law, ...) with the lesson that proves it, or status `quoted` (used without proof) or
+`background` (calculus tools the site assumes). `npm run check:results` fails when a lesson names an
+eponymous result that is not registered, or names a quoted result without a marker such as "quoted
+without proof" in that entry. Adding a lesson that proves or quotes a new result: add its row here first.
