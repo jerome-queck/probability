@@ -70,3 +70,38 @@ test('the same reviewer twice does not make two', () => {
     /R1 twice/,
   );
 });
+
+// Found by #20 verifier r3: one session listed twice, R01 beside R1, a task id, a zero id or a
+// trailing hyphen all counted as separate reported reviewers.
+test('one session listed twice does not make two reviewers', () => {
+  for (const second of ['5e19ac26', '5e19ac26-2c3f'])
+    assert.match(
+      reviewerErrors(
+        `R1 grok-4.7-high CLEAN (session 5e19ac26); R2 grok-4.7-high CLEAN (session ${second})`,
+      ).join('\n'),
+      /session 5e19ac26 twice/,
+      second,
+    );
+});
+
+test('R01, task ids, zero ids and trailing hyphens fail', () => {
+  for (const bad of [
+    'R01 grok-4.7-high CLEAN (session 3cbed3fe)',
+    'R2 grok-4.7-high CLEAN (task 3cbed3fe)',
+    'R2 grok-4.7-high CLEAN (session 3cbed3fe-)',
+    'R2 grok-4.7-high CLEAN (session 3CBED3FE)',
+  ])
+    assert.match(
+      reviewerErrors(`R1 grok-4.7-high CLEAN (session 5e19ac26); ${bad}`).join(
+        '\n',
+      ),
+      /must read exactly/,
+      bad,
+    );
+  assert.match(
+    reviewerErrors(
+      'R1 grok-4.7-high CLEAN (session 5e19ac26); R2 grok-4.7-high CLEAN (session 00000000)',
+    ).join('\n'),
+    /not a real session id/,
+  );
+});
