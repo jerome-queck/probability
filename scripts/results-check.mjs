@@ -32,18 +32,53 @@ const ORDINARY =
 // "the variance formula" or "the chain rule" are ordinary words, so those must be registered
 // by hand (see AGENTS.md).
 const TITLED =
-  /(?<!\p{L})(?:[Tt]he ((?:\p{L}[\p{L}'’–-]* ){1,3})(?:theorem|criterion|principle)|(?:[Ss]trong|[Ww]eak) laws?|[Ll]aws? of (?:[Tt]otal \p{L}+|[Ll]arge [Nn]umbers|[Tt]he [Uu]nconscious [Ss]tatistician)|[Ii]nclusion[-–]exclusion)(?!\p{L})/gu;
+  /(?<!\p{L})(?:[Tt]he ((?:\p{L}[\p{L}'’–-]* ){1,3})(?:theorem|criterion|principle)|(?:[Ss]trong|[Ww]eak) laws?|[Ll]aws? [Oo]f (?:[Tt]otal \p{L}+|[Ll]arge [Nn]umbers|[Tt]he [Uu]nconscious [Ss]tatistician)|[Ii]nclusion[-–][Ee]xclusion)(?!\p{L})/gu;
 // The same titles as a heading or at the start of a sentence, with no "the": "Central limit
 // theorem.", "Basic counting principle." (PR #19 verifier r5).
 const HEADING =
   /(?:^|[.!?:;]\s+|\n\s*)((?:\p{Lu}[\p{L}'’–-]*)(?: \p{L}[\p{L}'’–-]*){0,2} (?:theorem|criterion|principle))(?!\p{L})/gu;
-// Title Case ("Central Limit Theorem", "Law of Total Probability") is read in sentence case, so
-// the scans above see it (PR #19 verifier r6).
+// Title Case (PR #19 verifier r6, r7). A run of capitalised words ending in a capitalised title
+// word ("Central Limit Theorem", "By the Poisson Slice Theorem", "De Morgan's Laws") is judged as
+// a whole: each tail of the run that starts at a capitalised word is put in sentence case, and the
+// run passes if any tail is registered. Otherwise the longest tail that does not start with an
+// ordinary word is reported, never a fragment of it. A two-word run ("Strong Law", "Wald's
+// Equation") only has its title word lowercased, so the scans above read it.
 const TITLE_WORD =
   'Theorem|Inequality|Identity|Expansion|Approximation|Lemma|Bound|Laws?|Formula|Rule|Equation|Principle|Paradox|Fallacy|Criterion';
-const TITLE_CASE = new RegExp(` (${TITLE_WORD})(?!\\p{L})`, 'gu');
-export const sentenceCase = (text) =>
-  text.replace(TITLE_CASE, (m) => m.toLowerCase());
+const RUN = new RegExp(
+  `(?<![\\p{L}'’])\\p{Lu}[\\p{L}'’–-]*(?: (?:[Oo]f|[Tt]he|\\p{Lu}[\\p{L}'’–-]*))* (?:${TITLE_WORD})(?!\\p{L})`,
+  'gu',
+);
+const CONNECTOR = /^(?:[Oo]f|[Tt]he)$/;
+// Words that only lead into a title ("By the …", "Then …").
+const LEAD = new Set(
+  'By From Using Use Apply See Then Next With In On For And Or If So Thus Hence Now Here Recall Since By'.split(
+    ' ',
+  ),
+);
+const keepCase = (word, prev) =>
+  /['’]s?$/.test(word) || prev === 'De' || /\p{Ll}\p{Lu}/u.test(word);
+function toSentence(words) {
+  return words
+    .map((w, i) => (i === 0 || keepCase(w, words[i - 1]) ? w : w.toLowerCase()))
+    .join(' ');
+}
+// Returns the text with long runs blanked out (so the other scans see no fragment of them) and
+// the runs as lists of sentence-case tails, longest first.
+export function titleCaseRuns(text) {
+  const runs = [];
+  const rest = text.replace(RUN, (run) => {
+    const words = run.split(' ');
+    if (words.length === 2) return `${words[0]} ${words[1].toLowerCase()}`;
+    const tails = [];
+    for (let i = 0; i < words.length - 1; i++)
+      if (!CONNECTOR.test(words[i])) tails.push(toSentence(words.slice(i)));
+    runs.push(tails);
+    return ' '.repeat(run.length);
+  });
+  return { rest, runs };
+}
+export const sentenceCase = (text) => titleCaseRuns(text).rest;
 
 // Words after "the" that make an ordinary reference, not a title ("the same theorem").
 const NOT_A_TITLE =
@@ -90,8 +125,21 @@ export function checkResults(lessons, results) {
   for (const l of lessons) {
     const entries = strings(l);
     for (const { path, text: raw } of entries) {
-      const text = sentenceCase(raw);
+      const { rest: text, runs } = titleCaseRuns(raw);
       const names = [];
+      for (const tails of runs) {
+        if (
+          tails.some((t) =>
+            registry.some((r) => r.res.some((re) => re.test(t))),
+          )
+        )
+          continue;
+        const name = tails.find((t) => {
+          const first = t.split(/[\s'’]/)[0];
+          return !LEAD.has(first) && !NOT_A_NAME.has(first);
+        });
+        if (name) names.push(name);
+      }
       for (const m of text.matchAll(NAMED)) {
         const first = m[0].split(/[\s'’]/)[0];
         if (!NOT_A_NAME.has(first) && !ORDINARY.test(m[0])) names.push(m[0]);

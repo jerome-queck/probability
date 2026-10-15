@@ -205,27 +205,67 @@ test('headings and sentence starts without "the" are scanned (PR #19 verifier r5
   assert.deepEqual(checkResults(plain, results), []);
 });
 
-test('Title Case and titles after a semicolon are scanned (PR #19 verifier r6)', () => {
+// PR #19 verifier r6 asked for Title Case and titles after ";" or a newline; verifier r7 found
+// the first fix reported a fragment ("Limit theorem") of a registered Title Case title.
+const inject = (text, without = []) => {
   const all = structuredClone(lessons());
-  all[0].caution +=
-    ' By the Central Limit Theorem and the Law of Total Probability; Basic counting principle applies. Strong Law.';
-  const errors = checkResults(
+  all[0].caution += text;
+  return checkResults(
     all,
-    results.filter(
-      (r) =>
-        ![
-          'central-limit',
-          'total-probability',
-          'counting-principle',
-          'strong-law',
-        ].includes(r.id),
-    ),
-  ).join('\n');
-  for (const name of [
-    /Central Limit theorem/,
-    /law of Total Probability/,
-    /"Basic counting principle"/,
-    /Strong law/,
+    results.filter((r) => !without.includes(r.id)),
+  );
+};
+
+test('registered titles in Title Case raise no error and no fragment (PR #19 verifier r7)', () => {
+  for (const t of [
+    ' By the Central Limit Theorem.',
+    ' Poisson Slice Theorem.',
+    ' Basic Counting Principle.',
+    ' x.\nCentral Limit Theorem',
+    ' (Central Limit Theorem)',
+    " De Morgan's Laws hold.",
+    ' the Law Of Total Probability.',
+    ' Inclusion-Exclusion.',
+    ' Then Poisson Approximation.',
+    ' Cauchy–Schwarz Inequality.',
   ])
-    assert.match(errors, name);
+    assert.deepEqual(inject(t), [], t);
+});
+
+test('an unregistered Title Case title is reported whole, in sentence case', () => {
+  const clt = inject(' By the Central Limit Theorem.', ['central-limit'])
+    .filter((e) => e.startsWith('F01 '))
+    .join('\n');
+  assert.match(clt, /"Central limit theorem" is not in/);
+  assert.doesNotMatch(clt, /"Limit theorem"/);
+  const slice = inject(' Poisson Slice Theorem.', ['poisson-slice'])
+    .filter((e) => e.startsWith('F01 '))
+    .join('\n');
+  assert.match(slice, /"Poisson slice theorem" is not in/);
+  assert.doesNotMatch(slice, /"Slice theorem"/);
+  assert.match(
+    inject(' Then Poisson Approximation.', ['poisson-limit']).join('\n'),
+    /F01 caution: "Poisson approximation" is not in/,
+  );
+  assert.match(
+    inject(' the Law of Total Probability.', ['total-probability']).join('\n'),
+    /F01 caution: "Law of Total Probability" is not in/,
+  );
+  // A two-word Title Case quoted result is still read, and still needs its marker.
+  assert.match(
+    inject(' Strong Law.').join('\n'),
+    /F01 caution: strong-law is quoted/,
+  );
+});
+
+test('a heading after ";" or a newline is scanned', () => {
+  for (const t of [
+    ' a; Fabricated counting principle holds.',
+    ' a\nFabricated counting principle holds.',
+  ])
+    assert.match(
+      inject(t).join('\n'),
+      /F01 caution: "Fabricated counting principle" is not in/,
+      t,
+    );
 });
