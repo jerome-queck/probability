@@ -136,6 +136,7 @@ OK. Fixing a wrong gate is its own PR.
 | Lint and format | `biome.json` via `npm run lint` and `npm run format:check` |
 | The real site loads and every mapped feature works | `scripts/control-probability.mjs` (`npm run smoke`) |
 | Every feature state looks right at desktop and mobile widths; no unintended visual change | `scripts/control-probability.mjs` (rendering checks + pixel comparison with `.cursor/skills/verify-probability/baselines`) |
+| No inline formula orphans on a phone: no scrap under 40px alone on a new line, no formula under 120px split across lines, on every lesson page at 390, 600, 860 and 1280px | `scripts/orphans.mjs` called by the sweep in `scripts/control-probability.mjs` + `scripts/orphans.test.mjs` (fails on E03 at daf7a37) + `isShortFormula` in `src/mathBreaks.ts` |
 | Every feature lists visual states that are driven and baselined | `scripts/check-drift.mjs` |
 | Same check locally and in CI | `.github/workflows/check.yml` runs `npm run check` |
 | Evidence and verdicts are in the PR | `.github/workflows/evidence.yml` (pull_request_target: the gate script comes from the base branch, never the PR head) + `.github/pull_request_template.md` |

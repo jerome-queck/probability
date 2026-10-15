@@ -1,7 +1,7 @@
 import katex from 'katex';
 import { Fragment } from 'react';
 import 'katex/dist/katex.min.css';
-import { keepShortTail } from './mathBreaks';
+import { isShortFormula, keepShortTail } from './mathBreaks';
 
 // Punctuation right after a formula is kept with it, so a period never wraps alone.
 const pattern = /\\\[([\s\S]*?)\\\]([.,;:]?)|\\\(([\s\S]*?)\\\)([.,;:]?)/g;
@@ -40,7 +40,7 @@ export function MathText({ text }: { text: string }) {
           displayMode
             ? 'math-block'
             : // Short formulas never break; long ones may break after a relation, as TeX does.
-              latex.length <= 16
+              isShortFormula(latex)
               ? 'math-inline math-nowrap'
               : 'math-inline'
         }
