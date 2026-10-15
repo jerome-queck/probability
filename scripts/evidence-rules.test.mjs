@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import { reviewerErrors } from './evidence-rules.mjs';
+import { EXAMPLE, reviewerErrors } from './evidence-rules.mjs';
 
 // PR #18's merged body: the review line says both second-opinion sessions dropped, and there
 // was no per-reviewer record. That merge should not have passed.
@@ -42,7 +42,7 @@ test('dropped, silent or annotated entries fail', () => {
       reviewerErrors(`R1 grok-4.7-high CLEAN (session 5e19ac26); ${bad}`).join(
         '\n',
       ),
-      /must read exactly/,
+      /must have the form/,
       bad,
     );
 });
@@ -57,7 +57,7 @@ test('-fast, xhigh and slash tiers fail', () => {
       reviewerErrors(
         `R1 grok-4.7-high CLEAN (session 5e19ac26); R2 ${t} CLEAN (session 3cbed3fe)`,
       ).join('\n'),
-      /must read exactly/,
+      /must have the form/,
       t,
     );
 });
@@ -95,7 +95,7 @@ test('R01, task ids, zero ids and trailing hyphens fail', () => {
       reviewerErrors(`R1 grok-4.7-high CLEAN (session 5e19ac26); ${bad}`).join(
         '\n',
       ),
-      /must read exactly/,
+      /must have the form/,
       bad,
     );
   assert.match(
@@ -103,5 +103,51 @@ test('R01, task ids, zero ids and trailing hyphens fail', () => {
       'R1 grok-4.7-high CLEAN (session 5e19ac26); R2 grok-4.7-high CLEAN (session 00000000)',
     ).join('\n'),
     /not a real session id/,
+  );
+});
+
+// PR #20 reviewer 2 (081b7938): the shape the errors showed did not pass the check, and the
+// "rerun" advice did not say how, so an agent reran the same dropping Task path.
+test('every error shows a form that passes and says how to rerun', () => {
+  assert.deepEqual(reviewerErrors(EXAMPLE), []);
+  const cases = {
+    missing: reviewerErrors(undefined),
+    malformed: reviewerErrors(
+      'R1 grok-4.7-high CLEAN (session 5e19ac26); R2 dropped',
+    ),
+    sameSession: reviewerErrors(
+      'R1 grok-4.7-high CLEAN (session 5e19ac26); R2 grok-4.7-high CLEAN (session 5e19ac26)',
+    ),
+  };
+  for (const [name, errors] of Object.entries(cases)) {
+    const text = errors.join('\n');
+    assert.match(text, /own top-level session/, name);
+    assert.match(text, /one reviewer at a time/, name);
+    assert.match(text, /no Task subagents/, name);
+  }
+  // The form quoted in the malformed-entry error passes as written (with a second reviewer).
+  const quoted = /form “([^”]+)”/.exec(cases.malformed.join('\n'))?.[1];
+  assert.ok(quoted);
+  assert.deepEqual(
+    reviewerErrors(
+      `${quoted}; ${quoted.replace('R1', 'R2').replace('5e19ac26', '3cbed3fe')}`,
+    ),
+    [],
+  );
+  assert.ok(cases.missing.join('\n').includes(EXAMPLE));
+});
+
+test('duplicate number and fake id errors name the correction', () => {
+  assert.match(
+    reviewerErrors(
+      'R1 grok-4.7-high CLEAN (session 5e19ac26); R1 grok-4.7-high CLEAN (session 3cbed3fe)',
+    ).join('\n'),
+    /number the reviewers R1, R2, … once each/,
+  );
+  assert.match(
+    reviewerErrors(
+      'R1 grok-4.7-high CLEAN (session 5e19ac26); R2 grok-4.7-high CLEAN (session 00000000)',
+    ).join('\n'),
+    /session= id agent-run\.sh printed/,
   );
 });

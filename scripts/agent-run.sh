@@ -4,7 +4,8 @@
 #   scripts/agent-run.sh <role> <prompt-file> <out-prefix>
 # Roles and tiers (grok-4.7 only; the tier is the effort):
 #   verifier  grok-4.7-high   independent verifier using verify-probability
-#   review    grok-4.7-high   interrogate lead (its Task reviewers run grok-4.7-high)
+#   review    grok-4.7-high   one interrogate reviewer working alone (no Task subagents); a PR gets
+#                             two such sessions, started one at a time (AGENTS.md merge gate 2)
 #   math      grok-4.7-high   independent math check of lesson content
 #   chore     grok-4.7-medium mechanical work (merges, baselines, bodies)
 # Writes <out-prefix>.jsonl (stream-json transcript) and prints the session id, every model seen,

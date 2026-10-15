@@ -69,7 +69,7 @@ Box Ops' `longrun`, never supervised from a chat turn.
 | Role | Tier | What it does |
 |---|---|---|
 | verifier | `grok-4.7-high` | independent verifier using `verify-probability`; looks at the screenshots |
-| review | `grok-4.7-high` | `interrogate` lead; its two reviewers run `grok-4.7-high` |
+| review | `grok-4.7-high` | one `interrogate` reviewer per session, no Task subagents; each PR gets two such sessions (R1, R2), started one at a time, each with its own prompt |
 | math | `grok-4.7-high` | independent math check of lesson content against the sources |
 | chore | `grok-4.7-medium` | mechanical work: merges, baselines, PR bodies |
 
@@ -103,8 +103,10 @@ A PR auto-merges (squash) only when all hold:
    **every** review session reported its own verdict. A reviewer that drops or returns nothing is
    rerun; the lead alone is not a review. The PR body's “Reviewer verdicts:” lists each one in a
    fixed form, `R1 grok-4.7-high CLEAN (session <id>); R2 grok-4.7-high CHANGES NEEDED (session <id>)`.
-   Run each reviewer as its own top-level session: Task subagents are cut off when the lead is
-   stalled and resumed, and then never report.
+   Run each reviewer as its own top-level session (`scripts/agent-run.sh review <prompt> <out>`,
+   one prompt per reviewer, telling it to work alone), one at a time: Task subagents are cut off
+   when the lead is stalled and resumed, and then never report. A dropped reviewer is rerun the
+   same way, never as a subagent. The session id is the `session=` value agent-run.sh prints.
 3. CI `check` is green on a head that is up to date with `main` (the ruleset requires it).
 4. Evidence is in the PR body (the `evidence` CI job checks the template fields): verdict and
    verified head, review record naming the reviewer, skills used with model and effort, and for
