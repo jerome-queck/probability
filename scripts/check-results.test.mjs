@@ -204,3 +204,28 @@ test('headings and sentence starts without "the" are scanned (PR #19 verifier r5
   plain[0].caution += ' Same theorem. This principle. The theorem holds.';
   assert.deepEqual(checkResults(plain, results), []);
 });
+
+test('Title Case and titles after a semicolon are scanned (PR #19 verifier r6)', () => {
+  const all = structuredClone(lessons());
+  all[0].caution +=
+    ' By the Central Limit Theorem and the Law of Total Probability; Basic counting principle applies. Strong Law.';
+  const errors = checkResults(
+    all,
+    results.filter(
+      (r) =>
+        ![
+          'central-limit',
+          'total-probability',
+          'counting-principle',
+          'strong-law',
+        ].includes(r.id),
+    ),
+  ).join('\n');
+  for (const name of [
+    /Central Limit theorem/,
+    /law of Total Probability/,
+    /"Basic counting principle"/,
+    /Strong law/,
+  ])
+    assert.match(errors, name);
+});

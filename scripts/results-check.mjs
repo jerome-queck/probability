@@ -32,11 +32,19 @@ const ORDINARY =
 // "the variance formula" or "the chain rule" are ordinary words, so those must be registered
 // by hand (see AGENTS.md).
 const TITLED =
-  /(?<!\p{L})(?:[Tt]he ((?:\p{L}[\p{L}'’–-]* ){1,3})(?:theorem|criterion|principle)|(?:[Ss]trong|[Ww]eak) laws?|[Ll]aws? of (?:total \p{L}+|large numbers|the unconscious statistician)|[Ii]nclusion[-–]exclusion)(?!\p{L})/gu;
+  /(?<!\p{L})(?:[Tt]he ((?:\p{L}[\p{L}'’–-]* ){1,3})(?:theorem|criterion|principle)|(?:[Ss]trong|[Ww]eak) laws?|[Ll]aws? of (?:[Tt]otal \p{L}+|[Ll]arge [Nn]umbers|[Tt]he [Uu]nconscious [Ss]tatistician)|[Ii]nclusion[-–]exclusion)(?!\p{L})/gu;
 // The same titles as a heading or at the start of a sentence, with no "the": "Central limit
 // theorem.", "Basic counting principle." (PR #19 verifier r5).
 const HEADING =
-  /(?:^|[.!?:]\s+)((?:\p{Lu}[\p{L}'’–-]*)(?: \p{L}[\p{L}'’–-]*){0,2} (?:theorem|criterion|principle))(?!\p{L})/gu;
+  /(?:^|[.!?:;]\s+|\n\s*)((?:\p{Lu}[\p{L}'’–-]*)(?: \p{L}[\p{L}'’–-]*){0,2} (?:theorem|criterion|principle))(?!\p{L})/gu;
+// Title Case ("Central Limit Theorem", "Law of Total Probability") is read in sentence case, so
+// the scans above see it (PR #19 verifier r6).
+const TITLE_WORD =
+  'Theorem|Inequality|Identity|Expansion|Approximation|Lemma|Bound|Laws?|Formula|Rule|Equation|Principle|Paradox|Fallacy|Criterion';
+const TITLE_CASE = new RegExp(` (${TITLE_WORD})(?!\\p{L})`, 'gu');
+export const sentenceCase = (text) =>
+  text.replace(TITLE_CASE, (m) => m.toLowerCase());
+
 // Words after "the" that make an ordinary reference, not a title ("the same theorem").
 const NOT_A_TITLE =
   /^(?:same|previous|above|next|following|last|first|second|general|stated|proposed|whole|main|key|preceding|earlier|later) /i;
@@ -81,7 +89,8 @@ export function checkResults(lessons, results) {
   }
   for (const l of lessons) {
     const entries = strings(l);
-    for (const { path, text } of entries) {
+    for (const { path, text: raw } of entries) {
+      const text = sentenceCase(raw);
       const names = [];
       for (const m of text.matchAll(NAMED)) {
         const first = m[0].split(/[\s'’]/)[0];
