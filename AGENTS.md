@@ -54,22 +54,29 @@ Cursor CLI (`cursor-agent`, also `agent`) with pstack installed as its Cursor pl
 `grok-4.7` tiers only (never Claude, GPT, Gemini or Composer); the tier is the effort.
 `setup-pstack` writes `~/.cursor/rules/pstack-models.mdc`: pstack's
 Task subagents accept only `grok-4.7-high`, so every pstack role uses it. The review workflow
-picks its tier per role and runs each role as a fresh headless session (resumed with --resume if it stalls or drops) with
-`scripts/agent-run.sh <role> <prompt-file> <out-prefix>`, always in its own git worktree:
-Before each attempt it waits at a box-wide gate: at most 2 heavy runs (cursor-agent sessions plus
-Playwright smoke runs) at once and a 1-minute load below 8 (`AGENT_MAX_RUNS`, `AGENT_MAX_LOAD`).
-Receipt agent-run-stability-2026-10-15: the stall watchdog is 1800s and does not count time while a
-Task subagent call is open; after a `NonRetriableError` the next attempt is a fresh session with the
-original prompt, not `--resume`; images over 2000px per side written under the worktree (or
-`AGENT_IMAGE_DIRS`) during an attempt are downscaled in place by `scripts/shrink-images.py` once
-unchanged for 10s and while no smoke run is active in that tree; baselines are never touched
-(needs Pillow; without it only a warning is logged and the image tests are skipped). Long runs are started detached through
-Box Ops' `longrun`, never supervised from a chat turn.
+picks its tier per role and runs each role as a fresh headless session with
+`scripts/agent-run.sh <role> <prompt-file> <out-prefix> [--resume <session-id>]`, always in its own
+git worktree. The script runs one session: it guards the model tier, appends the stream-json
+transcript to `<out-prefix>.jsonl` (and stdout), and ends with one summary line
+`session=<id> models="..." <verdicts>`. The run fails (exit 1) when there is no `VERDICT:`/`REVIEW:`/`MATH:`
+verdict, when a Task subagent call was started and never completed (`INCOMPLETE`), or when
+`scripts/check-models.mjs` finds a model other than `grok-4.7` at or below high. A verdict is found
+at the start of any line of the result or assistant text, even when a later turn's text follows it.
+Supervision has one owner, Box Ops' `longrun` (never a chat turn): it queues the run behind the
+box-wide cap of 2 heavy runs, watches for stalls and memory, and retries with
+`LONGRUN_RESUME_CMD='bash scripts/agent-run.sh <role> <prompt> <out> --resume {session}'`
+(`LONGRUN_DONE_REGEX='(VERDICT|REVIEW|MATH): '`; `--chunk-min 150` for math runs). After a
+`NonRetriableError` the next call starts a fresh session with the original prompt instead of
+resuming. Images over 2000px per side written under the worktree (or `AGENT_IMAGE_DIRS`) during a
+session are downscaled in place by `scripts/shrink-images.py` once unchanged for 10s and while no
+smoke run is active in that tree; baselines are never touched (needs Pillow; without it only a
+warning is logged and the image tests are skipped). A half-written last transcript line (a killed
+session) is cut, unless it carried a verdict or a model id; then the run fails for a person to read.
 
 | Role | Tier | What it does |
 |---|---|---|
 | verifier | `grok-4.7-high` | independent verifier using `verify-probability`; looks at the screenshots |
-| review | `grok-4.7-high` | `interrogate` lead; its two reviewers run `grok-4.7-high` |
+| review | `grok-4.7-high` | one `interrogate` reviewer per session, no subagents; each PR gets two such sessions, run one at a time |
 | math | `grok-4.7-high` | independent math check of lesson content against the sources |
 | chore | `grok-4.7-medium` | mechanical work: merges, baselines, PR bodies |
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Exercise scripts/agent-run.sh against fake agents (never the real cursor-agent).
+# Exercise scripts/agent-run.sh against fake agents (never the real cursor-agent). Retries are
+# longrun's job, so a "resume" here is a second call with --resume, the way longrun makes it.
 set -uo pipefail
 here=$(cd "$(dirname "$0")" && pwd)
 t=$(mktemp -d)
@@ -10,105 +11,90 @@ fake() { # name, body (bash; "$resume" is 1 on a --resume call)
   printf '#!/usr/bin/env bash\nresume=0; [[ " $* " == *" --resume "* ]] && resume=1\n%s\n' "$2" > "$t/$1"
   chmod +x "$t/$1"
 }
-run() { # name, expected exit (0 or nonzero), grep pattern expected on stdout
-  AGENT_MAX_LOAD=1000 AGENT_MAX_RUNS=1000 AGENT_BIN="$t/$1" AGENT_STALL_SECS=3 AGENT_POLL_SECS=1 AGENT_RESUMES=2 \
-    bash "$here/agent-run.sh" verifier "$t/p" "$t/$1.out" > "$t/$1.stdout" 2> /dev/null
-  local code=$?
-  if { [ "$2" = 0 ] && [ $code -ne 0 ]; } || { [ "$2" != 0 ] && [ $code -eq 0 ]; } ||
-    { [ -n "$3" ] && ! grep -qE "$3" "$t/$1.stdout"; }; then
-    echo "FAIL $1 (exit $code): $(cat "$t/$1.stdout")"; fails=$((fails + 1))
+call() { # name [--resume id]: one agent-run call; prints its exit code
+  local n=$1
+  shift
+  AGENT_BIN="$t/$n" bash "$here/agent-run.sh" verifier "$t/p" "$t/$n.out" "$@" > "$t/$n.stdout" 2> /dev/null
+  echo $?
+}
+check() { # name, exit code, expected (0 or nonzero), pattern expected in the last stdout line
+  local last
+  last=$(tail -n 2 "$t/$1.stdout" | grep -E '^session=' || true)
+  if { [ "$3" = 0 ] && [ "$2" -ne 0 ]; } || { [ "$3" != 0 ] && [ "$2" -eq 0 ]; } ||
+    { [ -n "$4" ] && ! grep -qE "$4" <<< "$last"; }; then
+    echo "FAIL $1 (exit $2): $last"; fails=$((fails + 1))
   else echo "ok   $1"; fi
 }
 init='echo "{\"type\":\"system\",\"session_id\":\"s1\",\"model\":\"Grok 4.7 256K High\"}"'
 done_ok='echo "{\"type\":\"result\",\"result\":\"VERDICT: VERIFIED\",\"session_id\":\"s1\"}"'
 fake normal "$init; $done_ok"
-run normal 0 'VERDICT: VERIFIED'
-fake stall "if [ \$resume = 1 ]; then $done_ok; else $init; sleep 60; fi"
-run stall 0 'VERDICT: VERIFIED'
-fake drop "if [ \$resume = 1 ]; then $done_ok; else $init; echo stalled >&2; exit 1; fi"
-run drop 0 'VERDICT: VERIFIED'
+check normal "$(call normal)" 0 'VERDICT: VERIFIED'
 fake never "$init; exit 1"
-run never 1 'NO VERDICT'
-fake badresume "if [ \$resume = 1 ]; then echo '{\"type\":\"assistant\",\"model\":\"claude-opus-4-5\"}'; $done_ok; else $init; exit 1; fi"
-run badresume 1 'VERIFIED'
-fake nonewline "$init; printf '{\"type\":\"result\",\"result\":\"VERDICT: NOT VERIFIED\",\"model\":\"claude-opus-4-5\"}'"
-run nonewline 1 'NOT VERIFIED'
-fake earlyverdict "if [ \$resume = 1 ]; then $done_ok; else $init; echo '{\"type\":\"result\",\"result\":\"VERDICT: NOT VERIFIED\"}'; fi"
-run earlyverdict 0 'NOT VERIFIED'
-fake halfline "if [ \$resume = 1 ]; then $done_ok; else $init; printf '{\"type\":\"assis'; exit 1; fi"
-run halfline 0 'VERDICT: VERIFIED'
-fake orphan "$init; (sleep 301; echo late) & echo \$! > $t/orphan.pid; setsid sleep 302 & echo \$! > $t/session.pid; sleep 60"
-run orphan 1 'NO VERDICT'
-for f in orphan session; do
-  p=$(cat "$t/$f.pid" 2> /dev/null) || continue
-  if kill -0 "$p" 2> /dev/null; then echo "FAIL $f child $p survived"; fails=$((fails + 1)); kill -KILL "$p"; fi
-done
-fake tornverdict "if [ \$resume = 1 ]; then $done_ok; else $init; printf '{\"type\":\"result\",\"result\":\"REVIEW: CHANGES NEEDED'; exit 1; fi"
-run tornverdict 1 ''
-fake droporphan "if [ \$resume = 1 ]; then $done_ok; else $init; setsid sleep 303 & echo \$! > $t/drop.pid; sleep 2; exit 1; fi"
-run droporphan 0 'VERDICT: VERIFIED'
-p=$(cat "$t/drop.pid" 2> /dev/null) && if kill -0 "$p" 2> /dev/null; then echo "FAIL droporphan child $p survived"; fails=$((fails + 1)); kill -KILL "$p"; fi
-fake proseverdict "if [ \$resume = 1 ]; then $done_ok; else $init; printf '{\"type\":\"assistant\",\"text\":\"The VERDICT: comes later'; exit 1; fi"
-run proseverdict 1 '' # fail closed: any verdict token in a torn line stops the run
-fake churn "if [ \$resume = 1 ]; then $done_ok; else $init; setsid sleep 304 & echo \$! > $t/churn.pid; for i in \$(seq 60); do sleep 0.05; echo '{\"type\":\"tick\"}'; done; exit 1; fi"
-run churn 0 'VERDICT: VERIFIED'
-p=$(cat "$t/churn.pid" 2> /dev/null) && if kill -0 "$p" 2> /dev/null; then echo "FAIL churn child $p survived"; fails=$((fails + 1)); kill -KILL "$p"; fi
-fake tornid "if [ \$resume = 1 ]; then $done_ok; else $init; printf '{\"type\":\"assistant\",\"text\":\"hi\",\"model_call_id\":\"abc'; exit 1; fi"
-run tornid 0 'VERDICT: VERIFIED'
-fake tornmodel "if [ \$resume = 1 ]; then $done_ok; else $init; printf '{\"type\":\"assistant\",\"model\":\"claude-op'; exit 1; fi"
-run tornmodel 1 ''
-# Gate closed (load limit 0): exits 3 after the max wait without starting the agent.
-AGENT_MAX_LOAD=0 AGENT_GATE_POLL=1 AGENT_GATE_MAX_WAIT=2 AGENT_BIN="$t/normal" \
-  bash "$here/agent-run.sh" verifier "$t/p" "$t/gate.out" > /dev/null 2>&1
-code=$?
-if [ $code -eq 3 ] && [ ! -s "$t/gate.out.jsonl" ]; then echo "ok   gate"; else echo "FAIL gate (exit $code)"; fails=$((fails + 1)); fi
-# Receipt agent-run-stability-2026-10-15: each of these fails on 9252f57 and passes after the fix.
-# A lead silent while a Task subagent call is open is not a stall (resume would fail here).
+check never "$(call never)" 1 'NO VERDICT'
+# A non-grok model anywhere in the transcript fails the run, even beside a verdict.
+fake badmodel "$init; echo '{\"type\":\"assistant\",\"model\":\"claude-opus-4-5\"}'; $done_ok"
+check badmodel "$(call badmodel)" 1 'VERIFIED'
+# longrun's retry: the second call passes --resume to the agent and appends to the transcript.
+fake resume "if [ \$resume = 1 ]; then $done_ok; else $init; echo dropped >&2; exit 1; fi"
+c1=$(call resume)
+c2=$(call resume --resume s1)
+if [ "$c1" -ne 0 ] && [ "$(grep -c '"session_id"' "$t/resume.out.jsonl")" -ge 2 ]; then check resume "$c2" 0 'VERDICT: VERIFIED'; else echo "FAIL resume (first exit $c1)"; fails=$((fails + 1)); fi
+# A verdict written before a drop survives the retry (the transcript is appended, never truncated).
+fake asstverdict "if [ \$resume = 1 ]; then $done_ok; else $init; echo '{\"type\":\"assistant\",\"message\":{\"content\":[{\"type\":\"text\",\"text\":\"REVIEW: CHANGES NEEDED\"}]}}'; exit 1; fi"
+call asstverdict > /dev/null
+check asstverdict "$(call asstverdict --resume s1)" 0 'REVIEW: CHANGES NEEDED'
+# After a NonRetriableError the next call is a fresh session, never --resume.
+fake nonretriable "if [ \$resume = 1 ]; then exit 1; fi; if [ -e $t/nr.once ]; then $done_ok; else touch $t/nr.once; $init; echo 'NonRetriableError: Invalid Image' >&2; exit 1; fi"
+call nonretriable > /dev/null
+check nonretriable "$(call nonretriable --resume s1)" 0 'VERDICT: VERIFIED'
+# Real miss (#19 verifier r2, #20 verifier r2): a later turn's text follows the verdict with no newline.
+fake followup "$init; echo '{\"type\":\"result\",\"result\":\"Proof.\\n\\nVERDICT: VERIFIED\`npm run check\` finished successfully.\",\"session_id\":\"s1\"}'"
+check followup "$(call followup)" 0 'VERDICT: VERIFIED'
+# Real miss (#18 review r4, the #18 after-the-fact review): reviewers started as Task subagents
+# never returned, and the lead still wrote a verdict. That run fails.
 task_s='echo "{\"type\":\"tool_call\",\"subtype\":\"started\",\"call_id\":\"c1\",\"tool_call\":{\"taskToolCall\":{}}}"'
 task_c='echo "{\"type\":\"tool_call\",\"subtype\":\"completed\",\"call_id\":\"c1\",\"tool_call\":{\"taskToolCall\":{}}}"'
-fake taskwait "if [ \$resume = 1 ]; then exit 1; fi; $init; $task_s; sleep 6; $task_c; $done_ok"
-run taskwait 0 'VERDICT: VERIFIED'
-# After a NonRetriableError the next attempt is a fresh session, never --resume.
-fake nonretriable "if [ \$resume = 1 ]; then exit 1; fi; if [ -e $t/nr.once ]; then $done_ok; else touch $t/nr.once; $init; echo 'NonRetriableError: Invalid Image' >&2; exit 1; fi"
-run nonretriable 0 'VERDICT: VERIFIED'
-# A screenshot over 2000px written during the attempt is downscaled before the run ends.
+fake taskdrop "$init; $task_s; $task_s; echo '{\"type\":\"result\",\"result\":\"REVIEW: CLEAN\",\"session_id\":\"s1\"}'"
+check taskdrop "$(call taskdrop)" 1 'INCOMPLETE: 1 Task'
+fake taskdone "$init; $task_s; $task_c; echo '{\"type\":\"result\",\"result\":\"REVIEW: CLEAN\",\"session_id\":\"s1\"}'"
+check taskdone "$(call taskdone)" 0 'REVIEW: CLEAN'
+# A half-written last line that carried a verdict or a model id fails closed.
+fake tornverdict "$init; printf '{\"type\":\"result\",\"result\":\"REVIEW: CHANGES NEEDED'; exit 1"
+check tornverdict "$(call tornverdict)" 1 ''
+fake tornmodel "$init; printf '{\"type\":\"assistant\",\"model\":\"claude-op'; exit 1"
+check tornmodel "$(call tornmodel)" 1 ''
+fake tornescmodel "$init; printf '{\"type\":\"tool_call\",\"args\":\"{\\\\\"model\\\\\":\\\\\"claude-op'; exit 1"
+check tornescmodel "$(call tornescmodel)" 1 ''
+# ...but a torn line without either is dropped and the retry finishes.
+fake tornid "if [ \$resume = 1 ]; then $done_ok; else $init; printf '{\"type\":\"assistant\",\"text\":\"hi\",\"model_call_id\":\"abc'; exit 1; fi"
+call tornid > /dev/null
+check tornid "$(call tornid --resume s1)" 0 'VERDICT: VERIFIED'
+# Screenshots over 2000px written during the session are downscaled (receipt agent-run-stability-2026-10-15).
 if python3 -c 'import PIL' 2> /dev/null; then
   mkdir -p "$t/wt/artifacts"
-  # Written, then left to settle (AGENT_IMAGE_SETTLE=0.5 here) before the attempt ends.
   fake bigshot "$init; python3 -c 'from PIL import Image; Image.new(\"RGB\", (3000, 40)).save(\"artifacts/big.png\")'; sleep 2; $done_ok"
-  (cd "$t/wt" && AGENT_IMAGE_SETTLE=0.5 run bigshot 0 'VERDICT: VERIFIED')
+  c=$(cd "$t/wt" && AGENT_IMAGE_SETTLE=0.5 call bigshot)
+  check bigshot "$c" 0 'VERDICT: VERIFIED'
+  w=$(python3 -c "from PIL import Image; print(max(Image.open('$t/wt/artifacts/big.png').size))")
+  if [ "$w" -le 2000 ]; then echo "ok   bigshot-size"; else echo "FAIL bigshot-size ($w px)"; fails=$((fails + 1)); fi
   # A fresh screenshot is not rewritten before a reader (smoke's compare) can use it.
   fake freshshot "$init; python3 -c 'from PIL import Image; Image.new(\"RGB\", (3000, 40)).save(\"artifacts/fresh.png\")'; sleep 2; python3 -c 'from PIL import Image; print(max(Image.open(\"artifacts/fresh.png\").size))' > $t/fresh.size; $done_ok"
-  (cd "$t/wt" && AGENT_IMAGE_SETTLE=5 run freshshot 0 'VERDICT: VERIFIED')
+  c=$(cd "$t/wt" && AGENT_IMAGE_SETTLE=5 call freshshot)
+  check freshshot "$c" 0 'VERDICT: VERIFIED'
   if [ "$(cat "$t/fresh.size" 2> /dev/null)" = 3000 ]; then echo "ok   freshshot-size"; else echo "FAIL freshshot-size ($(cat "$t/fresh.size" 2> /dev/null))"; fails=$((fails + 1)); fi
   # A process that merely mentions the driver in its arguments does not block the shrink.
   python3 -c 'from PIL import Image; Image.new("RGB", (3000, 40)).save("'"$t"'/wt/artifacts/settled.png")'
   touch -d '-1 minute' "$t/wt/artifacts/settled.png"
   (cd "$t/wt" && exec -a "mention-control-probability" sleep 30) &
   m=$!
-  (cd "$t/wt" && bash -c 'sleep 30 # control-probability' ) &
+  (cd "$t/wt" && bash -c 'sleep 30 # control-probability') &
   m2=$!
   sleep 0.5
   (cd "$t/wt" && AGENT_IMAGE_SETTLE=0 python3 "$here/shrink-images.py" --once 0 "$t/wt")
   kill $m $m2 2> /dev/null
   w=$(python3 -c "from PIL import Image; print(max(Image.open('$t/wt/artifacts/settled.png').size))")
   if [ "$w" -le 2000 ]; then echo "ok   mention"; else echo "FAIL mention ($w px)"; fails=$((fails + 1)); fi
-  w=$(python3 -c "from PIL import Image; print(max(Image.open('$t/wt/artifacts/big.png').size))")
-  if [ "$w" -le 2000 ]; then echo "ok   bigshot-size"; else echo "FAIL bigshot-size ($w px)"; fails=$((fails + 1)); fi
 else
   echo "skip bigshot (Pillow not installed)"
 fi
-# A torn line with an escaped model key (tool args) or a spaced result verdict also fails closed.
-fake tornescmodel "if [ \$resume = 1 ]; then $done_ok; else $init; printf '{\"type\":\"tool_call\",\"args\":\"{\\\\\"model\\\\\":\\\\\"claude-op'; exit 1; fi"
-run tornescmodel 1 ''
-fake tornspaceverdict "if [ \$resume = 1 ]; then $done_ok; else $init; printf '{\"type\":\"result\",\"result\": \"VERDICT: NOT VERIFIED'; exit 1; fi"
-run tornspaceverdict 1 ''
-# Replayed Task "started" events for the same call_id must not disable the stall watchdog.
-fake taskreplay "if [ \$resume = 1 ]; then $done_ok; else $init; $task_s; $task_s; $task_s; $task_c; sleep 40; fi"
-t0=$SECONDS
-run taskreplay 0 'VERDICT: VERIFIED'
-if [ $((SECONDS - t0)) -ge 25 ]; then echo "FAIL taskreplay-stall (watchdog stayed off for $((SECONDS - t0))s)"; fails=$((fails + 1)); fi
-# A verdict on an assistant line before a drop is still printed after the resume.
-fake asstverdict "if [ \$resume = 1 ]; then $done_ok; else $init; echo '{\"type\":\"assistant\",\"message\":{\"content\":[{\"type\":\"text\",\"text\":\"REVIEW: CHANGES NEEDED\"}]}}'; exit 1; fi"
-run asstverdict 0 'REVIEW: CHANGES NEEDED'
 exit $fails

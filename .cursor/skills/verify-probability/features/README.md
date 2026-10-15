@@ -22,5 +22,7 @@ Verifier, review and math sessions run through `scripts/agent-run.sh` (see AGENT
 driving this map from such a session: screenshots over 2000px per side that appear in the worktree
 during a run are downscaled in place by `scripts/shrink-images.py` once they have been unchanged for
 10s and no smoke run is active in that tree (baselines are never touched), so wait before reading a
-fresh screenshot. Covered by `npm run test:agent-run` (`bigshot`, `freshshot`, `taskwait`,
-`taskreplay`, `nonretriable`, `asstverdict`).
+fresh screenshot. End the session with the verdict line at the start of a line; a run whose Task
+subagent call never returns fails as `INCOMPLETE`, so reviewers run as their own sessions, not as
+subagents. Covered by `npm run test:agent-run` (`bigshot`, `freshshot`, `followup`, `taskdrop`,
+`nonretriable`, `asstverdict`).
