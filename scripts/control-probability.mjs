@@ -17,6 +17,7 @@ import {
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
+import { orphanProblems } from './orphans.mjs';
 
 export const commands = [
   'launch',
@@ -222,7 +223,7 @@ const baselineDir = join(root, '.cursor/skills/verify-probability/baselines');
 const maxDiffRatio = Number(process.env.VISUAL_MAX_DIFF ?? 0.002);
 
 async function renderingProblems(page) {
-  return page.evaluate(async () => {
+  const { problems, inline } = await page.evaluate(async () => {
     await document.fonts.ready;
     const problems = [];
     if (document.documentElement.scrollWidth > window.innerWidth + 1)
@@ -237,15 +238,15 @@ async function renderingProblems(page) {
           `clipped display math: ${el.scrollWidth}px formula in a ${el.clientWidth}px box (“${el.textContent.slice(0, 40)}”)`,
         );
     }
-    // A wrapped inline formula must not leave a scrap (one symbol and its period) alone
-    // on the next line.
-    for (const el of document.querySelectorAll('.math-inline .katex-html')) {
-      const rects = [...el.getClientRects()].filter((r) => r.width > 0);
-      if (rects.length > 1 && rects[rects.length - 1].width < 40)
-        problems.push(
-          `orphaned formula fragment: “${el.textContent.slice(-20)}” wraps alone onto a new line`,
-        );
-    }
+    // Each inline formula's width on every line it spans; scripts/orphans.mjs judges them.
+    const inline = [...document.querySelectorAll('.math-inline .katex-html')]
+      .map((el) => ({
+        text: el.textContent,
+        widths: [...el.getClientRects()]
+          .filter((r) => r.width > 0)
+          .map((r) => Math.round(r.width)),
+      }))
+      .filter((f) => f.widths.length > 1);
     if (document.querySelector('.math-error'))
       problems.push('KaTeX reported invalid mathematics');
     const families = new Set();
@@ -333,8 +334,9 @@ async function renderingProblems(page) {
         }
       }
     }
-    return problems;
+    return { problems, inline };
   });
+  return [...problems, ...orphanProblems(inline)];
 }
 
 async function act(page, action) {
