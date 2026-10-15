@@ -12,7 +12,7 @@ export const MARKER =
 // inequality", "Wald's equation", "De Morgan's laws", accented names such as "Hölder's inequality". Each match must be
 // covered by a registry pattern.
 const NAMED =
-  /(?<!\p{L})(?:De )?\p{Lu}\p{Ll}+(?:[-–]\p{Lu}\p{Ll}+)*(?:['’]s?)? (?:theorem|inequality|identity|expansion|approximation|lemma|bound|laws?|formula|rule|equation|principle|paradox|fallacy)(?!\p{L})/gu;
+  /(?<!\p{L})(?:De )?\p{Lu}\p{Ll}+(?:[-–]\p{Lu}\p{Ll}+)*(?:['’]s?)? (?:theorem|inequality|identity|expansion|approximation|lemma|bound|laws?|formula|rule|equation|principle|paradox|fallacy|criterion)(?!\p{L})/gu;
 // Capitalised words that start ordinary phrases ("The bound", "Normal approximation").
 const NOT_A_NAME = new Set(
   'The This That Then These Those Both Each Every Same Such Its Our An A Upper Lower Tail Product Normal Poisson Binomial Multinomial Continuity Weak Strong Central Exact General'.split(

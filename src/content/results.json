@@ -11,6 +11,8 @@
   { "id": "bayes", "patterns": ["Bayes'? (rule|formula|theorem)"], "status": "proved", "in": "K03" },
   { "id": "vandermonde", "patterns": ["Vandermonde's identity"], "status": "proved", "in": "J03" },
   { "id": "poisson-limit", "patterns": ["Poisson approximation"], "status": "proved", "in": "D05" },
+  { "id": "lotus", "patterns": ["law of the unconscious statistician"], "status": "proved", "in": "R02" },
+  { "id": "factorisation-criterion", "patterns": ["[Ff]actori[sz]ation criterion"], "status": "proved", "in": "J02" },
   { "id": "de-moivre-laplace", "patterns": ["Moivre[-–]Laplace theorem", "normal approximation"], "status": "proved", "in": "R05" },
   { "id": "stirling", "patterns": ["Stirling('s)? (approximation|formula)"], "status": "quoted", "in": "R05" },
   { "id": "cauchy-schwarz", "patterns": ["Cauchy[-–]Schwarz"], "status": "proved", "in": "E03" },

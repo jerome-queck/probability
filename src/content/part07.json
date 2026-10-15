@@ -231,7 +231,7 @@
     "hypotheses": [
       "The law of total variance needs \\(E[X^2]<\\infty\\). Then \\(E[|X|]<\\infty\\) as well, because \\(|X|\\le 1+X^2\\). The argument below also shows \\(E[(E[X\\mid Y])^2]\\le E[X^2]<\\infty\\).",
       "For the random sum, \\(N\\) must be independent of the whole sequence \\((X_i)\\), and the \\(X_i\\) must be i.i.d. with a finite mean. The variance formula also needs \\(\\sigma^2<\\infty\\) and \\(E[N^2]<\\infty\\).",
-      "The formula does not apply when \\(N\\) is allowed to depend on the summands, for instance when \\(N\\) is the first index at which the partial sum exceeds a threshold.",
+      "The variance formula and the conditional identities \\(E[S\\mid N=n]=n\\mu\\) and \\(\\operatorname{Var}(S\\mid N=n)=n\\sigma^2\\) do not apply when \\(N\\) is allowed to depend on the summands, for instance when \\(N\\) is the first index at which the partial sum exceeds a threshold. For such a stopping time the mean formula \\(E[S]=E[N]\\mu\\) can still hold; the caution below gives the conditions.",
       "The empty sum is \\(0\\). Both formulas remain valid on the event \\(\\{N=0\\}\\), where the conditional mean and conditional variance of \\(S\\) are \\(0\\)."
     ],
     "proof": [

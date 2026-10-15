@@ -105,3 +105,13 @@ test('accented names and law/rule/formula titles are scanned', () => {
   ])
     assert.match(errors, new RegExp(`"${name}" is not in`), name);
 });
+
+test('a titled criterion must be registered (PR #19 math r1: factorisation criterion in J02)', () => {
+  const unregistered = results.filter(
+    (r) => r.id !== 'factorisation-criterion',
+  );
+  assert.match(
+    checkResults(lessons(), unregistered).join('\n'),
+    /J02 .*"Factorisation criterion" is not in src\/content\/results\.json/,
+  );
+});
