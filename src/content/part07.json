@@ -8,7 +8,10 @@
       "D08",
       "J02"
     ],
-    "results": [],
+    "results": [
+      "linearity-of-expectation",
+      "expectation-product-rule"
+    ],
     "summary": "The expectation of a function of two jointly distributed random variables is a double sum or a double integral against the joint distribution. Sums split by linearity with no independence assumption, while a product of a function of each variable splits when the variables are independent, and those two facts yield the mean of a sample average, the coupon collector's waiting time, and the expected number of runs.",
     "intuition": "A sum splits inside an average no matter how the variables move together, because averaging is linear. A product of a function of \\(X\\) and a function of \\(Y\\) splits when the joint distribution factors into marginals.",
     "definition": [
@@ -65,7 +68,10 @@
       "E01",
       "D03"
     ],
-    "results": [],
+    "results": [
+      "linearity-of-expectation",
+      "covariance-bilinearity"
+    ],
     "summary": "Covariance is the expected product of the deviations of two random variables from their means, and it equals \\(E[XY]-E[X]E[Y]\\). It is bilinear, so the variance of a sum is the sum of the variances plus twice every pairwise covariance; independence forces covariance to vanish, but a vanishing covariance does not force independence.",
     "intuition": "Covariance records whether the deviations of \\(X\\) and \\(Y\\) from their own means tend to share a sign. Once that joint movement is measured, the variance of a sum is the sum of the variances plus twice every pairwise covariance.",
     "definition": [
@@ -121,7 +127,9 @@
       "E02"
     ],
     "results": [
-      "cauchy-schwarz"
+      "cauchy-schwarz",
+      "continuity-of-probability",
+      "covariance-bilinearity"
     ],
     "summary": "The correlation of two non-degenerate random variables is their covariance divided by the product of their standard deviations. The Cauchy-Schwarz inequality forces this ratio to lie in \\([-1,1]\\), and, for non-constant \\(X\\), the value \\(\\pm 1\\) occurs exactly when one variable is almost surely an affine function of the other with slope of that same sign.",
     "intuition": "Correlation rescales covariance by the two standard deviations, so it has no units and must lie between \\(-1\\) and \\(1\\). It detects straight-line agreement and can miss a strong curved relationship.",

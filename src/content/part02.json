@@ -8,8 +8,7 @@
       "F03"
     ],
     "results": [
-      "counting-principle",
-      "multiplication-rule"
+      "counting-principle"
     ],
     "summary": "If a procedure is a sequence of choices and each choice has a fixed number of options, the number of outcomes is the product of those numbers. That product counts ordered samples, the \\(n!\\) orderings of \\(n\\) distinct objects, and the distinct arrangements of objects that are not all different.",
     "intuition": "Each new choice multiplies the list already counted, because every outcome of the earlier steps can be continued in as many ways as the next step allows.",
@@ -113,7 +112,8 @@
       "C02"
     ],
     "results": [
-      "multinomial-theorem"
+      "multinomial-theorem",
+      "stars-and-bars"
     ],
     "summary": "The multinomial coefficient \\(n!/(n_1!\\cdots n_r!)\\) counts divisions of \\(n\\) distinct objects into \\(r\\) labelled groups of prescribed sizes, and it is the coefficient of the corresponding monomial in \\((x_1+\\cdots+x_r)^n\\). When the objects are identical and the boxes are distinct, stars and bars replaces that count by a single binomial coefficient, shifted by one if every box must be nonempty.",
     "intuition": "Order inside a labelled group is irrelevant, so divide a full permutation by the internal rearrangements; identical balls in distinct urns are a row of stars cut into blocks by bars.",

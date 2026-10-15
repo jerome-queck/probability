@@ -170,7 +170,8 @@
     ],
     "results": [
       "binomial-theorem",
-      "inclusion-exclusion"
+      "inclusion-exclusion",
+      "complement-rule"
     ],
     "summary": "Two events are independent when the probability of both equals the product of the probabilities. For three or more events the product formula is required on every subcollection, and in independent repeated trials the probability of at least one success in \\(n\\) trials is \\(1-(1-p)^n\\).",
     "intuition": "Independent events neither help nor hinder each other. Probability 0 means almost never, and probability 1 means almost surely; in a continuous sample space an outcome can still land in a set of probability 0.",

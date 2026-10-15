@@ -60,7 +60,9 @@
     ],
     "results": [
       "lotus",
-      "fubini-tonelli"
+      "fubini-tonelli",
+      "linearity-of-expectation",
+      "tail-formula"
     ],
     "summary": "The expectation of a continuous random variable is the integral of \\(x\\) against its density, and the expectation of \\(g(X)\\) is the integral of \\(g\\) against the same density. Variance is the expected square deviation from the mean, and it equals \\(E[X^2]-(E[X])^2\\).",
     "intuition": "The density marks where the probability sits, and the expectation is the balance point of that mass. Variance is the average squared distance from the balance point.",
@@ -281,7 +283,9 @@
       "R02",
       "D05"
     ],
-    "results": [],
+    "results": [
+      "tail-formula"
+    ],
     "summary": "The exponential distribution with rate \\(\\lambda\\) has density \\(\\lambda e^{-\\lambda x}\\) on the positive line, mean \\(1/\\lambda\\) and variance \\(1/\\lambda^2\\). It is memoryless, it is the only continuous memoryless law, and it is the waiting time until the first event of a Poisson process of rate \\(\\lambda\\).",
     "intuition": "A constant hazard means the process has no ageing: surviving up to time \\(s\\) does not change the law of the remaining wait. That is exactly the gap before the next event when events arrive at a steady rate.",
     "definition": [

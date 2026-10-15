@@ -6,7 +6,8 @@
     "question": "How do we describe an uncertain experiment precisely enough to reason about it?",
     "prerequisites": [],
     "results": [
-      "de-morgan"
+      "de-morgan",
+      "distributive-law"
     ],
     "summary": "An experiment is modelled by the set \\(S\\) of all its possible outcomes. Events are subsets of \\(S\\), so the language of sets becomes the language of “or”, “and” and “not”.",
     "intuition": "Before asking how likely something is, write down everything that could happen. Each question about the experiment then picks out a subset of that list.",
@@ -57,7 +58,8 @@
     ],
     "results": [
       "boole",
-      "inclusion-exclusion"
+      "inclusion-exclusion",
+      "complement-rule"
     ],
     "summary": "Three axioms (non-negativity, total mass one, countable additivity) are enough to derive the complement rule, monotonicity and inclusion–exclusion.",
     "intuition": "Think of probability as one unit of mass spread over the sample space. Mass is never negative, it all lies somewhere in \\(S\\), and the mass of disjoint pieces adds up.",

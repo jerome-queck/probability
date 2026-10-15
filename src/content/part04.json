@@ -7,7 +7,9 @@
     "prerequisites": [
       "F03"
     ],
-    "results": [],
+    "results": [
+      "continuity-of-probability"
+    ],
     "summary": "A random variable is a numerical measurement of the outcome. For a discrete random variable the probability mass function lists the probability at each value, and the cumulative distribution function stacks those probabilities up to each threshold.",
     "intuition": "The mass function places a weight on each possible number. The distribution function tells how much weight sits at or to the left of a point, and a vertical jump is a point mass.",
     "definition": [
@@ -58,7 +60,9 @@
     "prerequisites": [
       "D01"
     ],
-    "results": [],
+    "results": [
+      "linearity-of-expectation"
+    ],
     "summary": "The expectation of a discrete random variable is the sum of each value times its probability. The same weights compute the expectation of a function of the variable, and expectation is linear under scaling and shifting.",
     "intuition": "Expectation is the balance point of the probability masses, and it is the average value you settle on if each number \\(x\\) keeps appearing with frequency \\(p(x)\\).",
     "definition": [
@@ -369,7 +373,9 @@
       "D04",
       "D07"
     ],
-    "results": [],
+    "results": [
+      "linearity-of-expectation"
+    ],
     "summary": "On a finite or countable sample space, expectation adds over outcomes. The expectation of a sum is therefore the sum of the expectations, with no independence hypothesis. Indicators turn this into a machine for computing means of counts, including the binomial mean, the hypergeometric mean and the expected number of fixed points of a random permutation.",
     "intuition": "Expectation averages a numerical function over outcomes. Adding two functions and then averaging is the same as averaging each function and adding the averages, whether or not the functions rise and fall together.",
     "definition": [

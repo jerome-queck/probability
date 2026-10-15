@@ -35,5 +35,14 @@
   { "id": "berry-esseen", "name": "Berry–Esseen theorem", "status": "quoted", "in": "L04" },
   { "id": "taylor", "name": "Taylor's theorem", "status": "background" },
   { "id": "fubini-tonelli", "name": "Fubini–Tonelli theorem", "status": "background" },
-  { "id": "fundamental-theorem-calculus", "name": "fundamental theorem of calculus", "status": "background" }
+  { "id": "fundamental-theorem-calculus", "name": "fundamental theorem of calculus", "status": "background" },
+  { "id": "linearity-of-expectation", "name": "linearity of expectation", "status": "proved", "in": "D08" },
+  { "id": "complement-rule", "name": "complement rule", "status": "proved", "in": "F02" },
+  { "id": "distributive-law", "name": "distributive law", "status": "proved", "in": "F01" },
+  { "id": "stars-and-bars", "name": "stars and bars", "status": "proved", "in": "C03" },
+  { "id": "continuity-of-probability", "name": "continuity of probability", "status": "proved", "in": "D01" },
+  { "id": "expectation-product-rule", "name": "product rule for expectations of independent variables", "status": "proved", "in": "E01" },
+  { "id": "covariance-bilinearity", "name": "bilinearity of covariance", "status": "proved", "in": "E02" },
+  { "id": "tail-formula", "name": "tail formula for expectation", "status": "proved", "in": "R02" },
+  { "id": "central-limit-finite-variance", "name": "central limit theorem under finite variance alone", "status": "quoted", "in": "L04" }
 ]
