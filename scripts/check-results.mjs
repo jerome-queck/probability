@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Runs scripts/results-check.mjs on every lesson. Fix: register the named result in
+// Runs scripts/results-check.mjs on every lesson. Fix: correct the row's "names" or "in" in
 // src/content/results.json, or mark a quoted result "quoted without proof" where it is named.
 import { readdirSync, readFileSync } from 'node:fs';
 import { checkResults } from './results-check.mjs';
