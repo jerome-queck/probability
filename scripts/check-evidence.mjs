@@ -3,6 +3,7 @@
 // the current head SHA, plus evidence. Content PRs also need a clean math review.
 // Run in CI by .github/workflows/evidence.yml; locally: PR=<n> node scripts/check-evidence.mjs
 import { execFileSync } from 'node:child_process';
+import { reviewerErrors } from './evidence-rules.mjs';
 
 const pr = process.env.PR;
 const gh = (...a) => execFileSync('gh', a, { encoding: 'utf8' });
@@ -35,6 +36,8 @@ if (
   );
 if (!/^clean\b/i.test(field('Review')))
   errors.push('“Review:” must start with “clean” (no open Act-on items)');
+// Every review session must have reported (a dropped reviewer is rerun, not skipped).
+errors.push(...reviewerErrors(field('Reviewer verdicts')));
 if (field('Evidence').length < 10)
   errors.push(
     '“Evidence:” must point at the proof (CI run, smoke drives, artifacts)',

@@ -69,7 +69,7 @@ Box Ops' `longrun`, never supervised from a chat turn.
 | Role | Tier | What it does |
 |---|---|---|
 | verifier | `grok-4.7-high` | independent verifier using `verify-probability`; looks at the screenshots |
-| review | `grok-4.7-high` | `interrogate` lead; its two reviewers run `grok-4.7-high` |
+| review | `grok-4.7-high` | one `interrogate` reviewer per session, no Task subagents; each PR gets two such sessions (R1, R2), started one at a time, each with its own prompt |
 | math | `grok-4.7-high` | independent math check of lesson content against the sources |
 | chore | `grok-4.7-medium` | mechanical work: merges, baselines, PR bodies |
 
@@ -99,7 +99,14 @@ A PR auto-merges (squash) only when all hold:
 1. Independent verifier verdict **VERIFIED** on the PR head, using the verify skill — including
    visual verification: the verifier opened and inspected the screenshots of every state the
    change touches, at desktop and mobile widths.
-2. Multi-model review (`interrogate` or equivalent) is **clean**: no open *Act on* items.
+2. Multi-model review (`interrogate` or equivalent) is **clean**: no open *Act on* items, and
+   **every** review session reported its own verdict. A reviewer that drops or returns nothing is
+   rerun; the lead alone is not a review. The PR body's “Reviewer verdicts:” lists each one in a
+   fixed form, `R1 grok-4.7-high CLEAN (session <id>); R2 grok-4.7-high CHANGES NEEDED (session <id>)`.
+   Run each reviewer as its own top-level session (`scripts/agent-run.sh review <prompt> <out>`,
+   one prompt per reviewer, telling it to work alone), one at a time: Task subagents are cut off
+   when the lead is stalled and resumed, and then never report. A dropped reviewer is rerun the
+   same way, never as a subagent. The session id is the `session=` value agent-run.sh prints.
 3. CI `check` is green on a head that is up to date with `main` (the ruleset requires it).
 4. Evidence is in the PR body (the `evidence` CI job checks the template fields): verdict and
    verified head, review record naming the reviewer, skills used with model and effort, and for
@@ -130,10 +137,12 @@ OK. Fixing a wrong gate is its own PR.
 | Lint and format | `biome.json` via `npm run lint` and `npm run format:check` |
 | The real site loads and every mapped feature works | `scripts/control-probability.mjs` (`npm run smoke`) |
 | Every feature state looks right at desktop and mobile widths; no unintended visual change | `scripts/control-probability.mjs` (rendering checks + pixel comparison with `.cursor/skills/verify-probability/baselines`) |
+| No inline formula orphans on a phone: no scrap under 40px alone on a new line, no formula under 120px split across lines, on every lesson page at 390, 600, 860 and 1280px | `scripts/orphans.mjs` called by the sweep in `scripts/control-probability.mjs` + `scripts/orphans.test.mjs` (fails on E03 at daf7a37) + `isShortFormula` in `src/mathBreaks.ts` |
 | Every feature lists visual states that are driven and baselined | `scripts/check-drift.mjs` |
 | Same check locally and in CI | `.github/workflows/check.yml` runs `npm run check` |
 | Evidence and verdicts are in the PR | `.github/workflows/evidence.yml` (pull_request_target: the gate script comes from the base branch, never the PR head) + `.github/pull_request_template.md` |
 | Merge only on green, up-to-date heads | GitHub ruleset `main-gates` (required checks `check` and `evidence`, strict) |
+| Every review session reported (no merge on a lead-only review after a reviewer dropped) | `scripts/evidence-rules.mjs` via `.github/workflows/evidence.yml` (“Reviewer verdicts:”) + `scripts/evidence-rules.test.mjs` (fails on PR #18's body) |
 | Math reviewed independently before merge | `.github/workflows/evidence.yml` (requires a clean math-review line for content PRs) |
 
 ## Run log (every agent run)

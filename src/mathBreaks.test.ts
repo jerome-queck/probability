@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { keepShortTail } from './mathBreaks.ts';
+import { isShortFormula, keepShortTail } from './mathBreaks.ts';
 
 test('a tiny last piece is joined to the piece before it', () => {
   assert.equal(
@@ -65,4 +65,11 @@ test('every formula in the lessons still renders after grouping', async () => {
       count++;
     }
   assert.ok(count > 50, `only ${count} formulas found`);
+});
+
+test('short formulas are measured in visible characters, not source length', () => {
+  // E03 at daf7a37 split this one in half at 390px; its source is 19 characters long.
+  assert.ok(isShortFormula('\\sigma_Y=-b\\sigma_X'));
+  assert.ok(isShortFormula('Y\\sim\\operatorname{Poisson}(\\lambda_2)'));
+  assert.ok(!isShortFormula('E[XY]=E[X^3]=(-27-1+1+27)/4=0'));
 });
