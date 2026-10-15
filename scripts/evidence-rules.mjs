@@ -54,3 +54,76 @@ export function reviewerErrors(line) {
   }
   return errors;
 }
+
+// “Math review:” (content PRs) names the math-check session and the commit whose lesson text it
+// checked, in one fixed form, then any notes after “;”:
+//   clean — grok-4.7-<low|medium|high> (session <id>) on <sha>; notes
+// The math check runs while authoring, before the verifier and reviewers, and again after any
+// later change to the lesson text: check-evidence fails when a lesson file this PR changes is
+// different at the head than at <sha> (PR #13 merged with E03 edited after its math check).
+export const MATH_EXAMPLE =
+  'clean — grok-4.7-high (session 74c693ac) on 7b6bf0c; every value recomputed';
+export const MATH_ENTRY =
+  /^clean\s*(?:—|-|:)\s*grok-4\.7-(low|medium|high) \(session ([0-9a-f]{8})(?:-[0-9a-f]+)*\) on ([0-9a-f]{7,40})(?![0-9a-z])\s*(?:;|$)/;
+export const MATH_RERUN =
+  'run the math check on the head (scripts/agent-run.sh math <prompt> <out>) and record its session= id and the commit it checked';
+
+// Returns { errors, sha } for the “Math review:” field.
+export function mathReviewErrors(line) {
+  const m = MATH_ENTRY.exec((line ?? '').trim());
+  if (!m)
+    return {
+      errors: [
+        `content changed: “Math review:” must read “${MATH_EXAMPLE}”: clean, the math checker's tier, the session= id agent-run.sh printed and the commit whose lesson text it checked, then notes after “;”; ${MATH_RERUN}`,
+      ],
+      sha: null,
+    };
+  if (/^0+$/.test(m[2]))
+    return {
+      errors: [
+        `content changed: “Math review:” session ${m[2]} is not a real session id; ${MATH_RERUN}`,
+      ],
+      sha: null,
+    };
+  return { errors: [], sha: m[3] };
+}
+
+// compare: GitHub's compare of <sha>...<head> ({ status, files: [filename] }); prFiles: the
+// PR's changed files. Fails when the checked commit is not an ancestor of the head, or when a
+// lesson file the PR changes differs between them.
+// GitHub's compare lists at most this many files; a full list may be truncated.
+export const COMPARE_FILE_CAP = 300;
+
+export function staleMathErrors(sha, compare, prFiles) {
+  if (compare.files.length >= COMPARE_FILE_CAP)
+    return [
+      `content changed: the compare of the math check's commit ${sha} with the head lists ${compare.files.length} files, GitHub's cap, so it may be incomplete; ${MATH_RERUN}`,
+    ];
+  if (!['ahead', 'identical'].includes(compare.status))
+    return [
+      `content changed: the math check's commit ${sha} is not an ancestor of the head (compare status “${compare.status}”); ${MATH_RERUN}`,
+    ];
+  const lessons = new Set(prFiles.filter((f) => f.startsWith('src/content/')));
+  const changed = compare.files.filter((f) => lessons.has(f));
+  return changed.length
+    ? [
+        `content changed after the math check on ${sha}: ${changed.join(', ')}; ${MATH_RERUN}`,
+      ]
+    : [];
+}
+
+// A compare that could not run (gh exited non-zero). stderr carries GitHub's own error line.
+export function compareFailedErrors(sha, stderr) {
+  const reason =
+    String(stderr ?? '')
+      .split('\n')
+      .map((l) => l.trim())
+      .find((l) => l.startsWith('gh:')) ?? 'no error from gh';
+  return /HTTP (404|422)\b/.test(reason)
+    ? [
+        `content changed: the math check's commit ${sha} was not found on GitHub (${reason}); push it, or ${MATH_RERUN}`,
+      ]
+    : [
+        `could not compare the math check's commit ${sha} with the head (${reason}); re-run the evidence job`,
+      ];
+}
