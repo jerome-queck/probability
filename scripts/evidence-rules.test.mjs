@@ -13,54 +13,60 @@ test('PR #18: a lead-only review with dropped reviewers fails', () => {
   assert.ok(reviewerErrors(field).length > 0);
 });
 
-test('a dropped reviewer fails even when listed', () => {
-  const errors = reviewerErrors(
-    'R1 grok-4.7-high CLEAN (task a1); R2 grok-4.7-high dropped before reporting',
-  );
-  assert.match(errors.join('\n'), /R2 .* has no reported verdict/);
+const ok =
+  'R1 grok-4.7-high CLEAN (session 5e19ac26-2c3f); R2 grok-4.7-high CHANGES NEEDED (session 3cbed3fe)';
+
+test('every reviewer reported, in the fixed form: passes', () => {
+  assert.deepEqual(reviewerErrors(ok), []);
 });
 
 test('one reviewer is not enough', () => {
   assert.match(
-    reviewerErrors('R1 grok-4.7-high CLEAN (task a1)').join('\n'),
+    reviewerErrors('R1 grok-4.7-high CLEAN (session 5e19ac26)').join('\n'),
     /at least 2/,
   );
 });
 
-test('every reviewer reported, with model and verdict: passes', () => {
-  assert.deepEqual(
-    reviewerErrors(
-      'R1 grok-4.7-high CLEAN (task a1); R2 grok-4.7-high CHANGES NEEDED, one Consider, dismissed by the lead (task b2)',
-    ),
-    [],
-  );
-});
-
-test('an entry without a model fails', () => {
-  assert.match(
-    reviewerErrors('R1 CLEAN; R2 grok-4.7-high CLEAN').join('\n'),
-    /must name its model/,
-  );
-});
-
-test('PR #20 verifier r1: a silent or timed-out reviewer fails even beside CLEAN', () => {
-  for (const e of ['CLEAN (silent)', 'CLEAN (timed-out)', 'CLEAN, timeout'])
+// Every phrasing the verifiers of #20 got past the earlier word-matching rules (r1, r2).
+test('dropped, silent or annotated entries fail', () => {
+  for (const bad of [
+    'R2 grok-4.7-high dropped before reporting',
+    'R2 grok-4.7-high CLEAN (silent)',
+    'R2 grok-4.7-high CLEAN (timed-out)',
+    'R2 grok-4.7-high CLEAN, not reported',
+    'R2 grok-4.7-high CLEAN, silently',
+    'R2 grok-4.7-high CLEAN (no verdicts)',
+    'R2 CLEAN (session 3cbed3fe)',
+  ])
     assert.match(
-      reviewerErrors(`R1 grok-4.7-high CLEAN (a1); R2 grok-4.7-high ${e}`).join(
+      reviewerErrors(`R1 grok-4.7-high CLEAN (session 5e19ac26); ${bad}`).join(
         '\n',
       ),
-      /has no reported verdict/,
-      e,
+      /must read exactly/,
+      bad,
     );
 });
 
-test('PR #20 verifier r1: -fast and xhigh tiers fail', () => {
-  for (const t of ['grok-4.7-high-fast', 'grok-4.7-xhigh'])
+test('-fast, xhigh and slash tiers fail', () => {
+  for (const t of [
+    'grok-4.7-high-fast',
+    'grok-4.7-xhigh',
+    'grok-4.7-high/fast',
+  ])
     assert.match(
-      reviewerErrors(`R1 grok-4.7-high CLEAN (a1); R2 ${t} CLEAN (b2)`).join(
-        '\n',
-      ),
-      /must name its model/,
+      reviewerErrors(
+        `R1 grok-4.7-high CLEAN (session 5e19ac26); R2 ${t} CLEAN (session 3cbed3fe)`,
+      ).join('\n'),
+      /must read exactly/,
       t,
     );
+});
+
+test('the same reviewer twice does not make two', () => {
+  assert.match(
+    reviewerErrors(
+      'R1 grok-4.7-high CLEAN (session 5e19ac26); R1 grok-4.7-high CLEAN (session 5e19ac27)',
+    ).join('\n'),
+    /R1 twice/,
+  );
 });

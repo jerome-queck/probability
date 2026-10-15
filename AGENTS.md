@@ -101,7 +101,10 @@ A PR auto-merges (squash) only when all hold:
    change touches, at desktop and mobile widths.
 2. Multi-model review (`interrogate` or equivalent) is **clean**: no open *Act on* items, and
    **every** review session reported its own verdict. A reviewer that drops or returns nothing is
-   rerun; the lead alone is not a review. The PR body's “Reviewer verdicts:” lists each one.
+   rerun; the lead alone is not a review. The PR body's “Reviewer verdicts:” lists each one in a
+   fixed form, `R1 grok-4.7-high CLEAN (session <id>); R2 grok-4.7-high CHANGES NEEDED (session <id>)`.
+   Run each reviewer as its own top-level session: Task subagents are cut off when the lead is
+   stalled and resumed, and then never report.
 3. CI `check` is green on a head that is up to date with `main` (the ruleset requires it).
 4. Evidence is in the PR body (the `evidence` CI job checks the template fields): verdict and
    verified head, review record naming the reviewer, skills used with model and effort, and for
