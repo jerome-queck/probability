@@ -8,6 +8,10 @@
       "D08",
       "J02"
     ],
+    "results": [
+      "linearity-of-expectation",
+      "expectation-product-rule"
+    ],
     "summary": "The expectation of a function of two jointly distributed random variables is a double sum or a double integral against the joint distribution. Sums split by linearity with no independence assumption, while a product of a function of each variable splits when the variables are independent, and those two facts yield the mean of a sample average, the coupon collector's waiting time, and the expected number of runs.",
     "intuition": "A sum splits inside an average no matter how the variables move together, because averaging is linear. A product of a function of \\(X\\) and a function of \\(Y\\) splits when the joint distribution factors into marginals.",
     "definition": [
@@ -64,6 +68,11 @@
       "E01",
       "D03"
     ],
+    "results": [
+      "linearity-of-expectation",
+      "covariance-bilinearity",
+      "expectation-product-rule"
+    ],
     "summary": "Covariance is the expected product of the deviations of two random variables from their means, and it equals \\(E[XY]-E[X]E[Y]\\). It is bilinear, so the variance of a sum is the sum of the variances plus twice every pairwise covariance; independence forces covariance to vanish, but a vanishing covariance does not force independence.",
     "intuition": "Covariance records whether the deviations of \\(X\\) and \\(Y\\) from their own means tend to share a sign. Once that joint movement is measured, the variance of a sum is the sum of the variances plus twice every pairwise covariance.",
     "definition": [
@@ -118,6 +127,11 @@
     "prerequisites": [
       "E02"
     ],
+    "results": [
+      "cauchy-schwarz",
+      "continuity-of-probability",
+      "covariance-bilinearity"
+    ],
     "summary": "The correlation of two non-degenerate random variables is their covariance divided by the product of their standard deviations. The Cauchy-Schwarz inequality forces this ratio to lie in \\([-1,1]\\), and, for non-constant \\(X\\), the value \\(\\pm 1\\) occurs exactly when one variable is almost surely an affine function of the other with slope of that same sign.",
     "intuition": "Correlation rescales covariance by the two standard deviations, so it has no units and must lie between \\(-1\\) and \\(1\\). It detects straight-line agreement and can miss a strong curved relationship.",
     "definition": [
@@ -170,6 +184,10 @@
       "E01",
       "J04"
     ],
+    "results": [
+      "total-expectation",
+      "fubini-tonelli"
+    ],
     "summary": "The conditional expectation \\(E[X\\mid Y=y]\\) is an ordinary mean under the conditional distribution of \\(X\\) given \\(Y=y\\), and \\(E[X\\mid Y]\\) is the random variable obtained by putting \\(Y\\) back in place of \\(y\\). The law of total expectation says that averaging this random variable returns \\(E[X]\\), and the same identity computes probabilities by conditioning.",
     "intuition": "Conditional expectation is an ordinary mean computed inside the slice where the conditioning variable is held fixed. Averaging those slice-wise means, with weights given by the distribution of the conditioner, returns the unconditional mean.",
     "definition": [
@@ -221,6 +239,11 @@
       "E04",
       "E02"
     ],
+    "results": [
+      "total-expectation",
+      "wald",
+      "total-variance"
+    ],
     "summary": "The conditional variance is the ordinary variance computed inside the conditional distribution, viewed afterwards as a random variable. The law of total variance writes \\(\\operatorname{Var}(X)\\) as the mean of that conditional variance plus the variance of the conditional mean, and applying it to a random sum produces both the mean \\(E[N]E[X]\\) and the variance \\(E[N]\\operatorname{Var}(X)+(E[X])^2\\operatorname{Var}(N)\\).",
     "intuition": "Variance splits into the average leftover noise after \\(Y\\) is known and the variance of the conditional mean as \\(Y\\) varies. A random sum is noisy both because each summand is random and because the number of summands is random.",
     "definition": [
@@ -231,7 +254,7 @@
     "hypotheses": [
       "The law of total variance needs \\(E[X^2]<\\infty\\). Then \\(E[|X|]<\\infty\\) as well, because \\(|X|\\le 1+X^2\\). The argument below also shows \\(E[(E[X\\mid Y])^2]\\le E[X^2]<\\infty\\).",
       "For the random sum, \\(N\\) must be independent of the whole sequence \\((X_i)\\), and the \\(X_i\\) must be i.i.d. with a finite mean. The variance formula also needs \\(\\sigma^2<\\infty\\) and \\(E[N^2]<\\infty\\).",
-      "The formula does not apply when \\(N\\) is allowed to depend on the summands, for instance when \\(N\\) is the first index at which the partial sum exceeds a threshold.",
+      "The variance formula and the conditional identities \\(E[S\\mid N=n]=n\\mu\\) and \\(\\operatorname{Var}(S\\mid N=n)=n\\sigma^2\\) do not apply when \\(N\\) is allowed to depend on the summands, for instance when \\(N\\) is the first index at which the partial sum exceeds a threshold. For such a stopping time the mean formula \\(E[S]=E[N]\\mu\\) can still hold; the caution below gives the conditions.",
       "The empty sum is \\(0\\). Both formulas remain valid on the event \\(\\{N=0\\}\\), where the conditional mean and conditional variance of \\(S\\) are \\(0\\)."
     ],
     "proof": [
@@ -260,7 +283,7 @@
       ],
       "answer": "The participant probabilities add to \\(1/2+1/3+1/6=1\\). Then \\(E[N]=1\\cdot(1/2)+2\\cdot(1/3)+3\\cdot(1/6)=1/2+2/3+1/2=5/3\\) and \\(E[N^2]=1\\cdot(1/2)+4\\cdot(1/3)+9\\cdot(1/6)=1/2+4/3+3/2=10/3\\), so \\(\\operatorname{Var}(N)=10/3-(5/3)^2=10/3-25/9=30/9-25/9=5/9\\). A single fee \\(X\\) has \\(E[X]=(4+8)/2=6\\) and \\(E[X^2]=(16+64)/2=40\\), so \\(\\operatorname{Var}(X)=40-36=4\\). Therefore \\(E[S]=(5/3)\\cdot 6=10\\) and \\(\\operatorname{Var}(S)=(5/3)\\cdot 4+6^2\\cdot(5/9)=20/3+36\\cdot(5/9)=20/3+20=20/3+60/3=80/3\\)."
     },
-    "caution": "The term \\((E[X])^2\\operatorname{Var}(N)\\) is the part of \\(\\operatorname{Var}(S)\\) that comes from not knowing how many summands there will be. Omitting it is correct only when the term genuinely vanishes: when \\(\\mu=0\\), or when \\(N\\) is almost surely constant so that \\(\\operatorname{Var}(N)=0\\). The formula also requires \\(N\\) to be independent of every \\(X_i\\). If \\(N\\) is a stopping time built from the \\(X_i\\), the conditional law of the summands given \\(N=n\\) is no longer the original i.i.d. law, and the conditional identities \\(E[S\\mid N=n]=n\\mu\\) and \\(\\operatorname{Var}(S\\mid N=n)=n\\sigma^2\\) can fail. The mean formula \\(E[S]=E[N]\\mu\\) still holds when \\(E[N]\\) and \\(E[|X_1|]\\) are finite (Wald's equation), but the variance formula can fail: for steps of 1 or 2 with probability \\(\\tfrac12\\) each, stopped once the total reaches 2, the formula gives \\(\\tfrac{15}{16}\\) while the true variance is \\(\\tfrac{3}{16}\\). Finally \\(E[\\operatorname{Var}(X\\mid Y)]\\) is a number, whereas \\(\\operatorname{Var}(X\\mid Y)\\) is a random variable.",
+    "caution": "The term \\((E[X])^2\\operatorname{Var}(N)\\) is the part of \\(\\operatorname{Var}(S)\\) that comes from not knowing how many summands there will be. Omitting it is correct only when the term genuinely vanishes: when \\(\\mu=0\\), or when \\(N\\) is almost surely constant so that \\(\\operatorname{Var}(N)=0\\). The formula also requires \\(N\\) to be independent of every \\(X_i\\). If \\(N\\) is a stopping time built from the \\(X_i\\), the conditional law of the summands given \\(N=n\\) is no longer the original i.i.d. law, and the conditional identities \\(E[S\\mid N=n]=n\\mu\\) and \\(\\operatorname{Var}(S\\mid N=n)=n\\sigma^2\\) can fail. The mean formula \\(E[S]=E[N]\\mu\\) still holds when \\(E[N]\\) and \\(E[|X_1|]\\) are finite (Wald's equation, quoted here without proof), but the variance formula can fail: for steps of 1 or 2 with probability \\(\\tfrac12\\) each, stopped once the total reaches 2, the formula gives \\(\\tfrac{15}{16}\\) while the true variance is \\(\\tfrac{3}{16}\\). Finally \\(E[\\operatorname{Var}(X\\mid Y)]\\) is a number, whereas \\(\\operatorname{Var}(X\\mid Y)\\) is a random variable.",
     "bridge": "The sample mean of \\(n\\) uncorrelated observations has variance \\(\\sigma^2/n\\). That shrinking variance is what makes an average settle near its mean as \\(n\\) grows, which is the starting point of the limit theorems.",
     "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 7 (conditional variance and the sum of a random number of random variables)."
   }

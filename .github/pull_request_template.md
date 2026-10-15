@@ -6,6 +6,10 @@
 
 <!-- The falsifiable check that says this is finished. -->
 
+## Pre-review self-check
+
+<!-- The authoring-time checks you ran before asking for review, each with its result: npm run check (and which parts), test counts, smoke screenshots, check:results, and for content PRs the authoring-time math checker. Name anything you did not run. -->
+
 ## Verification
 
 - Verifier verdict: <!-- VERIFIED / NOT VERIFIED / INCONCLUSIVE — by whom, using verify-probability -->

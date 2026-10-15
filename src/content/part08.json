@@ -8,6 +8,12 @@
       "E02",
       "R02"
     ],
+    "results": [
+      "markov",
+      "chebyshev",
+      "weak-law",
+      "continuity-of-probability"
+    ],
     "summary": "Markov's inequality converts a finite mean into a tail bound for a nonnegative random variable. Chebyshev's inequality converts a finite variance into a bound on the probability of straying from the mean, and zero variance forces the variable to be constant with probability 1.",
     "intuition": "A fixed mean can come from a modest value that always occurs, or from a rare enormous one. Markov charges that rare value the largest probability the mean allows, and Chebyshev does the same job for squared distance from the mean.",
     "definition": [
@@ -56,6 +62,14 @@
     "question": "In what sense does the average of more and more independent observations settle at the mean?",
     "prerequisites": [
       "L01"
+    ],
+    "results": [
+      "chebyshev",
+      "weak-law",
+      "weak-law-finite-mean",
+      "strong-law",
+      "central-limit",
+      "linearity-of-expectation"
     ],
     "summary": "If \\(X_1,X_2,\\dots\\) are iid with finite mean \\(\\mu\\), the sample average converges to \\(\\mu\\) in probability. When the variance is finite, Chebyshev's inequality proves it, because the variance of the average is \\(\\sigma^2/n\\).",
     "intuition": "Each new observation moves the average by a smaller and smaller amount. A large deviation from the mean remains possible, but its probability drains away as the sample grows.",
@@ -110,6 +124,14 @@
       "E01",
       "R04",
       "D05"
+    ],
+    "results": [
+      "binomial-theorem",
+      "mgf-affine",
+      "mgf-uniqueness",
+      "joint-mgf-uniqueness",
+      "central-limit",
+      "expectation-product-rule"
     ],
     "summary": "The moment generating function \\(M(t)=E[e^{tX}]\\) packages the moments as derivatives at \\(0\\), when it exists on a neighbourhood of \\(0\\), and it determines the distribution. Independence turns the moment generating function of a sum into a product, which identifies sums of independent Poisson random variables and sums of independent normal random variables.",
     "intuition": "The exponential series \\(e^{tX}=\\sum_{n\\ge 0}(tX)^n/n!\\) mixes every power of \\(X\\). Taking expectations turns those powers into moments, and independence turns the expectation of a product into a product of expectations.",
@@ -168,6 +190,19 @@
       "L02",
       "L03",
       "R05"
+    ],
+    "results": [
+      "de-moivre-laplace",
+      "mgf-affine",
+      "weak-law",
+      "continuity-theorem",
+      "central-limit",
+      "edgeworth",
+      "berry-esseen",
+      "taylor",
+      "central-limit-finite-variance",
+      "markov",
+      "chebyshev"
     ],
     "summary": "For iid random variables with mean \\(\\mu\\) and variance \\(\\sigma^2\\), the distribution function of \\((S_n-n\\mu)/(\\sigma\\sqrt{n})\\) converges to the standard normal distribution function \\(\\Phi\\). The argument below assumes a moment generating function near \\(0\\) and uses the continuity theorem; in practice the limit is an approximation whose error depends on skewness.",
     "intuition": "A sum is a crowd of small independent nudges. After centering and scaling, the moment generating function of that crowd retains the mean and the variance and forgets every other detail of the summands.",
