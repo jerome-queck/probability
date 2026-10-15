@@ -13,12 +13,29 @@ export const MARKER =
 // covered by a registry pattern.
 const NAMED =
   /(?<!\p{L})(?:De )?\p{Lu}\p{Ll}+(?:[-–]\p{Lu}\p{Ll}+)*(?:['’]s?)? (?:theorem|inequality|identity|expansion|approximation|lemma|bound|laws?|formula|rule|equation|principle|paradox|fallacy|criterion)(?!\p{L})/gu;
-// Capitalised words that start ordinary phrases ("The bound", "Normal approximation").
+// Capitalised words that only start ordinary phrases ("The bound", "This formula"). Words that
+// begin real titles (Binomial, Poisson, Weak, Continuity, ...) are not here: a title that
+// starts with them is scanned like any other (PR #19 reviewer 1).
 const NOT_A_NAME = new Set(
-  'The This That Then These Those Both Each Every Same Such Its Our An A Upper Lower Tail Product Normal Poisson Binomial Multinomial Continuity Weak Strong Central Exact General'.split(
+  'The This That Then These Those Both Each Every Same Such Its Our An A Upper Lower Tail Product Exact General'.split(
     ' ',
   ),
 );
+// Ordinary phrases the eponymous pattern also matches: a distribution name before "formula",
+// "law" or "approximation" describes a formula, not a named result.
+const ORDINARY =
+  /^(?:Normal|Poisson|Binomial|Gamma|Exponential|Uniform) (?:formula|laws?|rule|bound)$/;
+
+// A titled result in lowercase: "the central limit theorem", "the cdf criterion", "the
+// multiplication principle", "the strong law", "the law of total probability",
+// inclusion-exclusion. Only "theorem", "criterion" and "principle" are titles after "the":
+// "the variance formula" or "the chain rule" are ordinary words, so those must be registered
+// by hand (see AGENTS.md).
+const TITLED =
+  /(?<!\p{L})(?:[Tt]he ((?:\p{L}[\p{L}'’–-]* ){1,3})(?:theorem|criterion|principle)|(?:strong|weak) laws?|laws? of (?:total \p{L}+|large numbers|the unconscious statistician)|inclusion[-–]exclusion)(?!\p{L})/gu;
+// Words after "the" that make an ordinary reference, not a title ("the same theorem").
+const NOT_A_TITLE =
+  /^(?:same|previous|above|next|following|last|first|second|general|stated|proposed|whole|main|key|preceding|earlier|later) /i;
 
 export const strings = (value, path = '') =>
   typeof value === 'string'
@@ -60,15 +77,20 @@ export function checkResults(lessons, results) {
   }
   for (const l of lessons) {
     const entries = strings(l);
-    for (const { path, text } of entries)
+    for (const { path, text } of entries) {
+      const names = [];
       for (const m of text.matchAll(NAMED)) {
         const first = m[0].split(/[\s'’]/)[0];
-        if (NOT_A_NAME.has(first)) continue;
-        if (!registry.some((r) => r.res.some((re) => re.test(m[0]))))
-          errors.push(
-            `${l.id} ${path}: "${m[0]}" is not in src/content/results.json; register it with the lesson that proves it, or status "quoted"`,
-          );
+        if (!NOT_A_NAME.has(first) && !ORDINARY.test(m[0])) names.push(m[0]);
       }
+      for (const m of text.matchAll(TITLED))
+        if (!NOT_A_TITLE.test(m[1] ?? '')) names.push(m[0]);
+      for (const name of names)
+        if (!registry.some((r) => r.res.some((re) => re.test(name))))
+          errors.push(
+            `${l.id} ${path}: "${name}" is not in src/content/results.json; register it with the lesson that proves it, or status "quoted" (used without proof) or "background" (calculus the site assumes)`,
+          );
+    }
     for (const r of registry) {
       if (r.status !== 'quoted') continue;
       const hits = entries.filter((e) => r.res.some((re) => re.test(e.text)));

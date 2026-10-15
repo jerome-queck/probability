@@ -104,6 +104,7 @@ test('accented names and law/rule/formula titles are scanned', () => {
     'Bienaymé’s identity',
   ])
     assert.match(errors, new RegExp(`"${name}" is not in`), name);
+  assert.doesNotMatch(errors, /Bayes rule/);
 });
 
 test('a titled criterion must be registered (PR #19 math r1: factorisation criterion in J02)', () => {
@@ -114,4 +115,68 @@ test('a titled criterion must be registered (PR #19 math r1: factorisation crite
     checkResults(lessons(), unregistered).join('\n'),
     /J02 .*"Factorisation criterion" is not in src\/content\/results\.json/,
   );
+});
+
+// PR #19 reviewer 1 (c03c05ff): the skip list dropped titles starting with Binomial, Poisson,
+// Weak, Continuity, ..., and lowercase titles ("central limit theorem", "law of total
+// probability") were never scanned, so those registry rows could be deleted silently.
+// Only rows for results the lessons state without a title are registered by hand.
+const HAND_ONLY = ['mgf-uniqueness', 'joint-mgf-uniqueness'];
+
+test('deleting any titled registry row fails the check', () => {
+  const all = lessons();
+  for (const r of results) {
+    const errors = checkResults(
+      all,
+      results.filter((x) => x !== r),
+    );
+    if (HAND_ONLY.includes(r.id)) continue;
+    assert.ok(errors.length > 0, `deleting ${r.id} passed silently`);
+  }
+});
+
+test('titles starting with Binomial, Continuity, Weak or Poisson are scanned; ordinary phrases are not', () => {
+  const all = structuredClone(lessons());
+  all[0].caution +=
+    ' The Binomial theorem, the Continuity theorem, the Weak law and the Poisson approximation.';
+  const errors = checkResults(
+    all,
+    results.filter(
+      (r) =>
+        ![
+          'binomial-theorem',
+          'continuity-theorem',
+          'weak-law',
+          'poisson-limit',
+        ].includes(r.id),
+    ),
+  ).join('\n');
+  for (const name of [
+    'Binomial theorem',
+    'Continuity theorem',
+    'Weak law',
+    'Poisson approximation',
+  ])
+    assert.match(errors, new RegExp(`"${name}" is not in`), name);
+  const plain = structuredClone(lessons());
+  plain[0].caution +=
+    ' The bound holds. This formula and the same theorem; the variance formula; the Poisson formula.';
+  assert.deepEqual(checkResults(plain, results), []);
+});
+
+test('lowercase titles are scanned: theorem, criterion, principle, strong/weak law, law of total …', () => {
+  const all = structuredClone(lessons());
+  all[0].caution +=
+    ' By the Kolmogorov extension theorem, the cdf criterion, the pigeonhole principle and the law of total covariance.';
+  const errors = checkResults(
+    all,
+    results.filter((r) => r.id !== 'cdf-criterion'),
+  ).join('\n');
+  for (const name of [
+    'the Kolmogorov extension theorem',
+    'the cdf criterion',
+    'the pigeonhole principle',
+    'law of total covariance',
+  ])
+    assert.match(errors, new RegExp(`"${name}" is not in`), name);
 });

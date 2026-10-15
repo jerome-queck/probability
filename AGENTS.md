@@ -122,7 +122,7 @@ OK. Fixing a wrong gate is its own PR.
 |---|---|
 | No course, institution, lecturer or handout identifiers anywhere | `scripts/check-forbidden.mjs` (tree, history, branch, PR text) + `scripts/check-forbidden.test.mjs` |
 | Lessons are complete, IDs unique, prerequisites earlier, math renders | `scripts/check-content.mjs` |
-| Every eponymous or titled result (“Name’s theorem/inequality/law/rule/…”) is registered with the lesson that proves it, or as quoted; a result used without proof says so ("quoted without proof") where it is named | `scripts/check-results.mjs` + `src/content/results.json` + `scripts/check-results.test.mjs` (fails on PR #14's text before math round 1) |
+| Every titled result the scanner finds (“Name’s theorem/inequality/law/rule/…”, or lowercase “the … theorem/criterion/principle”, strong/weak law, “law of total …”) is registered with the lesson that proves it, or as quoted or background; results titled “the … formula/rule” or stated without a title are registered by hand; a result used without proof says so ("quoted without proof") where it is named | `scripts/check-results.mjs` + `src/content/results.json` + `scripts/check-results.test.mjs` (fails on PR #14's text before math round 1) |
 | Feature map, verify skill, smoke drives, labs, chapters and tests stay in sync | `scripts/check-drift.mjs` |
 | Every rule here names an enforcer that exists | `scripts/check-rule-table.mjs` |
 | Probability helpers behave correctly | `src/math/counting.test.ts`, `src/math/distributions.test.ts`, `src/math/simulation.test.ts` |
