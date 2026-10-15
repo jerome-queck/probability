@@ -27,7 +27,7 @@ fresh screenshot. Covered by `npm run test:agent-run` (`bigshot`, `freshshot`, `
 
 ## Named results (content gate, not a site feature)
 
-`src/content/results.json` registers every named result the lessons use (binomial theorem, Chebyshev's
+`src/content/results.json` registers the named results the lessons use (the scanner finds every eponymous or titled one; others are added by hand) (binomial theorem, Chebyshev's
 inequality, strong law, ...) with the lesson that proves it, or status `quoted` (used without proof) or
 `background` (calculus tools the site assumes). `npm run check:results` fails when a lesson names an
 eponymous result that is not registered, or names a quoted result without a marker such as "quoted
