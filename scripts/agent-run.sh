@@ -3,7 +3,8 @@
 #   scripts/agent-run.sh <role> <prompt-file> <out-prefix> [--resume <session-id>]
 # Roles and tiers (grok-4.7 only; the tier is the effort):
 #   verifier  grok-4.7-high   independent verifier using verify-probability
-#   review    grok-4.7-high   one independent reviewer (each reviewer is its own session)
+#   review    grok-4.7-high   one interrogate reviewer working alone (no Task subagents); a PR gets
+#                             two such sessions, started one at a time (AGENTS.md merge gate 2)
 #   math      grok-4.7-high   independent math check of lesson content
 #   chore     grok-4.7-medium mechanical work (merges, baselines, bodies)
 # Supervision is not done here. Box Ops owns it: start runs with /home/box/box-ops/longrun, which

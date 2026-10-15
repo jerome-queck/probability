@@ -10,6 +10,12 @@ const breakAfter =
 const visible = (s: string) =>
   s.replace(/\\[a-zA-Z]+/g, 'x').replace(/[\s{}]/g, '').length;
 
+// A formula this short fits on any phone line, so it never breaks (class math-nowrap).
+// Counted in visible characters, not source length: \sigma_Y=-b\sigma_X is 19 characters of
+// source but renders as about 40px, and splitting it left "σY =" and "−bσX" on separate lines
+// at 390px (E03 at daf7a37).
+export const isShortFormula = (latex: string) => visible(latex) <= 16;
+
 function groupShortBrackets(latex: string): string {
   const open: number[] = [];
   const pairs: [number, number][] = [];
