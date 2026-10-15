@@ -86,4 +86,12 @@ fake tornescmodel "if [ \$resume = 1 ]; then $done_ok; else $init; printf '{\"ty
 run tornescmodel 1 ''
 fake tornspaceverdict "if [ \$resume = 1 ]; then $done_ok; else $init; printf '{\"type\":\"result\",\"result\": \"VERDICT: NOT VERIFIED'; exit 1; fi"
 run tornspaceverdict 1 ''
+# Replayed Task "started" events for the same call_id must not disable the stall watchdog.
+fake taskreplay "if [ \$resume = 1 ]; then $done_ok; else $init; $task_s; $task_s; $task_s; $task_c; sleep 40; fi"
+t0=$SECONDS
+run taskreplay 0 'VERDICT: VERIFIED'
+if [ $((SECONDS - t0)) -ge 25 ]; then echo "FAIL taskreplay-stall (watchdog stayed off for $((SECONDS - t0))s)"; fails=$((fails + 1)); fi
+# A verdict on an assistant line before a drop is still printed after the resume.
+fake asstverdict "if [ \$resume = 1 ]; then $done_ok; else $init; echo '{\"type\":\"assistant\",\"message\":{\"content\":[{\"type\":\"text\",\"text\":\"REVIEW: CHANGES NEEDED\"}]}}'; exit 1; fi"
+run asstverdict 0 'REVIEW: CHANGES NEEDED'
 exit $fails

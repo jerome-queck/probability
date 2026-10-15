@@ -19,6 +19,8 @@ def one_pass(since, dirs, Image):
             for f in files:
                 if not f.lower().endswith(EXT):
                     continue
+                if "/baselines/" in root + "/":
+                    continue  # visual baselines are compared at full size
                 p = os.path.join(root, f)
                 try:
                     if os.path.getmtime(p) < since:

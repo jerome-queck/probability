@@ -86,12 +86,12 @@ trap 'stop; exit 130' INT TERM
 trap stop EXIT
 # 0 if a Task subagent call is open (started without completed) in the transcript.
 task_open() { node -e '
-let open = 0;
+const open = new Set();
 for (const l of require("fs").readFileSync(process.argv[1], "utf8").split("\n")) {
   let e; try { e = JSON.parse(l); } catch { continue; }
-  if (e.type === "tool_call" && e.tool_call && "taskToolCall" in e.tool_call) open += e.subtype === "started" ? 1 : e.subtype === "completed" ? -1 : 0;
+  if (e.type === "tool_call" && e.tool_call && "taskToolCall" in e.tool_call) { const id = e.call_id ?? JSON.stringify(e.tool_call); if (e.subtype === "started") open.add(id); else if (e.subtype === "completed") open.delete(id); }
 }
-process.exit(open > 0 ? 0 : 1);' "$1"; }
+process.exit(open.size > 0 ? 0 : 1);' "$1"; }
 has_result() { node -e '
 const ok = require("fs").readFileSync(process.argv[1], "utf8").split("\n").some((l) => {
   try { return JSON.parse(l).type === "result"; } catch { return false; } });
@@ -205,7 +205,9 @@ const walk = (v, k) => {
   else if (v && typeof v === "object") for (const [kk, vv] of Object.entries(v)) if (!(/^model/i.test(kk) && vv && typeof vv === "object" && typeof vv.description === "string")) walk(vv, kk);
 };
 lines.forEach((l) => walk(l, ""));
-const verdicts = lines.filter((l) => l.type === "result").flatMap((l) => (l.result ?? "").match(/^(VERDICT|REVIEW|MATH): [A-Z ]+$/gm) ?? []);
+// Verdict lines from result events and from assistant text (a drop can land between the two).
+const texts = lines.flatMap((l) => l.type === "result" ? [l.result ?? ""] : l.type === "assistant" ? (l.message?.content ?? []).filter((c) => c.type === "text").map((c) => c.text ?? "") : []);
+const verdicts = texts.flatMap((t) => t.match(/^(VERDICT|REVIEW|MATH): [A-Z ]+$/gm) ?? []).filter((v, i, a) => v !== a[i - 1]);
 console.log(`session=${session} models="${[...models].join(", ")}" ${verdicts.join(" ") || "NO VERDICT"}`);
 ' "$out.jsonl"
 # Fail the run if any model other than grok-4.7 appears anywhere in the transcript (including Task subagents).
