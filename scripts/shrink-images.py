@@ -22,8 +22,9 @@ def smoke_cwds():
         if not pid.isdigit():
             continue
         try:
-            cmd = open(f"/proc/{pid}/cmdline", "rb").read().decode(errors="replace")
-            if "control-probability" in cmd:
+            argv = open(f"/proc/{pid}/cmdline", "rb").read().decode(errors="replace").split("\0")
+            # The driver itself (an argv element naming the script), not any text that mentions it.
+            if any(a.endswith("control-probability.mjs") for a in argv) and "smoke" in argv:
                 out.append(os.path.realpath(os.readlink(f"/proc/{pid}/cwd")))
         except OSError:
             pass

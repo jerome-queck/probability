@@ -81,6 +81,18 @@ if python3 -c 'import PIL' 2> /dev/null; then
   fake freshshot "$init; python3 -c 'from PIL import Image; Image.new(\"RGB\", (3000, 40)).save(\"artifacts/fresh.png\")'; sleep 2; python3 -c 'from PIL import Image; print(max(Image.open(\"artifacts/fresh.png\").size))' > $t/fresh.size; $done_ok"
   (cd "$t/wt" && AGENT_IMAGE_SETTLE=5 run freshshot 0 'VERDICT: VERIFIED')
   if [ "$(cat "$t/fresh.size" 2> /dev/null)" = 3000 ]; then echo "ok   freshshot-size"; else echo "FAIL freshshot-size ($(cat "$t/fresh.size" 2> /dev/null))"; fails=$((fails + 1)); fi
+  # A process that merely mentions the driver in its arguments does not block the shrink.
+  python3 -c 'from PIL import Image; Image.new("RGB", (3000, 40)).save("'"$t"'/wt/artifacts/settled.png")'
+  touch -d '-1 minute' "$t/wt/artifacts/settled.png"
+  (cd "$t/wt" && exec -a "mention-control-probability" sleep 30) &
+  m=$!
+  (cd "$t/wt" && bash -c 'sleep 30 # control-probability' ) &
+  m2=$!
+  sleep 0.5
+  (cd "$t/wt" && AGENT_IMAGE_SETTLE=0 python3 "$here/shrink-images.py" --once 0 "$t/wt")
+  kill $m $m2 2> /dev/null
+  w=$(python3 -c "from PIL import Image; print(max(Image.open('$t/wt/artifacts/settled.png').size))")
+  if [ "$w" -le 2000 ]; then echo "ok   mention"; else echo "FAIL mention ($w px)"; fails=$((fails + 1)); fi
   w=$(python3 -c "from PIL import Image; print(max(Image.open('$t/wt/artifacts/big.png').size))")
   if [ "$w" -le 2000 ]; then echo "ok   bigshot-size"; else echo "FAIL bigshot-size ($w px)"; fails=$((fails + 1)); fi
 else
