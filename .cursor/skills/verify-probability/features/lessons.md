@@ -18,6 +18,7 @@ Chapters currently published (kept in sync by `check:drift`):
 - Continuous random variables
 - Joint distributions
 - Properties of expectation
+- Limit theorems
 
 ## How to get to it (user POV)
 
