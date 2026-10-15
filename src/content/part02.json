@@ -7,6 +7,9 @@
     "prerequisites": [
       "F03"
     ],
+    "results": [
+      "counting-principle"
+    ],
     "summary": "If a procedure is a sequence of choices and each choice has a fixed number of options, the number of outcomes is the product of those numbers. That product counts ordered samples, the \\(n!\\) orderings of \\(n\\) distinct objects, and the distinct arrangements of objects that are not all different.",
     "intuition": "Each new choice multiplies the list already counted, because every outcome of the earlier steps can be continued in as many ways as the next step allows.",
     "definition": [
@@ -57,6 +60,11 @@
     "prerequisites": [
       "C01"
     ],
+    "results": [
+      "binomial-theorem",
+      "pascal",
+      "stars-and-bars"
+    ],
     "summary": "The binomial coefficient \\(\\binom{n}{k}\\) counts the \\(k\\)-element subsets of an \\(n\\)-element set. Pascal's identity builds these numbers from smaller ones, the binomial theorem expands \\((x+y)^n\\), and adding every coefficient shows that an \\(n\\)-element set has \\(2^n\\) subsets.",
     "intuition": "An unordered selection is an ordered one with the internal order forgotten, so divide the permutation count by \\(k!\\).",
     "definition": [
@@ -103,6 +111,10 @@
     "question": "How many ways can distinct objects be split into labelled groups, and how many ways can identical objects be placed into distinct boxes?",
     "prerequisites": [
       "C02"
+    ],
+    "results": [
+      "multinomial-theorem",
+      "stars-and-bars"
     ],
     "summary": "The multinomial coefficient \\(n!/(n_1!\\cdots n_r!)\\) counts divisions of \\(n\\) distinct objects into \\(r\\) labelled groups of prescribed sizes, and it is the coefficient of the corresponding monomial in \\((x_1+\\cdots+x_r)^n\\). When the objects are identical and the boxes are distinct, stars and bars replaces that count by a single binomial coefficient, shifted by one if every box must be nonempty.",
     "intuition": "Order inside a labelled group is irrelevant, so divide a full permutation by the internal rearrangements; identical balls in distinct urns are a row of stars cut into blocks by bars.",
@@ -152,6 +164,9 @@
     "question": "How do counting formulas become probabilities for shared birthdays, derangements and dealt hands?",
     "prerequisites": [
       "C03"
+    ],
+    "results": [
+      "inclusion-exclusion"
     ],
     "summary": "When every outcome is equally likely, the chance of a shared birthday, of a permutation with no fixed point, and of a given hand are ratios of counts. The shared-birthday probability among \\(n\\) people first exceeds \\(1/2\\) at \\(n=23\\), where it equals \\(0.5073\\) to four decimal places, and the probability of no fixed point in a random permutation tends to \\(1/e\\).",
     "intuition": "Shared birthdays become likely while most days are still unused, because every pair of people is another chance to collide. A random permutation leaves nobody fixed with probability close to \\(1/e\\), because inclusion-exclusion reproduces the series for the exponential.",
