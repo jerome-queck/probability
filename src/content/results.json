@@ -31,7 +31,6 @@
   { "id": "joint-mgf-uniqueness", "name": "joint MGF uniqueness theorem", "status": "quoted", "in": "L03" },
   { "id": "continuity-theorem", "name": "continuity theorem", "status": "quoted", "in": "L04" },
   { "id": "central-limit", "name": "central limit theorem", "status": "proved", "in": "L04" },
-  { "id": "edgeworth", "name": "Edgeworth expansion", "status": "quoted", "in": "L04" },
   { "id": "berry-esseen", "name": "Berry–Esseen theorem", "status": "quoted", "in": "L04" },
   { "id": "taylor", "name": "Taylor's theorem", "status": "background" },
   { "id": "fubini-tonelli", "name": "Fubini–Tonelli theorem", "status": "background" },
@@ -44,5 +43,13 @@
   { "id": "expectation-product-rule", "name": "product rule for expectations of independent variables", "status": "proved", "in": "E01" },
   { "id": "covariance-bilinearity", "name": "bilinearity of covariance", "status": "proved", "in": "E02" },
   { "id": "tail-formula", "name": "tail formula for expectation", "status": "proved", "in": "R02" },
-  { "id": "central-limit-finite-variance", "name": "central limit theorem under finite variance alone", "status": "quoted", "in": "L04" }
+  { "id": "central-limit-finite-variance", "name": "central limit theorem under finite variance alone", "status": "quoted", "in": "L04" },
+  { "id": "conditional-independence", "name": "conditional independence criterion", "status": "proved", "in": "K05" },
+  { "id": "negative-binomial-wait", "name": "negative binomial waiting-count formulas", "status": "proved", "in": "D09" },
+  { "id": "beta-moments", "name": "beta distribution moment formulas", "status": "proved", "in": "R09" },
+  { "id": "mixed-law-formulas", "name": "atom-plus-density mixture formulas", "status": "proved", "in": "R10" },
+  { "id": "joint-change-of-variables", "name": "joint density transformation formula", "status": "proved", "in": "J06" },
+  { "id": "change-of-variables", "name": "multivariable change-of-variables theorem", "status": "background" },
+  { "id": "order-statistic-law", "name": "general order-statistic distribution formulas", "status": "proved", "in": "J07" },
+  { "id": "jensen", "name": "Jensen's inequality", "status": "proved", "in": "E06" }
 ]

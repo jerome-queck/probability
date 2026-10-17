@@ -286,5 +286,59 @@
     "caution": "The term \\((E[X])^2\\operatorname{Var}(N)\\) is the part of \\(\\operatorname{Var}(S)\\) that comes from not knowing how many summands there will be. Omitting it is correct only when the term genuinely vanishes: when \\(\\mu=0\\), or when \\(N\\) is almost surely constant so that \\(\\operatorname{Var}(N)=0\\). The formula also requires \\(N\\) to be independent of every \\(X_i\\). If \\(N\\) is a stopping time built from the \\(X_i\\), the conditional law of the summands given \\(N=n\\) is no longer the original i.i.d. law, and the conditional identities \\(E[S\\mid N=n]=n\\mu\\) and \\(\\operatorname{Var}(S\\mid N=n)=n\\sigma^2\\) can fail. The mean formula \\(E[S]=E[N]\\mu\\) still holds when \\(E[N]\\) and \\(E[|X_1|]\\) are finite (Wald's equation, quoted here without proof), but the variance formula can fail: for steps of 1 or 2 with probability \\(\\tfrac12\\) each, stopped once the total reaches 2, the formula gives \\(\\tfrac{15}{16}\\) while the true variance is \\(\\tfrac{3}{16}\\). Finally \\(E[\\operatorname{Var}(X\\mid Y)]\\) is a number, whereas \\(\\operatorname{Var}(X\\mid Y)\\) is a random variable.",
     "bridge": "The sample mean of \\(n\\) uncorrelated observations has variance \\(\\sigma^2/n\\). That shrinking variance is what makes an average settle near its mean as \\(n\\) grows, which is the starting point of the limit theorems.",
     "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 7 (conditional variance and the sum of a random number of random variables)."
+  },
+  {
+    "id": "E06",
+    "title": "Convexity and Jensen's inequality",
+    "cluster": "Properties of expectation",
+    "question": "When does applying a function after averaging underestimate the average of that function?",
+    "prerequisites": [
+      "E01",
+      "R02",
+      "E03"
+    ],
+    "results": [
+      "jensen",
+      "linearity-of-expectation"
+    ],
+    "summary": "For a convex function \\(\\varphi\\), Jensen's inequality gives \\(\\varphi(E[X])\\le E[\\varphi(X)]\\) when the expectations are finite. The direction reverses for a concave function. This explains why nonlinear functions usually cannot pass through expectation.",
+    "intuition": "A convex graph lies below its chords and above a supporting line at the mean. Averaging the supporting line gives its value at the mean, while averaging the graph can give a larger value.",
+    "definition": [
+      "A real-valued function \\(\\varphi\\) on an interval \\(I\\) is convex if \\[\\varphi(\\theta x+(1-\\theta)y)\\le\\theta\\varphi(x)+(1-\\theta)\\varphi(y)\\] for all \\(x,y\\in I\\) and \\(0\\le\\theta\\le1\\). It is strictly convex if the inequality is strict when \\(x\\ne y\\) and \\(0<\\theta<1\\). A function is concave when its negative is convex.",
+      "For a twice differentiable function, \\(\\varphi'\\!'(x)\\ge0\\) throughout the interval is a test for convexity. Examples are \\(x^2\\) on the real line and \\(1/x\\) on \\((0,\\infty)\\). The function \\(\\log x\\) is strictly concave on \\((0,\\infty)\\).",
+      "A supporting line at \\(m\\) is an affine function \\(\\varphi(m)+a(x-m)\\) that stays below \\(\\varphi(x)\\). When \\(\\varphi\\) is differentiable and convex, the tangent slope \\(a=\\varphi'(m)\\) supplies such a line. Differentiability is not needed for a supporting line at an interior point."
+    ],
+    "theorem": "Jensen's inequality. Let \\(\\varphi:I\\to\\mathbb R\\) be convex on an open interval \\(I\\). Suppose \\(P(X\\in I)=1\\), \\(E[|X|]<\\infty\\), \\(m=E[X]\\in I\\), and \\(E[|\\varphi(X)|]<\\infty\\). Then \\[\\varphi(E[X])\\le E[\\varphi(X)].\\] If \\(\\varphi\\) is strictly convex, equality holds if and only if \\(X=m\\) almost surely. For concave functions the inequality reverses.",
+    "hypotheses": [
+      "Convexity must hold on an interval containing both the values of \\(X\\) with probability 1 and the finite mean \\(m\\). Merely checking a second derivative at the mean is insufficient.",
+      "This finite version assumes absolute integrability of \\(X\\) and \\(\\varphi(X)\\). For instance, an integrable positive \\(X\\) need not have finite \\(E[1/X]\\).",
+      "The equality characterization requires strict convexity. For an affine function, equality holds for every integrable \\(X\\)."
+    ],
+    "proof": [
+      "First find a supporting line at \\(m\\). Convexity orders secant slopes: if \\(x<m<y\\), then \\[\\frac{\\varphi(m)-\\varphi(x)}{m-x}\\le\\frac{\\varphi(y)-\\varphi(m)}{y-m}.\\] This follows by expressing \\(m\\) as a weighted average of \\(x,y\\) in the definition of convexity.",
+      "Take the supremum of the slopes from points to the left of \\(m\\). It is finite because any fixed point to the right bounds all those slopes above, and a fixed point to the left gives a finite lower bound. Call this supremum \\(a\\). The slope inequality shows that \\(a\\) is at most every right-hand slope. Rearranging the two sets of inequalities gives \\(\\varphi(x)\\ge\\varphi(m)+a(x-m)\\) on both sides of \\(m\\), with equality at \\(m\\).",
+      "Apply this pointwise at \\(X\\), then take expectations. The integrability assumptions make every term finite. Linearity yields \\[E[\\varphi(X)]\\ge\\varphi(m)+a(E[X]-m)=\\varphi(m).\\]",
+      "If \\(\\varphi\\) is strictly convex, a supporting line cannot touch its graph at a second point. Otherwise the graph at an interior point of the segment between the two contacts would be strictly below the line, contradicting support. Thus the gap is strictly positive whenever \\(X\\ne m\\). A nonnegative random variable with expectation zero is zero almost surely, so equality forces \\(X=m\\) almost surely. Conversely a constant \\(X\\) gives equality. Apply the result to \\(-\\varphi\\) for a concave function. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "A vehicle travels a distance of 120 units at a constant random speed \\(V\\). Each journey uses speed 20 or 60, each with probability \\(1/2\\). Compare the mean travel time with the distance divided by the mean speed.",
+      "steps": [
+        "The mean speed is \\(E[V]=40\\). Dividing distance by that mean gives \\(120/40=3\\).",
+        "The actual travel time is \\(T=120/V\\), equal to 6 or 2. Hence \\(E[T]=(6+2)/2=4\\).",
+        "The function \\(\\varphi(v)=120/v\\) has second derivative \\(240/v^3>0\\) on positive speeds. Jensen gives \\(120/E[V]\\le E[120/V]\\), and the inequality is strict because the speed is not almost surely constant."
+      ],
+      "conclusion": "The mean time is 4, while dividing by mean speed gives 3. The reciprocal function must be averaged before replacing the random speed by a number."
+    },
+    "practice": {
+      "prompt": "Let \\(X\\) be uniform on \\((1,3)\\). Use Jensen's inequality to compare \\(E[\\log X]\\) with \\(\\log E[X]\\). Then compute \\(E[\\log X]\\) exactly and decide whether equality can hold.",
+      "hints": [
+        "\\(\\log x\\) has negative second derivative on positive \\(x\\), so it is strictly concave.",
+        "Use density \\(1/2\\), the mean \\(E[X]=2\\), and the antiderivative \\(x\\log x-x\\)."
+      ],
+      "answer": "Strict concavity gives \\(E[\\log X]<\\log E[X]=\\log2\\), because \\(X\\) is not constant and all quantities are finite on this interval. Directly, \\[E[\\log X]=\\frac12\\int_1^3\\log x\\,dx=\\frac12[x\\log x-x]_1^3=\\frac{3\\log3-2}{2}.\\] This is about \\(0.64792\\), below \\(\\log2\\approx0.69315\\). For a strictly concave function, equality would require \\(X\\) to equal its mean almost surely."
+    },
+    "caution": "Convexity sets the direction. A reciprocal is convex on positive inputs, while a logarithm is concave. Neither rule makes \\(E[\\varphi(X)]=\\varphi(E[X])\\) for a nonconstant variable and a strictly curved function. Check domains and integrability before comparing the expressions.",
+    "bridge": "The square-function case gives the nonnegativity of variance. The next chapter uses moment inequalities to control probabilities and limiting behavior.",
+    "reference": "Background reading: Introduction to Probability, Statistics, and Random Processes, Section 6.2.5 (Jensen's inequality)."
   }
 ]

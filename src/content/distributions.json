@@ -1,0 +1,142 @@
+[
+  {
+    "name": "Bernoulli",
+    "lessonId": "D04",
+    "support": "\\(x\\in\\{0,1\\}\\)",
+    "parameters": "\\(0\\le p\\le1\\)",
+    "formula": "PMF: \\(P(X=1)=p\\), \\(P(X=0)=1-p\\).",
+    "mean": "\\(p\\)",
+    "variance": "\\(p(1-p)\\)",
+    "caution": "One trial, with success coded as 1. The endpoint probabilities give constant variables."
+  },
+  {
+    "name": "Binomial",
+    "lessonId": "D04",
+    "support": "\\(k=0,1,\\ldots,n\\)",
+    "parameters": "Integer \\(n\\ge0\\), \\(0\\le p\\le1\\).",
+    "formula": "PMF: \\(P(X=k)=\\binom nk p^k(1-p)^{n-k}\\).",
+    "mean": "\\(np\\)",
+    "variance": "\\(np(1-p)\\)",
+    "caution": "Counts successes in \\(n\\) independent trials with one fixed success probability. At \\(p=0\\) or \\(p=1\\), use the corresponding constant law. Small variance alone does not justify a Poisson approximation."
+  },
+  {
+    "name": "Poisson",
+    "lessonId": "D05",
+    "support": "\\(k=0,1,2,\\ldots\\)",
+    "parameters": "\\(\\lambda>0\\). The case \\(\\lambda=0\\) is constant zero.",
+    "formula": "PMF: \\(P(X=k)=e^{-\\lambda}\\lambda^k/k!\\).",
+    "mean": "\\(\\lambda\\)",
+    "variance": "\\(\\lambda\\)",
+    "caution": "The parameter is the mean count over the stated observation interval. A Poisson approximation to a binomial needs a rare-success regime with small \\(p\\), not just low variance."
+  },
+  {
+    "name": "Geometric, trials convention",
+    "lessonId": "D06",
+    "support": "\\(k=1,2,\\ldots\\)",
+    "parameters": "\\(0<p\\le1\\)",
+    "formula": "PMF: \\(P(X=k)=(1-p)^{k-1}p\\).",
+    "mean": "\\(1/p\\)",
+    "variance": "\\((1-p)/p^2\\)",
+    "caution": "Includes the first successful trial. A failures-only convention subtracts 1 and has mean \\((1-p)/p\\). At \\(p=1\\), the trial count is 1."
+  },
+  {
+    "name": "Negative binomial, trials convention",
+    "lessonId": "D09",
+    "support": "\\(t=r,r+1,\\ldots\\)",
+    "parameters": "Integer \\(r\\ge1\\), \\(0<p<1\\).",
+    "formula": "PMF: \\(P(T_r=t)=\\binom{t-1}{r-1}p^r(1-p)^{t-r}\\).",
+    "mean": "\\(r/p\\)",
+    "variance": "\\(r(1-p)/p^2\\)",
+    "caution": "Counts all trials through the \\(r\\)th success. Trials must be independent with one fixed success probability. At \\(p=1\\), the boundary law is \\(T_r=r\\)."
+  },
+  {
+    "name": "Negative binomial, failures convention",
+    "lessonId": "D09",
+    "support": "\\(f=0,1,2,\\ldots\\)",
+    "parameters": "Integer \\(r\\ge1\\), \\(0<p<1\\).",
+    "formula": "PMF: \\(P(F_r=f)=\\binom{f+r-1}{r-1}p^r(1-p)^f\\).",
+    "mean": "\\(r(1-p)/p\\)",
+    "variance": "\\(r(1-p)/p^2\\)",
+    "caution": "Counts failures before success \\(r\\). Since \\(F_r=T_r-r\\), its mean differs from the trials convention by \\(r\\). At \\(p=1\\), it is zero."
+  },
+  {
+    "name": "Hypergeometric",
+    "lessonId": "D07",
+    "support": "Integer \\(\\max(0,n-(N-m))\\le k\\le\\min(n,m)\\).",
+    "parameters": "Integers \\(N\\ge1\\), \\(0\\le m\\le N\\), \\(0\\le n\\le N\\).",
+    "formula": "PMF: \\(P(X=k)=\\binom mk\\binom{N-m}{n-k}/\\binom Nn\\).",
+    "mean": "\\(nm/N\\)",
+    "variance": "\\(n(m/N)(1-m/N)(N-n)/(N-1)\\) for \\(N>1\\). Zero for \\(N=1\\).",
+    "caution": "A simple random sample of size \\(n\\) is drawn without replacement from \\(N\\) items with \\(m\\) marked. The variance includes the finite-population factor."
+  },
+  {
+    "name": "Uniform",
+    "lessonId": "R03",
+    "support": "\\(a<x<b\\)",
+    "parameters": "Finite real \\(a<b\\).",
+    "formula": "PDF: \\(f_X(x)=1/(b-a)\\) on \\((a,b)\\), zero elsewhere.",
+    "mean": "\\((a+b)/2\\)",
+    "variance": "\\((b-a)^2/12\\)",
+    "caution": "Equal-length intervals have equal probability. Individual endpoint values of the density do not affect the law, and endpoints have probability zero."
+  },
+  {
+    "name": "Normal",
+    "lessonId": "R04",
+    "support": "\\(x\\in\\mathbb R\\)",
+    "parameters": "\\(\\mu\\in\\mathbb R\\), \\(\\sigma>0\\).",
+    "formula": "PDF: \\(f_X(x)=\\exp(-(x-\\mu)^2/(2\\sigma^2))/(\\sigma\\sqrt{2\\pi})\\).",
+    "mean": "\\(\\mu\\)",
+    "variance": "\\(\\sigma^2\\)",
+    "caution": "The second parameter in \\(N(\\mu,\\sigma^2)\\) is variance. Standardize with \\((X-\\mu)/\\sigma\\). The degenerate case \\(\\sigma=0\\) has no ordinary density."
+  },
+  {
+    "name": "Exponential",
+    "lessonId": "R06",
+    "support": "\\(x>0\\)",
+    "parameters": "Rate \\(\\lambda>0\\).",
+    "formula": "PDF: \\(f_X(x)=\\lambda e^{-\\lambda x}\\) for \\(x>0\\), zero elsewhere.",
+    "mean": "\\(1/\\lambda\\)",
+    "variance": "\\(1/\\lambda^2\\)",
+    "caution": "Uses the rate parameterization. Scale equals \\(1/\\lambda\\). The memoryless tail identity is a property of this law, not of all waiting times."
+  },
+  {
+    "name": "Gamma",
+    "lessonId": "R07",
+    "support": "\\(x>0\\)",
+    "parameters": "Shape \\(\\alpha>0\\), rate \\(\\lambda>0\\).",
+    "formula": "PDF: \\(f_X(x)=\\lambda^\\alpha x^{\\alpha-1}e^{-\\lambda x}/\\Gamma(\\alpha)\\) for \\(x>0\\).",
+    "mean": "\\(\\alpha/\\lambda\\)",
+    "variance": "\\(\\alpha/\\lambda^2\\)",
+    "caution": "Shape need not be an integer. Independent gamma shapes add under a common rate. If a reference uses scale \\(\\theta\\), substitute \\(\\lambda=1/\\theta\\)."
+  },
+  {
+    "name": "Lognormal",
+    "lessonId": "R08",
+    "support": "\\(x>0\\)",
+    "parameters": "\\(\\log X\\sim N(\\mu,\\sigma^2)\\), \\(\\mu\\in\\mathbb R\\), \\(\\sigma>0\\).",
+    "formula": "PDF: \\(f_X(x)=\\exp(-(\\log x-\\mu)^2/(2\\sigma^2))/(x\\sigma\\sqrt{2\\pi})\\) for \\(x>0\\).",
+    "mean": "\\(e^{\\mu+\\sigma^2/2}\\)",
+    "variance": "\\((e^{\\sigma^2}-1)e^{2\\mu+\\sigma^2}\\)",
+    "caution": "The parameters describe the normal logarithm. The median is \\(e^\\mu\\), which differs from the mean. The moments follow from the normal MGF in L03 by \\(E[X^k]=E[e^{k\\log X}]\\)."
+  },
+  {
+    "name": "Beta",
+    "lessonId": "R09",
+    "support": "\\(0<x<1\\)",
+    "parameters": "Shapes \\(\\alpha>0\\), \\(\\beta>0\\).",
+    "formula": "PDF: \\(f_X(x)=x^{\\alpha-1}(1-x)^{\\beta-1}/B(\\alpha,\\beta)\\) on \\((0,1)\\).",
+    "mean": "\\(\\alpha/(\\alpha+\\beta)\\)",
+    "variance": "\\(\\alpha\\beta/((\\alpha+\\beta)^2(\\alpha+\\beta+1))\\)",
+    "caution": "Shapes below 1 can give unbounded endpoint densities but no endpoint atoms. The uniform law is \\(\\operatorname{Beta}(1,1)\\)."
+  },
+  {
+    "name": "Atom-plus-density mixture",
+    "lessonId": "R10",
+    "support": "One atom at \\(a\\), together with the support of the continuous branch.",
+    "parameters": "\\(0<w<1\\), atom \\(a\\in\\mathbb R\\); continuous branch has CDF \\(G\\), density \\(g\\), finite mean \\(\\mu\\), finite variance \\(v\\).",
+    "formula": "CDF: \\(F_X(x)=w\\mathbf1_{\\{x\\ge a\\}}+(1-w)G(x)\\). Atom mass \\(w\\), density contribution \\((1-w)g(x)\\).",
+    "mean": "\\(wa+(1-w)\\mu\\)",
+    "variance": "\\((1-w)v+w(1-w)(a-\\mu)^2\\)",
+    "caution": "The derivative of the CDF away from its atom integrates to \\(1-w\\), not 1. Include the atom separately in probabilities and moments."
+  }
+]

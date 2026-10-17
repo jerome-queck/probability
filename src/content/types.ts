@@ -27,3 +27,27 @@ export type Lesson = {
   reference: string;
   lab?: LabId;
 };
+
+export type ChapterCheckpoint = {
+  id: string;
+  cluster: string;
+  title: string;
+  problems: {
+    id: string;
+    lessonIds: string[];
+    prompt: string;
+    hints: string[];
+    answer: string;
+  }[];
+};
+
+export type DistributionReference = {
+  name: string;
+  lessonId: string;
+  support: string;
+  parameters: string;
+  formula: string;
+  mean: string;
+  variance: string;
+  caution: string;
+};

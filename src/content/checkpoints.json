@@ -1,0 +1,373 @@
+[
+  {
+    "id": "checkpoint-foundations",
+    "cluster": "Foundations",
+    "title": "Events, probabilities, and model checks",
+    "problems": [
+      {
+        "id": "F-check-1",
+        "lessonIds": [
+          "F01",
+          "F02",
+          "F03"
+        ],
+        "prompt": "One word is drawn uniformly from \\(\\{00,01,10,11\\}\\). Let \\(A\\) mean the first digit is 1 and \\(B\\) mean the last digit is 1. List \\(A\\cap B\\), \\(A\\cup B\\), and \\((A\\cup B)^c\\), then find their probabilities.",
+        "hints": [
+          "Each of the four words has probability \\(1/4\\).",
+          "The union includes words satisfying either condition, including words satisfying both."
+        ],
+        "answer": "\\(A=\\{10,11\\}\\) and \\(B=\\{01,11\\}\\). Thus \\(A\\cap B=\\{11\\}\\), \\(A\\cup B=\\{01,10,11\\}\\), and \\((A\\cup B)^c=\\{00\\}\\). Their probabilities are \\(1/4,3/4,1/4\\). As a check, \\(P(A\\cup B)=1/2+1/2-1/4=3/4\\)."
+      },
+      {
+        "id": "F-check-2",
+        "lessonIds": [
+          "F02"
+        ],
+        "prompt": "A model claims \\(P(A)=0.7\\), \\(P(B)=0.6\\), and \\(P(A\\cap B)=0.2\\). Can a probability space satisfy these claims? Derive the smallest possible intersection probability from the axioms.",
+        "hints": [
+          "Apply inclusion-exclusion and use \\(P(A\\cup B)\\le1\\)."
+        ],
+        "answer": "No. The claimed union probability would be \\(0.7+0.6-0.2=1.1\\), which exceeds 1. In general \\(P(A\\cap B)\\ge P(A)+P(B)-1\\), and nonnegativity also gives a lower bound of 0. Here the smallest possible value is \\(0.3\\). It is achievable by assigning probabilities \\(0.3,0.4,0.3,0\\) to the regions both, only \\(A\\), only \\(B\\), neither, respectively."
+      },
+      {
+        "id": "F-check-3",
+        "lessonIds": [
+          "F01",
+          "F02",
+          "F03"
+        ],
+        "prompt": "Construct a probability space with a nonempty event of probability zero. Explain why that cannot happen in a finite model in which every outcome is equally likely.",
+        "hints": [
+          "The axioms allow some individual outcomes to have probability zero.",
+          "In a uniform model of \\(N\\) outcomes, a nonempty event contains at least one outcome of mass \\(1/N\\)."
+        ],
+        "answer": "Take \\(S=\\{a,b\\}\\), assign \\(P(\\{a\\})=1\\) and \\(P(\\{b\\})=0\\), and obtain all event probabilities by addition. The event \\(\\{b\\}\\) is nonempty with probability zero. In a uniform finite model, every nonempty event has probability \\(k/N\\ge1/N>0\\). Thus probability zero does not in general mean that the event is the empty set; the uniform finite model is a special case."
+      }
+    ]
+  },
+  {
+    "id": "checkpoint-counting",
+    "cluster": "Counting",
+    "title": "Count the outcomes before dividing",
+    "problems": [
+      {
+        "id": "C-check-1",
+        "lessonIds": [
+          "C01",
+          "C02"
+        ],
+        "prompt": "How many distinct length-7 codes use the symbols in \\(AAABBCD\\) exactly once each? If a code is selected uniformly from these distinct codes, what is the probability that its last symbol is \\(D\\)?",
+        "hints": [
+          "Permuting identical copies does not produce a new code.",
+          "Fix \\(D\\) last, then count arrangements of the six remaining symbols."
+        ],
+        "answer": "The total is \\(7!/(3!2!)=420\\). With \\(D\\) last there are \\(6!/(3!2!)=60\\) codes. The probability is \\(60/420=1/7\\). Counting all \\(7!\\) permutations of individually labelled copies would count each visible code \\(3!2!\\) times."
+      },
+      {
+        "id": "C-check-2",
+        "lessonIds": [
+          "C03"
+        ],
+        "prompt": "Distribute 9 identical counters among 4 labelled containers, with every container nonempty. Count the allocations and explain why \\(4^9\\) answers a different question.",
+        "hints": [
+          "Remove one counter for each container, leaving 5 unrestricted counters.",
+          "Use three separators to divide the remaining counters among four labelled containers."
+        ],
+        "answer": "The allocations are positive integer solutions of \\(x_1+x_2+x_3+x_4=9\\). Setting \\(y_i=x_i-1\\) gives nonnegative solutions with sum 5, counted by \\(\\binom{5+4-1}{4-1}=\\binom83=56\\). The count \\(4^9\\) assigns each of 9 distinct counters to a container and allows empty containers. Its outcomes are different from allocations of identical counters."
+      },
+      {
+        "id": "C-check-3",
+        "lessonIds": [
+          "C04",
+          "F02"
+        ],
+        "prompt": "Four labelled packages are assigned uniformly to four labelled destinations, one package per destination. Find the probability that no package reaches its matching destination. Explain why multiplying four factors of \\(3/4\\) is invalid.",
+        "hints": [
+          "Use inclusion-exclusion on the four events that a particular package is correctly assigned.",
+          "There are \\(4!\\) equally likely assignments."
+        ],
+        "answer": "The number with no correct match is \\(4!-\\binom41 3!+\\binom42 2!-\\binom43 1!+\\binom44 0!=24-24+12-4+1=9\\). The probability is \\(9/24=3/8\\). The matching events are not independent. For two specified packages, the probability that both match is \\(2!/4!=1/12\\), which differs from \\((1/4)^2\\). The assignments share the constraint that destinations cannot be reused."
+      }
+    ]
+  },
+  {
+    "id": "checkpoint-conditioning",
+    "cluster": "Conditional probability",
+    "title": "Condition, update, and test independence",
+    "problems": [
+      {
+        "id": "K-check-1",
+        "lessonIds": [
+          "K03",
+          "K05"
+        ],
+        "prompt": "A fault occurs in \\(2\\%\\) of devices. A test is positive with probability \\(0.9\\) for a faulty device and \\(0.1\\) for a sound device. Two repetitions are independent conditional on the fault status. Find the probability of a fault after one positive result and after two positive results. State where conditional independence is used.",
+        "hints": [
+          "Weight each possible fault status by its prior probability and the probability of the observed test results.",
+          "The two-positive likelihoods are \\(0.9^2\\) and \\(0.1^2\\) within the two statuses."
+        ],
+        "answer": "For one positive, the probability is \\(0.02(0.9)/(0.02(0.9)+0.98(0.1))=0.018/0.116=9/58\\), about \\(0.1552\\). For two positives it is \\(0.02(0.9)^2/(0.02(0.9)^2+0.98(0.1)^2)=0.0162/0.026=81/130\\), about \\(0.6231\\). Conditional independence justifies multiplying the likelihoods within each fault status. It does not justify multiplying the marginal positive probabilities."
+      },
+      {
+        "id": "K-check-2",
+        "lessonIds": [
+          "K04",
+          "K05"
+        ],
+        "prompt": "Toss two independent fair coins. Let \\(A\\) mean the first is heads, \\(B\\) the second is heads, and \\(C\\) that they show different faces. Show that \\(A,B,C\\) are pairwise independent but not mutually independent. Are \\(A,B\\) conditionally independent given \\(C\\)?",
+        "hints": [
+          "List the four equiprobable coin pairs and compute each pairwise intersection.",
+          "Inside \\(C\\), only \\(HT\\) and \\(TH\\) remain."
+        ],
+        "answer": "Each event has probability \\(1/2\\). The pairwise intersections \\(A\\cap B=\\{HH\\}\\), \\(A\\cap C=\\{HT\\}\\), and \\(B\\cap C=\\{TH\\}\\) each have probability \\(1/4\\), so all pairs are independent. Their triple intersection is empty, with probability 0 instead of \\(1/8\\), so they are not mutually independent. Given \\(C\\), the two marginal probabilities are \\(1/2\\), but \\(P(A\\cap B\\mid C)=0\\). Thus \\(A,B\\) are not conditionally independent given \\(C\\)."
+      },
+      {
+        "id": "K-check-3",
+        "lessonIds": [
+          "K01",
+          "K02"
+        ],
+        "prompt": "A bag contains two amber and two blue counters. Three are drawn in order without replacement. Find the probability of amber, blue, amber. Then find the probability that the first is amber given that the third is amber.",
+        "hints": [
+          "For the ordered pattern multiply the conditional probabilities along its three stages.",
+          "For the second question, find the probability that both positions 1 and 3 are amber, and divide by \\(P(\\text{third amber})\\)."
+        ],
+        "answer": "The pattern probability is \\((2/4)(2/3)(1/2)=1/6\\). If positions 1 and 3 are both amber, the middle counter must be blue, so the joint probability is also \\(1/6\\). Every position is equally likely to contain any of the four counters, so the third is amber with probability \\(1/2\\). Therefore \\(P(\\text{first amber}\\mid\\text{third amber})=(1/6)/(1/2)=1/3\\). The reduction from \\(1/2\\) reflects depletion when an amber counter is known to occupy position 3."
+      }
+    ]
+  },
+  {
+    "id": "checkpoint-discrete",
+    "cluster": "Discrete random variables",
+    "title": "Select a count model and check its assumptions",
+    "problems": [
+      {
+        "id": "D-check-1",
+        "lessonIds": [
+          "D07",
+          "D08"
+        ],
+        "prompt": "A simple random sample of 4 items is drawn without replacement from 12 items, of which 5 are marked. Let \\(X\\) be the number marked in the sample. Identify its law and find \\(P(X=2)\\), its mean, and its variance.",
+        "hints": [
+          "Count samples with two marked and two unmarked items.",
+          "Include the finite-population factor \\((N-n)/(N-1)\\) in the variance."
+        ],
+        "answer": "This is hypergeometric with \\(N=12\\), marked count 5, and sample size 4. Thus \\(P(X=2)=\\binom52\\binom72/\\binom{12}4=210/495=14/33\\). The mean is \\(4(5/12)=5/3\\), and the variance is \\(4(5/12)(7/12)(8/11)=70/99\\). The draws are dependent, so a binomial law is not the exact model."
+      },
+      {
+        "id": "D-check-2",
+        "lessonIds": [
+          "D09",
+          "D06"
+        ],
+        "prompt": "Independent attempts succeed with probability \\(1/3\\). Stop at the second success. Let \\(T\\) count all attempts and \\(F\\) count failures. Find \\(P(F=4)\\), \\(E[T]\\), \\(E[F]\\), and both variances. Give the relation between the two conventions.",
+        "hints": [
+          "\\(T=F+2\\). A stop at trial 6 requires one success in the first five trials.",
+          "Changing a variable by a constant changes its mean but not its variance."
+        ],
+        "answer": "\\(P(F=4)=P(T=6)=\\binom51(1/3)^2(2/3)^4=80/729\\). The means are \\(E[T]=2/(1/3)=6\\) and \\(E[F]=6-2=4\\). Both variances equal \\(2(2/3)/(1/3)^2=12\\). The support of \\(T\\) begins at 2, while the support of \\(F\\) begins at 0."
+      },
+      {
+        "id": "D-check-3",
+        "lessonIds": [
+          "D08",
+          "D04",
+          "D05"
+        ],
+        "prompt": "Twenty indicators each equal 1 with probability \\(0.1\\), and \\(N\\) is their sum. No dependence assumptions are supplied. What can you conclude about \\(E[N]\\)? Must \\(N\\) be binomial or approximately Poisson? Give a counterexample.",
+        "hints": [
+          "Linearity of expectation does not require independence.",
+          "Consider making all twenty indicators equal to one common Bernoulli variable."
+        ],
+        "answer": "Linearity gives \\(E[N]=20(0.1)=2\\) for every dependence structure. Neither a binomial law nor a Poisson approximation follows. For a counterexample, let all indicators equal \\(I\\), where \\(P(I=1)=0.1\\). Then \\(N=20I\\), so \\(P(N=0)=0.9\\), \\(P(N=20)=0.1\\), and every other count has probability zero. Its variance is \\(400(0.1)(0.9)=36\\), very different from the independent-binomial variance \\(1.8\\) and Poisson variance 2. Marginal success probabilities determine this mean but not the count distribution."
+      }
+    ]
+  },
+  {
+    "id": "checkpoint-continuous",
+    "cluster": "Continuous random variables",
+    "title": "Densities, bounded fractions, and atoms",
+    "problems": [
+      {
+        "id": "R-check-1",
+        "lessonIds": [
+          "R01",
+          "R02",
+          "R08"
+        ],
+        "prompt": "A variable has density \\(f(x)=cx\\) on \\((0,2)\\) and zero elsewhere. Find \\(c\\), the CDF, the mean, the variance, and a function of a uniform variable that generates this law.",
+        "hints": [
+          "Normalize by integrating \\(cx\\) from 0 to 2.",
+          "Invert the CDF on its increasing interval."
+        ],
+        "answer": "Normalization gives \\(2c=1\\), so \\(c=1/2\\). The CDF is 0 below 0, \\(x^2/4\\) on \\([0,2]\\), and 1 above 2. The mean is \\(\\int_0^2x^2/2\\,dx=4/3\\), and the second moment is \\(\\int_0^2x^3/2\\,dx=2\\). Thus the variance is \\(2-16/9=2/9\\). If \\(U\\) is uniform on \\((0,1)\\), then \\(X=2\\sqrt U\\) has this CDF because \\(P(2\\sqrt U\\le x)=P(U\\le x^2/4)=x^2/4\\) for \\(0\\le x\\le2\\)."
+      },
+      {
+        "id": "R-check-2",
+        "lessonIds": [
+          "R09",
+          "R03"
+        ],
+        "prompt": "Let \\(X\\sim\\operatorname{Beta}(2,2)\\). Find its density, mean, variance, and \\(P(1/4<X<3/4)\\). Compare the last probability with a uniform fraction on \\((0,1)\\).",
+        "hints": [
+          "\\(B(2,2)=1/6\\). Integrate \\(6x(1-x)\\).",
+          "The beta law is symmetric, but symmetry alone does not make it uniform."
+        ],
+        "answer": "The density is \\(6x(1-x)\\) on \\((0,1)\\), with mean \\(1/2\\) and variance \\(4/(4^2\\cdot5)=1/20\\). Its CDF within the support is \\(3x^2-2x^3\\). The interval probability is \\(27/32-5/32=11/16\\). A uniform fraction gives probability \\(1/2\\) to the same interval. The beta law places more probability near the middle, consistent with its smaller variance than the uniform variance \\(1/12\\)."
+      },
+      {
+        "id": "R-check-3",
+        "lessonIds": [
+          "R06",
+          "R08",
+          "R10"
+        ],
+        "prompt": "An exponential loss \\(T\\) has rate \\(1/2\\). A deductible of 2 gives payment \\(Y=\\max(T-2,0)\\). Find its CDF, atom mass, positive density contribution, and mean. Explain why the positive density integrates to less than 1.",
+        "hints": [
+          "For \\(y\\ge0\\), the event \\(Y\\le y\\) is \\(T\\le y+2\\).",
+          "The mass at zero is the probability that the loss does not exceed the deductible."
+        ],
+        "answer": "The CDF is 0 for \\(y<0\\), and \\(1-e^{-(y+2)/2}\\) for \\(y\\ge0\\). Its jump at 0 is \\(1-e^{-1}\\). For \\(y>0\\), the density contribution is \\(\\tfrac12e^{-(y+2)/2}\\), whose integral is \\(e^{-1}\\). The remaining probability is the atom at zero. The mean is \\(\\int_0^\\infty y(\\tfrac12)e^{-(y+2)/2}\\,dy=e^{-1}\\cdot2=2/e\\). Treating the positive density contribution as a full density would discard the no-payment branch."
+      }
+    ]
+  },
+  {
+    "id": "checkpoint-joint",
+    "cluster": "Joint distributions",
+    "title": "Support, conditioning, transformations, and ranks",
+    "problems": [
+      {
+        "id": "J-check-1",
+        "lessonIds": [
+          "J01",
+          "J02",
+          "J04"
+        ],
+        "prompt": "A pair has density 2 on \\(0<x<y<1\\), zero elsewhere. Find both marginal densities and the conditional density of \\(X\\) given \\(Y=y\\). Are the variables independent? Find \\(P(X<Y/2)\\).",
+        "hints": [
+          "For a fixed \\(x\\), integrate \\(y\\) from \\(x\\) to 1. For fixed \\(y\\), integrate \\(x\\) from 0 to \\(y\\).",
+          "The conditional support is \\(0<x<y\\), so its width depends on \\(y\\)."
+        ],
+        "answer": "The marginals are \\(f_X(x)=2(1-x)\\) for \\(0<x<1\\), and \\(f_Y(y)=2y\\) for \\(0<y<1\\). For such \\(y\\), \\(f_{X\\mid Y}(x\\mid y)=2/(2y)=1/y\\) on \\((0,y)\\). The variables are dependent: the marginals are positive on the square, but the joint density vanishes on its half where \\(x>y\\). Finally, \\(P(X<Y/2)=\\int_0^1\\int_0^{y/2}2\\,dx\\,dy=\\int_0^1y\\,dy=1/2\\)."
+      },
+      {
+        "id": "J-check-2",
+        "lessonIds": [
+          "J06",
+          "J02"
+        ],
+        "prompt": "Let \\(X,Y\\) be independent uniform variables on \\((0,1)\\). Set \\(U=XY\\) and \\(V=Y\\). Find the inverse transformation, its determinant, the joint support and density, and the density of \\(U\\). Check the latter integrates to 1.",
+        "hints": [
+          "The inverse is \\(x=u/v,y=v\\). Translate both unit-interval restrictions.",
+          "For fixed \\(u\\), the allowed \\(v\\) runs from \\(u\\) to 1."
+        ],
+        "answer": "The inverse determinant is \\(1/v\\). The new support is \\(0<u<v<1\\), and \\(f_{U,V}(u,v)=1/v\\) there. Integrating gives \\(f_U(u)=\\int_u^1dv/v=-\\log u\\) for \\(0<u<1\\), and zero elsewhere. Its integral is \\([-u\\log u+u]_0^1=1\\), since \\(u\\log u\\to0\\) as \\(u\\downarrow0\\). Using the entire unit square as the transformed support would be wrong."
+      },
+      {
+        "id": "J-check-3",
+        "lessonIds": [
+          "J07",
+          "D04"
+        ],
+        "prompt": "Three iid observations have CDF \\(F(x)=x^2\\) on \\([0,1]\\), with CDF 0 below 0 and 1 above 1. Derive the CDF and density of their median \\(M\\). Find \\(P(M\\le1/2)\\).",
+        "hints": [
+          "The median is at most \\(x\\) exactly when at least two observations are at most \\(x\\).",
+          "The binomial success probability is \\(F(x)\\), not \\(x\\)."
+        ],
+        "answer": "For \\(0\\le x\\le1\\), \\(P(M\\le x)=3F(x)^2(1-F(x))+F(x)^3=3x^4-2x^6\\). It is 0 below 0 and 1 above 1. Differentiating gives \\(f_M(x)=12x^3(1-x^2)\\) on \\((0,1)\\), zero elsewhere. At \\(x=1/2\\), the CDF equals \\(3/16-2/64=5/32\\). The median itself is not the beta median from a uniform parent; the parent CDF has changed."
+      }
+    ]
+  },
+  {
+    "id": "checkpoint-expectation",
+    "cluster": "Properties of expectation",
+    "title": "Use structure before finding a full distribution",
+    "problems": [
+      {
+        "id": "E-check-1",
+        "lessonIds": [
+          "E04",
+          "E05"
+        ],
+        "prompt": "A random number \\(N\\) of jobs is Poisson with mean 3. Job durations are iid with mean 2 and variance 5, independent of \\(N\\). Let \\(S\\) be their total duration, with the empty total set to 0. Find \\(E[S]\\) and \\(\\operatorname{Var}(S)\\), showing the two variance contributions.",
+        "hints": [
+          "Conditional on \\(N=n\\), the total has mean \\(2n\\) and variance \\(5n\\).",
+          "Poisson mean and variance both equal 3."
+        ],
+        "answer": "Total expectation gives \\(E[S]=E[2N]=6\\). Total variance gives \\(\\operatorname{Var}(S)=E[5N]+\\operatorname{Var}(2N)=15+4\\cdot3=27\\). The first contribution comes from job-duration variation with the job count fixed. The second comes from the varying count. Independence of the count and the whole duration sequence is required for these conditional moments."
+      },
+      {
+        "id": "E-check-2",
+        "lessonIds": [
+          "E02",
+          "E03"
+        ],
+        "prompt": "Let \\(X\\) be uniform on \\(\\{0,1,2\\}\\), and set \\(Y=\\mathbf1_{\\{X=1\\}}\\). Compute their covariance and correlation. Are they independent? Give a probability calculation supporting the answer.",
+        "hints": [
+          "\\(XY\\) is 1 only when \\(X=1\\).",
+          "Both variables have positive finite variance, so zero covariance gives zero correlation."
+        ],
+        "answer": "\\(E[X]=1\\), \\(E[Y]=1/3\\), and \\(E[XY]=1/3\\), so the covariance is zero. Also \\(\\operatorname{Var}(X)=5/3-1=2/3\\) and \\(\\operatorname{Var}(Y)=2/9\\), so the correlation is defined and equals zero. They are dependent because \\(P(Y=1\\mid X=1)=1\\), while \\(P(Y=1)=1/3\\). Correlation measures linear association, so its zero value does not establish independence."
+      },
+      {
+        "id": "E-check-3",
+        "lessonIds": [
+          "E06",
+          "R03"
+        ],
+        "prompt": "Assume \\(X>0\\), \\(E[X]=3\\), and \\(E[1/X]<\\infty\\). Bound \\(E[1/X]\\) using Jensen and state the equality condition. Does the finite mean alone guarantee a finite reciprocal mean? Give a counterexample.",
+        "hints": [
+          "The function \\(1/x\\) is strictly convex for positive \\(x\\).",
+          "Try a uniform variable on an interval whose left endpoint is 0."
+        ],
+        "answer": "Jensen gives \\(E[1/X]\\ge1/E[X]=1/3\\). Equality holds exactly when \\(X=3\\) almost surely. A finite mean alone does not guarantee a finite reciprocal mean. If \\(X\\) is uniform on \\((0,6)\\), then \\(E[X]=3\\), but \\(E[1/X]=(1/6)\\int_0^6 dx/x=\\infty\\). The integrability hypothesis cannot be omitted from the finite version of the inequality."
+      }
+    ]
+  },
+  {
+    "id": "checkpoint-limits",
+    "cluster": "Limit theorems",
+    "title": "Separate guarantees, limiting laws, and approximations",
+    "problems": [
+      {
+        "id": "L-check-1",
+        "lessonIds": [
+          "L01",
+          "L02"
+        ],
+        "prompt": "Iid observations have mean 4 and variance 9. Use Chebyshev to give a sufficient sample size for \\(P(|\\bar X_n-4|\\ge0.3)\\le0.05\\). Does this establish the smallest actual sample size?",
+        "hints": [
+          "The variance of the average is \\(9/n\\).",
+          "The bound must be no more than \\(0.05\\)."
+        ],
+        "answer": "Chebyshev gives \\(P(|\\bar X_n-4|\\ge0.3)\\le9/(n\\cdot0.3^2)=100/n\\). Thus every integer \\(n\\ge2000\\) is sufficient. The bound does not establish the smallest actual sample size, since it need not be sharp for the underlying distribution. It gives a guarantee from these moments alone, while the weak law says the probability tends to zero as \\(n\\to\\infty\\)."
+      },
+      {
+        "id": "L-check-2",
+        "lessonIds": [
+          "L03",
+          "J03"
+        ],
+        "prompt": "Independent counts \\(X,Y\\) are Poisson with means 2 and 3. Use moment generating functions to identify \\(S=X+Y\\), then find the MGF, mean, and variance of \\(W=2S+1\\). Is \\(W\\) itself Poisson?",
+        "hints": [
+          "Multiply the MGFs for the independent sum.",
+          "For \\(aS+b\\), use \\(e^{bt}M_S(at)\\)."
+        ],
+        "answer": "\\(M_S(t)=\\exp(2(e^t-1))\\exp(3(e^t-1))=\\exp(5(e^t-1))\\), so uniqueness gives \\(S\\sim\\operatorname{Poisson}(5)\\). Then \\(M_W(t)=e^tM_S(2t)=\\exp(t+5(e^{2t}-1))\\). Its mean is \\(2\\cdot5+1=11\\), and its variance is \\(4\\cdot5=20\\). It is not Poisson: it takes only positive odd values and has unequal mean and variance."
+      },
+      {
+        "id": "L-check-3",
+        "lessonIds": [
+          "L04",
+          "R06"
+        ],
+        "prompt": "Sixty-four iid durations are exponential with rate 2. Use the CLT and \\(\\Phi(1)=0.8413\\) to approximate the probability their sum is at most 36. Then assess the claim that a symmetric summand makes a normal approximation exact, using two fair Bernoulli summands as a counterexample.",
+        "hints": [
+          "One exponential duration has mean \\(1/2\\) and variance \\(1/4\\).",
+          "For \\(B_1+B_2\\) with fair Bernoulli summands, compute the exact CDF at its mean 1 and compare with \\(\\Phi(0)\\)."
+        ],
+        "answer": "The duration sum has mean 32 and variance 16, so standardizing 36 gives \\((36-32)/4=1\\). The CLT approximation is \\(0.8413\\). This is not an exact probability or a finite-sample error guarantee. For the counterexample, centered fair Bernoulli variables are symmetric and have zero skewness. Yet \\(P(B_1+B_2\\le1)=3/4\\), while the normal CDF at the standardized mean is \\(\\Phi(0)=1/2\\). The gap \\(1/4\\) is the half-jump at the mean. Symmetry does not eliminate discrete jumps or make the approximation exact."
+      }
+    ]
+  }
+]

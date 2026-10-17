@@ -18,6 +18,10 @@ const lessons = readdirSync(dir)
       file: f,
     })),
   );
+const checkpoints = JSON.parse(readFileSync(`${dir}/checkpoints.json`, 'utf8'));
+const distributions = JSON.parse(
+  readFileSync(`${dir}/distributions.json`, 'utf8'),
+);
 const errors = [];
 const fail = (lesson, msg) =>
   errors.push(`${lesson.id ?? '?'} (${lesson.file}): ${msg}`);
@@ -68,6 +72,79 @@ for (const id of order)
   if (!seen.has(id))
     errors.push(`order.json lists ${id}, which no part file defines`);
 
+const nonemptyText = (value) =>
+  typeof value === 'string' && value.trim().length > 0;
+const chapters = new Set(lessons.map((lesson) => lesson.cluster));
+const checkpointChapters = new Set();
+const checkpointIds = new Set();
+const problemIds = new Set();
+if (!Array.isArray(checkpoints))
+  errors.push('checkpoints.json must be an array of chapter checkpoints');
+for (const checkpoint of Array.isArray(checkpoints) ? checkpoints : []) {
+  const label = `checkpoints.json ${checkpoint.id ?? '?'}`;
+  for (const key of ['id', 'cluster', 'title'])
+    if (!nonemptyText(checkpoint[key])) errors.push(`${label}: missing ${key}`);
+  if (checkpointIds.has(checkpoint.id))
+    errors.push(`${label}: duplicate checkpoint id`);
+  checkpointIds.add(checkpoint.id);
+  if (!chapters.has(checkpoint.cluster))
+    errors.push(`${label}: cluster must name an existing chapter`);
+  if (checkpointChapters.has(checkpoint.cluster))
+    errors.push(`${label}: chapter has more than one checkpoint set`);
+  checkpointChapters.add(checkpoint.cluster);
+  if (!Array.isArray(checkpoint.problems) || checkpoint.problems.length !== 3)
+    errors.push(`${label}: needs exactly three problems`);
+  for (const problem of Array.isArray(checkpoint.problems)
+    ? checkpoint.problems
+    : []) {
+    const problemLabel = `${label} ${problem.id ?? '?'}`;
+    for (const key of ['id', 'prompt', 'answer'])
+      if (!nonemptyText(problem[key]))
+        errors.push(`${problemLabel}: missing ${key}`);
+    if (problemIds.has(problem.id))
+      errors.push(`${problemLabel}: duplicate problem id`);
+    problemIds.add(problem.id);
+    if (
+      !Array.isArray(problem.hints) ||
+      !problem.hints.length ||
+      !problem.hints.every(nonemptyText)
+    )
+      errors.push(`${problemLabel}: needs nonempty hints`);
+    if (!Array.isArray(problem.lessonIds) || !problem.lessonIds.length)
+      errors.push(`${problemLabel}: needs relevant lessonIds`);
+    for (const id of Array.isArray(problem.lessonIds) ? problem.lessonIds : [])
+      if (!seen.has(id))
+        errors.push(`${problemLabel}: unknown lesson reference ${id}`);
+  }
+}
+for (const chapter of chapters)
+  if (!checkpointChapters.has(chapter))
+    errors.push(`checkpoints.json: missing chapter ${chapter}`);
+
+const distributionNames = new Set();
+if (!Array.isArray(distributions) || !distributions.length)
+  errors.push('distributions.json needs an array of distribution references');
+for (const distribution of Array.isArray(distributions) ? distributions : []) {
+  const label = `distributions.json ${distribution.name ?? '?'}`;
+  for (const key of [
+    'name',
+    'lessonId',
+    'support',
+    'parameters',
+    'formula',
+    'mean',
+    'variance',
+    'caution',
+  ])
+    if (!nonemptyText(distribution[key]))
+      errors.push(`${label}: missing ${key}`);
+  if (distributionNames.has(distribution.name))
+    errors.push(`${label}: duplicate distribution name`);
+  distributionNames.add(distribution.name);
+  if (!seen.has(distribution.lessonId))
+    errors.push(`${label}: unknown lesson reference ${distribution.lessonId}`);
+}
+
 const strings = (value) =>
   typeof value === 'string'
     ? [value]
@@ -77,7 +154,20 @@ const strings = (value) =>
         ? Object.values(value).flatMap(strings)
         : [];
 const math = /\\\[([\s\S]*?)\\\]|\\\(([\s\S]*?)\\\)/g;
-for (const l of lessons)
+for (const l of [
+  ...lessons,
+  ...(Array.isArray(checkpoints) ? checkpoints : []).map((checkpoint) => ({
+    ...checkpoint,
+    file: 'checkpoints.json',
+  })),
+  ...(Array.isArray(distributions) ? distributions : []).map(
+    (distribution) => ({
+      ...distribution,
+      id: distribution.name,
+      file: 'distributions.json',
+    }),
+  ),
+])
   for (const s of strings({ ...l, file: undefined })) {
     for (const m of s.matchAll(math)) {
       try {
@@ -103,5 +193,5 @@ if (errors.length) {
   process.exit(1);
 }
 console.log(
-  `check:content ok — ${lessons.length} lessons, ${new Set(lessons.map((l) => l.cluster)).size} chapters`,
+  `check:content ok — ${lessons.length} lessons, ${chapters.size} chapters, ${problemIds.size} checkpoint problems, ${distributionNames.size} distribution references`,
 );
