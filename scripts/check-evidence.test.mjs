@@ -24,7 +24,11 @@ writeFileSync(
   join(directory, 'gh'),
   `#!/usr/bin/env node
 const fixture = JSON.parse(process.env.PROBABILITY_GATE_FIXTURE);
-process.stdout.write(JSON.stringify(process.argv[2] === 'api' ? fixture.compare : fixture.pr));
+const fields = process.argv[process.argv.indexOf('--json') + 1]?.split(',') ?? [];
+const result = process.argv[2] === 'api'
+  ? fixture.compare
+  : Object.fromEntries(fields.map((field) => [field, fixture.pr[field]]));
+process.stdout.write(JSON.stringify(result));
 `,
   { mode: 0o755 },
 );
@@ -44,6 +48,7 @@ after(() => rmSync(directory, { recursive: true, force: true }));
 function gate(overrides = {}) {
   const fixture = {
     pr: {
+      title: 'Require complete verification evidence',
       body,
       headRefOid: head,
       files: [{ path: 'src/content/part01.json' }],
@@ -117,35 +122,89 @@ test('the evidence event must still match the live PR head', () => {
   assert.match(result.stderr, /PR head changed or is invalid/);
 });
 
-test('a successful CI run for an old head cannot supply current proof', () => {
-  const result = gate({ run: { head_sha: previousHead } });
+for (const path of [
+  'src/content/part01.json',
+  'app/page.tsx',
+  'server/progress.ts',
+  'db/migrations/0001_progress.sql',
+  'build/entry.mjs',
+  'vite.config.ts',
+  'future/new-surface.ts',
+  'docs/verification.md',
+]) {
+  test(`${path} requires complete current CI evidence`, () => {
+    const pr = { files: [{ path }] };
+    const valid = gate({ pr });
+    assert.equal(valid.status, 0, valid.stderr);
+    for (const invalid of [
+      {
+        pr: { body: body.replace(/^- Verify evidence:.*$/m, '') },
+        error: /Verify evidence.*must link/,
+      },
+      {
+        pr: {
+          body: body.replace(
+            'https://github.com/example/probability/actions/runs/123',
+            'no CI run',
+          ),
+        },
+        error: /Verify evidence.*must link/,
+      },
+      {
+        pr: { body: body.replaceAll('.png', '.txt') },
+        error: /Verify evidence.*screenshots inspected/,
+      },
+      {
+        run: { head_sha: previousHead },
+        error: /run 123 is for .*not the PR head/,
+      },
+      { run: { name: 'unrelated' }, error: /not the check workflow/ },
+      {
+        run: { path: '.github/workflows/unrelated.yml' },
+        error: /not the check workflow/,
+      },
+      { run: { conclusion: 'failure' }, error: /not success/ },
+      { artifacts: [], error: /no verify-evidence artifact/ },
+      ...[
+        { name: 'verify-evidence', expired: true, size_in_bytes: 123 },
+        { name: 'verify-evidence', expired: false, size_in_bytes: 0 },
+        { name: 'unrelated', expired: false, size_in_bytes: 123 },
+      ].map((artifact) => ({
+        artifacts: [artifact],
+        error: /no verify-evidence artifact/,
+      })),
+    ]) {
+      const result = gate({ ...invalid, pr: { ...pr, ...invalid.pr } });
+      assert.equal(result.status, 1, result.stderr || result.stdout);
+      assert.match(result.stderr, invalid.error);
+    }
+  });
+}
+
+test('live PR title and raw body must satisfy the public-content rule', () => {
+  const forbidden = ['QQ', '1234'].join('');
+  for (const pr of [
+    { title: `Explain ${forbidden}` },
+    { body: `${body}\nPrivate reference ${forbidden}` },
+    { body: `${body}\n<!-- Private reference ${forbidden} -->` },
+  ]) {
+    const result = gate({ pr });
+    assert.equal(result.status, 1, result.stderr || result.stdout);
+    assert.match(result.stderr, /forbidden course code.*pull-request-text/);
+  }
+});
+
+test('commented verdict records still cannot supply evidence', () => {
+  const result = gate({
+    pr: {
+      body: body.replace(
+        /- Verifier verdict: (.*)/,
+        '<!-- - Verifier verdict: $1 -->',
+      ),
+    },
+  });
   assert.equal(result.status, 1, result.stderr);
-  assert.match(result.stderr, /run 123 is for .*not the PR head/);
-});
-
-test('the linked run must be the successful check workflow', () => {
-  for (const run of [
-    { name: 'unrelated' },
-    { path: '.github/workflows/unrelated.yml' },
-    { conclusion: 'failure' },
-  ]) {
-    const result = gate({ run });
-    assert.equal(result.status, 1, result.stderr);
-    assert.match(result.stderr, /not the check workflow|not success/);
-  }
-});
-
-test('missing, expired, empty and wrong artifacts cannot supply proof', () => {
-  for (const artifacts of [
-    [],
-    [{ name: 'verify-evidence', expired: true, size_in_bytes: 123 }],
-    [{ name: 'verify-evidence', expired: false, size_in_bytes: 0 }],
-    [{ name: 'unrelated', expired: false, size_in_bytes: 123 }],
-  ]) {
-    const result = gate({ artifacts });
-    assert.equal(result.status, 1, result.stderr);
-    assert.match(result.stderr, /no verify-evidence artifact/);
-  }
+  assert.match(result.stderr, /Verifier verdict/);
 });
 
 test('a clean summary cannot override a failed reviewer in the complete gate', () => {
