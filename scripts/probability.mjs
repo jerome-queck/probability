@@ -94,7 +94,7 @@ export function planFiles(files, map) {
         : !owners.length
           ? 'unmapped, full coverage'
           : 'owned',
-      features: affected,
+      features: shared || !owners.length ? 'all' : affected,
     });
   }
   return { features: [...selected], reasons };

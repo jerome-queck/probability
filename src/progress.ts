@@ -609,6 +609,13 @@ export function createProgressStore(
       if (session.kind !== 'account') return;
       const data = session.data;
       const version = generation;
+      const discarded = new Set(
+        [...data.pending].flatMap(([id, queue]) =>
+          !lessonId || lessonId === id
+            ? queue.filter((item) => item.status !== 'saving')
+            : [],
+        ),
+      );
       try {
         if (!(await confirmAccount(data, version))) return;
         const response = await request('/api/progress', {
@@ -619,12 +626,20 @@ export function createProgressStore(
         if (!response.ok) throw new Error('Progress unavailable.');
         const records = parseRecords(await response.json(), data.owner);
         if (!active(data, version)) return;
-        data.records = records;
-        for (const [id, queue] of data.pending)
-          if ((!lessonId || lessonId === id) && queue[0]?.status !== 'saving')
-            data.pending.delete(id);
-        data.notice = 'Loaded the account version.';
+        for (const [id, row] of records)
+          if (row.revision >= (data.records.get(id)?.revision ?? 0))
+            data.records.set(id, row);
+        for (const [id, queue] of data.pending) {
+          for (let index = queue.length - 1; index >= 0; index--)
+            if (discarded.has(queue[index]) && queue[index].status !== 'saving')
+              queue.splice(index, 1);
+          if (!queue.length) data.pending.delete(id);
+        }
+        data.notice = data.pending.size ? '' : 'Loaded the account version.';
         publish();
+        await Promise.all(
+          [...data.pending.keys()].map((id) => flush(data, id, version)),
+        );
       } catch {
         if (!active(data, version)) return;
         data.notice =

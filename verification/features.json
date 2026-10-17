@@ -13,6 +13,7 @@
     "src/mathBreaks.ts",
     "src/routes.ts",
     "src/state.ts",
+    "src/progress.ts",
     "src/content/**",
     "scripts/**",
     ".github/**",
@@ -22,8 +23,7 @@
     ".agents/**",
     ".cursor/skills/verify-probability/**",
     "next.config.ts",
-    "biome.json",
-    "scripts/browser-probability.mjs"
+    "biome.json"
   ],
   "features": [
     {
@@ -45,6 +45,7 @@
       "id": "practice",
       "purpose": "Attempt bounded practice, reveal hints and study chapter checkpoints.",
       "owners": [
+        "src/AtlasViews.tsx",
         "src/StudyViews.tsx",
         "src/LessonPage.tsx"
       ]
@@ -53,6 +54,7 @@
       "id": "reference",
       "purpose": "Look up results, conditions and distribution parameters.",
       "owners": [
+        "src/AtlasViews.tsx",
         "src/StudyViews.tsx"
       ]
     },

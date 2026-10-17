@@ -719,6 +719,76 @@ test('production progress handler and account store against local D1', async (t)
         );
       },
     );
+    await t.test(
+      'an older account refresh preserves newer acknowledgements and unsaved intents',
+      async () => {
+        const owner = 'remote-refresh-race';
+        const base = transport(() => owner);
+        const failures = new Set(['F01']);
+        let holdRead = false;
+        let release = () => {};
+        let captured = () => {};
+        const capturedRead = new Promise<void>((resolve) => {
+          captured = resolve;
+        });
+        const fetch: typeof globalThis.fetch = async (input, init) => {
+          if (init?.method === 'PATCH') {
+            const { lessonId } = JSON.parse(String(init.body));
+            if (failures.has(lessonId)) throw new Error('offline write');
+          }
+          const response = await base(input, init);
+          if (String(input) === '/api/progress' && !init?.method && holdRead) {
+            holdRead = false;
+            await new Promise<void>((resolve) => {
+              release = resolve;
+              captured();
+            });
+          }
+          return response;
+        };
+        const store = createProgressStore({
+          storage: localStorageFixture({}),
+          fetch,
+        });
+        await store.initialize();
+        await store.toggleStudied('F01');
+        holdRead = true;
+        const loading = store.acceptRemote();
+        await capturedRead;
+        await store.toggleStudied('F02');
+        failures.add('F03');
+        await store.toggleStudied('F03');
+        await store.setVerdict('F01', 'review');
+        failures.delete('F01');
+        release();
+        await loading;
+        assert.deepEqual(store.getSnapshot().studied.sort(), ['F02', 'F03']);
+        assert.equal(store.getSnapshot().practice.F01, 'review');
+        assert.equal(store.getLessonSaveState('F02'), 'saved');
+        assert.equal(store.getLessonSaveState('F03'), 'error');
+        assert.equal(store.getSnapshot().unsaved, true);
+        assert.match(store.getAccountSnapshot().message, /Not saved/);
+        const rows = (await readJson(await read(owner))).records;
+        assert.equal(rows.find((row) => row.lessonId === 'F02')?.studied, true);
+        assert.equal(
+          rows.find((row) => row.lessonId === 'F01')?.verdict,
+          'review',
+        );
+        assert.equal(
+          rows.find((row) => row.lessonId === 'F01')?.studied,
+          false,
+        );
+        failures.clear();
+        await store.retry();
+        assert.equal(store.getLessonSaveState('F03'), 'saved');
+        assert.equal(
+          (await readJson(await read(owner))).records.find(
+            (row) => row.lessonId === 'F03',
+          )?.studied,
+          true,
+        );
+      },
+    );
   } finally {
     await mf.dispose();
   }
