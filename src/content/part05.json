@@ -451,7 +451,7 @@
       "fundamental-theorem-calculus"
     ],
     "summary": "A beta density is proportional to \\(x^{\\alpha-1}(1-x)^{\\beta-1}\\) on \\((0,1)\\). Its two positive shape parameters control the behavior near the endpoints. A normalizing integral gives its moments without an approximation.",
-    "intuition": "The power of \\(x\\) controls how much density lies near 0, and the power of \\(1-x\\) controls the behavior near 1. A common increase in both parameters concentrates the fraction around its mean.",
+    "intuition": "The power of \\(x\\) controls how much density lies near 0, and the power of \\(1-x\\) controls the behavior near 1. Multiplying both shape parameters by the same factor greater than one keeps the mean fixed and decreases the variance.",
     "definition": [
       "For \\(\\alpha,\\beta>0\\), define the beta function by \\[B(\\alpha,\\beta)=\\int_0^1 x^{\\alpha-1}(1-x)^{\\beta-1}\\,dx.\\] This integral is finite and strictly positive. Near 0 the integrand is bounded by a constant times \\(x^{\\alpha-1}\\), and near 1 by a constant times \\((1-x)^{\\beta-1}\\). Both endpoint integrals converge for positive parameters.",
       "The beta distribution with shapes \\(\\alpha,\\beta\\), written \\(X\\sim\\operatorname{Beta}(\\alpha,\\beta)\\), has density \\[f_X(x)=\\frac{x^{\\alpha-1}(1-x)^{\\beta-1}}{B(\\alpha,\\beta)},\\qquad 0<x<1,\\] and zero density elsewhere. It has no atom at either endpoint, even if the density is unbounded there.",
