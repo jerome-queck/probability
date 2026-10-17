@@ -61,7 +61,8 @@
       "D01"
     ],
     "results": [
-      "linearity-of-expectation"
+      "linearity-of-expectation",
+      "lotus"
     ],
     "summary": "The expectation of a discrete random variable is the sum of each value times its probability. The same weights compute the expectation of a function of the variable, and expectation is linear under scaling and shifting.",
     "intuition": "Expectation is the balance point of the probability masses, and it is the average value you settle on if each number \\(x\\) keeps appearing with frequency \\(p(x)\\).",
@@ -322,7 +323,9 @@
     "prerequisites": [
       "D04"
     ],
-    "results": [],
+    "results": [
+      "vandermonde"
+    ],
     "summary": "When \\(n\\) items are drawn without replacement from a population of size \\(N\\) containing \\(m\\) marked items, the number of marked items in the sample is hypergeometric. Its mean is \\(nm/N\\), and its variance is the binomial variance multiplied by the finite-population factor \\((N-n)/(N-1)\\).",
     "intuition": "Each seat in the sample has the same chance \\(m/N\\) of being filled by a marked item, which fixes the mean at \\(nm/N\\). Once the sample contains more than one item, a marked item already drawn cannot appear again, so the count varies less than a with-replacement count.",
     "definition": [
@@ -419,5 +422,59 @@
     "caution": "Linearity of expectation applies to dependent indicators, and that is why the binomial mean \\(np\\) and the hypergeometric mean \\(nm/N\\) share a proof. Variance does not add in the same automatic way. For independent Bernoulli trials the indicators are uncorrelated and the variance is \\(np(1-p)\\); for sampling without replacement they are negatively dependent and the variance carries the extra factor \\((N-n)/(N-1)\\). Absolute convergence is the other boundary: on a countable space the outcome sum must be absolutely convergent before its terms can be split.",
     "bridge": "Indicator sums compute means quickly. Variances of the same sums need the pairwise probabilities, which is where the dependence hidden from the mean becomes visible.",
     "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 7 (expectation of sums of random variables)."
+  },
+  {
+    "id": "D09",
+    "title": "Negative binomial waiting counts",
+    "cluster": "Discrete random variables",
+    "question": "How many independent trials are needed to accumulate a fixed number of successes?",
+    "prerequisites": [
+      "D06",
+      "D08",
+      "C02"
+    ],
+    "results": [
+      "negative-binomial-wait",
+      "linearity-of-expectation"
+    ],
+    "summary": "The negative binomial extends the geometric waiting time to the \\(r\\)th success. Counting all trials and counting only failures produce two shifted conventions with different means and the same variance.",
+    "intuition": "The last trial must be a success. Before it, exactly \\(r-1\\) successes must have occurred, in any positions. The count of those positions gives the mass function.",
+    "definition": [
+      "Run independent Bernoulli trials with the same success probability \\(0<p<1\\). Fix an integer \\(r\\ge1\\), and let \\(T_r\\) count trials through and including the \\(r\\)th success. In the trials convention its support is \\(r,r+1,\\ldots\\).",
+      "Let \\(F_r=T_r-r\\) be the number of failures before the \\(r\\)th success. In the failures convention its support is \\(0,1,\\ldots\\). Both laws are called negative binomial. Here a symbol \\(T_r\\) always counts trials and \\(F_r\\) always counts failures.",
+      "The case \\(r=1\\) is geometric: \\(T_1\\) is the geometric variable of D06, while \\(F_1=T_1-1\\). When \\(p=1\\), the boundary law is deterministic, \\(T_r=r\\) and \\(F_r=0\\)."
+    ],
+    "theorem": "Write \\(q=1-p\\). For \\(t=r,r+1,\\ldots\\) and \\(f=0,1,\\ldots\\), \\[P(T_r=t)=\\binom{t-1}{r-1}p^r q^{t-r},\\qquad P(F_r=f)=\\binom{f+r-1}{r-1}p^r q^f.\\] Their moments are \\[E[T_r]=\\frac r p,\\quad E[F_r]=\\frac{rq}{p},\\quad \\operatorname{Var}(T_r)=\\operatorname{Var}(F_r)=\\frac{rq}{p^2}.\\] For integers \\(n\\ge r\\), \\(P(T_r\\le n)=P(\\operatorname{Bin}(n,p)\\ge r)\\).",
+    "hypotheses": [
+      "Trials are independent and have one fixed success probability \\(0<p<1\\). The target \\(r\\) is a fixed positive integer.",
+      "Sampling without replacement generally changes the success probability and does not satisfy this model.",
+      "The formulas describe a waiting count, not a count of successes during a fixed number of trials. State the count convention before using a table or software."
+    ],
+    "proof": [
+      "The event \\(T_r=t\\) requires exactly \\(r-1\\) successes among the first \\(t-1\\) trials and a success at trial \\(t\\). There are \\(\\binom{t-1}{r-1}\\) choices of the earlier success positions. Each allowed sequence has probability \\(p^r q^{t-r}\\), which gives the first mass function. Substituting \\(t=f+r\\) gives the second.",
+      "Let \\(G_i\\) count the trials after success \\(i-1\\) through success \\(i\\), with the experiment beginning at success 0. For any positive integers \\(g_1,\\ldots,g_r\\), specifying these gaps fixes a string of failures followed by a success in each block. Its probability is \\[P(G_1=g_1,\\ldots,G_r=g_r)=\\prod_{i=1}^r q^{g_i-1}p.\\] Each factor is a geometric mass function whose sum is 1. Summing over all tuples therefore gives total mass 1. Thus the gaps are independent geometric variables, each finite with probability 1, and \\(T_r=G_1+\\cdots+G_r\\).",
+      "By D06, \\(E[G_i]=1/p\\) and \\(\\operatorname{Var}(G_i)=q/p^2\\). Linearity gives \\(E[T_r]=r/p\\). For distinct gaps, the product mass function gives \\(E[G_iG_j]=E[G_i]E[G_j]\\) by multiplying two convergent nonnegative sums. Expanding the square of the centered sum makes all cross expectations zero, so \\(\\operatorname{Var}(T_r)=\\sum_{i=1}^r\\operatorname{Var}(G_i)=rq/p^2\\). Subtracting the constant \\(r\\) changes the mean by \\(r\\) and leaves the variance unchanged.",
+      "Finally, the \\(r\\)th success has arrived by trial \\(n\\) exactly when the first \\(n\\) trials contain at least \\(r\\) successes. The count during those trials is \\(\\operatorname{Bin}(n,p)\\), proving the tail identity. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "A transmitter repeats independent attempts, each successful with probability \\(2/5\\), until three successes occur. Find the probability that it stops at attempt 5, its expected number of attempts, and the variance.",
+      "steps": [
+        "The first four attempts must contain two successes, and the fifth must succeed. Hence \\(P(T_3=5)=\\binom42(2/5)^3(3/5)^2=6\\cdot8\\cdot9/5^5=432/3125=0.13824\\).",
+        "The trials convention gives \\(E[T_3]=3/(2/5)=15/2\\). The expected number of failures is \\(E[F_3]=15/2-3=9/2\\).",
+        "The variance is \\(3(3/5)/(2/5)^2=45/4\\), for either convention."
+      ],
+      "conclusion": "The stop-at-5 probability is \\(0.13824\\). The mean trial count is \\(7.5\\), its variance is \\(11.25\\), and the mean failure count is \\(4.5\\)."
+    },
+    "practice": {
+      "prompt": "Independent trials succeed with probability \\(1/2\\), and stop at the second success. Let \\(F\\) count failures before stopping. Find \\(P(F=3)\\), \\(P(T_2\\le3)\\), \\(E[F]\\), and \\(\\operatorname{Var}(F)\\). Explain why \\(F\\) is not binomial with a fixed trial count.",
+      "hints": [
+        "The event \\(F=3\\) is \\(T_2=5\\). Its final trial is a success.",
+        "The event \\(T_2\\le3\\) means at least two successes among three trials."
+      ],
+      "answer": "For \\(F=3\\), there is one success among the first four trials and a success on trial 5. Thus \\(P(F=3)=\\binom41(1/2)^5=1/8\\). Also \\(P(T_2\\le3)=P(\\operatorname{Bin}(3,1/2)\\ge2)=(\\binom32+\\binom33)/8=1/2\\). The mean is \\(2(1/2)/(1/2)=2\\), and the variance is \\(2(1/2)/(1/2)^2=4\\). Here the number of trials is random and unbounded, while the number of successes at stopping is fixed. A binomial experiment fixes the number of trials instead."
+    },
+    "caution": "The same negative-binomial parameter pair can describe trials or failures in different references. Their means differ by \\(r\\). The mass at \\(t=r\\) is \\(p^r\\), which is the same event as \\(F_r=0\\). Use that boundary check to identify the convention.",
+    "bridge": "The continuous analogue waits for a fixed number of arrivals in time. Gamma variables later play that role.",
+    "reference": "Background reading: Probability, Mathematical Statistics, and Stochastic Processes, Bernoulli Trials, The Negative Binomial Distribution."
   }
 ]

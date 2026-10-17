@@ -8,8 +8,8 @@
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "preview": "vite preview --host 127.0.0.1",
-    "build": "tsc --noEmit && vite build",
+    "preview": "npm run start",
+    "build": "tsc --noEmit && vinext build",
     "typecheck": "tsc --noEmit",
     "format:check": "biome ci --linter-enabled=false .",
     "lint": "biome lint .",
@@ -20,27 +20,51 @@
     "check:drift": "node scripts/check-drift.mjs",
     "check:rules": "node scripts/check-rule-table.mjs",
     "smoke": "node scripts/control-probability.mjs smoke",
-    "check": "npm run check:forbidden && npm run check:content && npm run check:results && npm run check:drift && npm run check:rules && npm run typecheck && npm run lint && npm run format:check && npm test && npm run build && npm run smoke",
-    "check:evidence": "node scripts/check-evidence.mjs"
+    "check": "npm run verify:source && npm run build && npm run verify:browser",
+    "check:evidence": "node scripts/check-evidence.mjs",
+    "start": "node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js dev --config dist/server/wrangler.json --local --persist-to .wrangler/state --ip 127.0.0.1 --inspector-port 0",
+    "db:generate": "drizzle-kit generate",
+    "agent": "node scripts/probability.mjs",
+    "verify:source": "npm run check:forbidden && npm run check:content && npm run check:results && npm run check:drift && npm run check:rules && npm run typecheck && npm run lint && npm run format:check && npm test",
+    "verify:browser": "npm run smoke && node scripts/verify-journeys.mjs"
   },
   "dependencies": {
     "@fontsource/inter": "^5.3.0",
     "@fontsource/source-serif-4": "^5.3.1",
+    "drizzle-orm": "^0.45.2",
     "katex": "^0.18.10",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
+    "@cloudflare/vite-plugin": "^1.64.0",
+    "@cloudflare/workers-types": "^5.20261016.1",
     "@types/katex": "^0.16.8",
     "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@typescript/typescript6": "^6.0.2",
+    "@vitejs/plugin-react": "^6.0.2",
+    "@vitejs/plugin-rsc": "^0.5.38",
+    "drizzle-kit": "^0.31.11",
+    "miniflare": "^5.20261012.1-beta",
     "pixelmatch": "^8.0.0",
     "playwright-core": "^1.64.0",
     "pngjs": "^7.0.0",
     "typescript": "^7.0.2",
-    "vite": "^8.3.4"
+    "vite": "^8.3.4",
+    "wrangler": "^4.151.1",
+    "next": "^16.4.2",
+    "vinext": "^1.2.1",
+    "react-server-dom-webpack": "^19.3.1"
+  },
+  "overrides": {
+    "sharp": "^0.35.5",
+    "undici": "^7.29.1",
+    "ws": "^8.21.0",
+    "image-size": "^2.0.4",
+    "esbuild": "^0.28.2",
+    "fflate": "^0.8.3"
   }
 }

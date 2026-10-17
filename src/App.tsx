@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { AccountPanel } from './AccountPanel';
 import { AtlasViews } from './AtlasViews';
 import { lessons } from './content/lessons';
 import { LessonPage } from './LessonPage';
@@ -45,7 +46,9 @@ export function App() {
       ? `${lesson.title} · Probability`
       : `${route.view[0].toUpperCase()}${route.view.slice(1)} · Probability`;
     setDrawer(false);
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    const anchor = document.getElementById(window.location.hash.slice(1));
+    if (anchor) anchor.scrollIntoView({ behavior: 'instant', block: 'start' });
+    else window.scrollTo({ top: 0, behavior: 'instant' });
     // Move focus to the new page's heading so keyboard and screen-reader users land on it.
     if (firstRoute.current) firstRoute.current = false;
     else if (drawerOpen.current) focusAfter.current = 'heading';
@@ -120,6 +123,10 @@ export function App() {
               </button>
             ))}
           </nav>
+          <details className="account-menu">
+            <summary>Progress</summary>
+            <AccountPanel />
+          </details>
         </header>
         {route.view === 'not-found' ? (
           <div className="reading-shell">

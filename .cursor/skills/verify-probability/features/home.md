@@ -6,6 +6,7 @@ The landing page at `/`: a hero with the site promise, a start button, and a cha
 
 - `home.hero` — heading “Learn to reason under uncertainty.”, two actions, and the binomial-with-normal-curve figure.
 - `home.start` — “Begin at the beginning” opens the first lesson.
+- `home.scope` — expandable scope and required preparation.
 - `home.chapters` — one card per chapter, each lesson a button.
 
 ## How to get to it (user POV)
@@ -27,6 +28,7 @@ Each state is screenshotted at the listed widths, checked for overflow, KaTeX, f
 - `start-hover` (desktop, mobile)
 - `start-focus` (desktop, mobile)
 - `start` (desktop, mobile)
+- `course-scope` (desktop, mobile)
 
 ## Gotchas
 

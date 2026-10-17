@@ -1,10 +1,6 @@
 # Feature map — probability site
 
-Baseline: a fresh `npm run build` and `control-probability launch` with an empty data dir. No
-accounts, no seed data. Drive through the accessible UI; prove each journey by the route, heading
-and visible text it ends on. Drift is fixed here; product bugs are reported, never written around.
-`npm run check:drift` fails when this index, the feature files, `smoke.json`, the routes, the labs
-or the lesson chapters disagree.
+Start with a fresh build and owned data directory. Public preview drives anonymous reading; local account journeys use a separately migrated D1 and loopback sign-in fixture. Source ownership lives in `verification/features.json`; exact visual states live in `smoke.json`. Drift is fixed here; product bugs stay in product changes.
 
 | Feature | File |
 |---|---|
@@ -15,12 +11,11 @@ or the lesson chapters disagree.
 | Reference view | [reference.md](reference.md) |
 | Routing and navigation | [routing.md](routing.md) |
 | Study progress and self-check | [progress.md](progress.md) |
+| Account progress | [accounts.md](accounts.md) |
 
 ## Review tooling (not a site feature)
 
-Codex and optional Cursor sessions use this same driver and map. Record actual runner, model,
-effort, full session identity and checked commit as described in `AGENTS.md`. Keep original
-screenshots unchanged. Create separate resized copies when inspection needs them.
+Use the configured Codex model/effort defaults unless explicitly overridden. Cursor compatibility and Bugbot remain available. Preserve original PNG/ARIA evidence; do not resize proof images in place. Independent verifier, reviewer and mathematical verdicts require actual completed sessions.
 
 ## Named results (content gate, not a site feature)
 

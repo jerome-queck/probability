@@ -21,41 +21,111 @@ function Bars({
   label,
   series,
   max,
+  xLabels,
+  xLabel,
+  yLabel,
 }: {
   label: string;
   series: { name: string; values: number[]; className: string }[];
   max: number;
+  xLabels: string[];
+  xLabel: string;
+  yLabel: string;
 }) {
   const width = 560;
   const height = 180;
   const count = series[0].values.length;
   const slot = width / count;
   return (
-    <svg
-      viewBox={`0 0 ${width} ${height + 20}`}
-      role="img"
-      aria-label={label}
-      className="lab-chart"
-    >
-      <title>{label}</title>
-      {series.map((s, si) =>
-        s.values.map((v, i) => {
-          const h = max > 0 ? (v / max) * height : 0;
-          const w = slot / (series.length + 0.5);
-          return (
-            <rect
-              key={`${s.name}-${i}`}
-              x={i * slot + si * w + w * 0.25}
-              y={height - h}
-              width={w}
-              height={h}
-              className={s.className}
-            />
-          );
-        }),
-      )}
-      <line x1="0" y1={height} x2={width} y2={height} stroke="currentColor" />
-    </svg>
+    <figure className="experiment-figure">
+      <div className="chart-frame">
+        <div className="chart-axis chart-y-axis" aria-hidden="true">
+          {[1, 0.5, 0].map((fraction) => (
+            <span key={fraction}>{fmt(max * fraction, 2)}</span>
+          ))}
+        </div>
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          role="img"
+          aria-label={label}
+          className="lab-chart"
+        >
+          <title>{label}</title>
+          {series.map((s, si) =>
+            s.values.map((v, i) => {
+              const h = max > 0 ? (v / max) * height : 0;
+              const w = slot / (series.length + 0.5);
+              return (
+                <rect
+                  key={`${s.name}-${i}`}
+                  x={i * slot + si * w + w * 0.25}
+                  y={height - h}
+                  width={w}
+                  height={h}
+                  className={s.className}
+                />
+              );
+            }),
+          )}
+          <line
+            x1="0"
+            y1={height}
+            x2={width}
+            y2={height}
+            stroke="currentColor"
+          />
+        </svg>
+        <div className="chart-axis chart-x-axis" aria-hidden="true">
+          {[0, Math.floor((count - 1) / 2), count - 1].map((index) => (
+            <span
+              key={index}
+              className={index > 0 && index < count - 1 ? 'middle-tick' : ''}
+            >
+              {xLabels[index]}
+            </span>
+          ))}
+        </div>
+      </div>
+      <figcaption>
+        {xLabel} horizontally. {yLabel} vertically.
+      </figcaption>
+      <div className="chart-legend">
+        {series.map((item) => (
+          <span key={item.name}>
+            <i className={item.className} />
+            {item.name}
+          </span>
+        ))}
+      </div>
+      <details className="chart-values">
+        <summary>Read the chart values</summary>
+        <section className="table-scroll" aria-label={`${label} values`}>
+          <table>
+            <caption>{label}</caption>
+            <thead>
+              <tr>
+                <th scope="col">{xLabel}</th>
+                {series.map((item) => (
+                  <th scope="col" key={item.name}>
+                    {item.name}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {xLabels.map((value, index) => (
+                <tr key={value}>
+                  <th scope="row">{value}</th>
+                  {series.map((item) => (
+                    <td key={item.name}>{fmt(item.values[index])}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      </details>
+    </figure>
   );
 }
 
@@ -115,6 +185,9 @@ function BirthdayLab() {
       </p>
       <Bars
         label="Shared-birthday probability for 1 to 60 people"
+        xLabels={curve.map((_, index) => String(index + 1))}
+        xLabel="People"
+        yLabel="Probability"
         max={1}
         series={[{ name: 'p', values: curve, className: 'bar-primary' }]}
       />
@@ -162,6 +235,12 @@ function BayesLab() {
       <p className="result-line" data-testid="lab-result">
         P(D | +) = {fmt(posterior)}
       </p>
+      <p>
+        In 10,000 people, expect {fmt(10000 * prevalence * sensitivity, 1)} true
+        positive results and {fmt(10000 * (1 - prevalence) * falsePositive, 1)}{' '}
+        false positive results. The posterior is the true positives divided by
+        all positives.
+      </p>
     </>
   );
 }
@@ -202,6 +281,9 @@ function BinomialPoissonLab() {
       </p>
       <Bars
         label={`Binomial(n, λ/n) (dark) against Poisson(λ) (light) probabilities for k = 0 to ${top}`}
+        xLabels={ks.map(String)}
+        xLabel="Successes k"
+        yLabel="Probability"
         max={Math.max(...bin, ...poi)}
         series={[
           { name: 'binomial', values: bin, className: 'bar-primary' },
@@ -246,6 +328,9 @@ function NormalApproximationLab() {
       </p>
       <Bars
         label="Binomial probabilities (dark) and the normal density at each integer (light)"
+        xLabels={ks.map(String)}
+        xLabel="Successes k"
+        yLabel="Mass or density"
         max={Math.max(
           ...ks.map((i) => binomialPmf(n, p, i)),
           normalPdf(mean, mean, Math.sqrt(variance)),
@@ -294,6 +379,11 @@ function LawOfLargeNumbersLab() {
       </p>
       <Bars
         label="Running proportion of heads"
+        xLabels={sampled.map((_, index) =>
+          String(Math.floor(((index + 1) * tosses) / 50)),
+        )}
+        xLabel="Tosses so far"
+        yLabel="Proportion of heads"
         max={1}
         series={[
           { name: 'proportion', values: sampled, className: 'bar-primary' },
@@ -326,6 +416,9 @@ function CentralLimitLab() {
       </p>
       <Bars
         label="Histogram of standardised sums (dark) against the standard normal density (light)"
+        xLabels={bins.map((bin) => `${fmt(bin.from, 2)} to ${fmt(bin.to, 2)}`)}
+        xLabel="Standardized sum interval"
+        yLabel="Density"
         max={0.6}
         series={[
           {
@@ -342,33 +435,61 @@ function CentralLimitLab() {
 
 const registry: Record<
   LabId,
-  { title: string; Component: () => React.JSX.Element }
+  { title: string; prediction: string; Component: () => React.JSX.Element }
 > = {
-  birthday: { title: 'Shared birthdays', Component: BirthdayLab },
-  bayes: { title: 'Updating with Bayes’ rule', Component: BayesLab },
+  birthday: {
+    title: 'Shared birthdays',
+    prediction:
+      'How many people make a shared birthday more likely than not? Count pairs before moving the control.',
+    Component: BirthdayLab,
+  },
+  bayes: {
+    title: 'Updating with Bayes’ rule',
+    prediction:
+      'If the prior doubles, must the posterior double? Explain what happens to all positive results.',
+    Component: BayesLab,
+  },
   'binomial-poisson': {
     title: 'Binomial meets Poisson',
+    prediction:
+      'Hold the mean fixed. Predict what changing the number of trials does to the gap between the two laws.',
     Component: BinomialPoissonLab,
   },
   'normal-approximation': {
     title: 'Normal approximation',
+    prediction:
+      'Would you trust the approximation for a small, strongly skewed binomial? Compare the exact mass with the corrected normal probability.',
     Component: NormalApproximationLab,
   },
   'law-of-large-numbers': {
     title: 'Averages settle',
+    prediction:
+      'Does a long run force the next toss to balance earlier outcomes? Compare several runs before deciding.',
     Component: LawOfLargeNumbersLab,
   },
-  'central-limit': { title: 'Sums become normal', Component: CentralLimitLab },
+  'central-limit': {
+    title: 'Sums become normal',
+    prediction:
+      'Which distribution changes, the original uniform observations or their standardized sums? Predict the shape as the sum grows.',
+    Component: CentralLimitLab,
+  },
 };
 export const labIds = Object.keys(registry) as LabId[];
 
 export default function Labs({ id }: { id: LabId }) {
-  const { title, Component } = registry[id];
+  const { title, prediction, Component } = registry[id];
   return (
     <section id="lab" className="content-section lab" data-lab={id}>
       <span className="callout-label">EXPERIMENT</span>
       <h2>{title}</h2>
+      <p className="lab-prediction">
+        <strong>Predict first.</strong> {prediction}
+      </p>
       <Component />
+      <p className="lab-interpretation">
+        Explain the change using the lesson's conditions. An experiment
+        illustrates a model; it does not prove its theorem.
+      </p>
     </section>
   );
 }

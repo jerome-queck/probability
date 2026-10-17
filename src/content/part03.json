@@ -5,7 +5,8 @@
     "cluster": "Conditional probability",
     "question": "How should the probability of an event be revised once another event is known to have occurred?",
     "prerequisites": [
-      "F03"
+      "F03",
+      "C01"
     ],
     "results": [
       "multiplication-rule",
@@ -166,12 +167,14 @@
     "cluster": "Conditional probability",
     "question": "When does learning that one event occurred leave the probability of another event unchanged?",
     "prerequisites": [
-      "K01"
+      "K01",
+      "C02"
     ],
     "results": [
       "binomial-theorem",
       "inclusion-exclusion",
-      "complement-rule"
+      "complement-rule",
+      "continuity-of-probability"
     ],
     "summary": "Two events are independent when the probability of both equals the product of the probabilities. For three or more events the product formula is required on every subcollection, and in independent repeated trials the probability of at least one success in \\(n\\) trials is \\(1-(1-p)^n\\).",
     "intuition": "Independent events neither help nor hinder each other. Probability 0 means almost never, and probability 1 means almost surely; in a continuous sample space an outcome can still land in a set of probability 0.",
@@ -218,5 +221,57 @@
     "caution": "Disjointness is not independence. If \\(EF=\\varnothing\\) while \\(P(E)>0\\) and \\(P(F)>0\\), then \\(P(EF)=0\\), which is not equal to \\(P(E)P(F)\\), so \\(E\\) and \\(F\\) are dependent: occurrence of one rules the other out. A probability of 0 also does not permit conditioning. The product formula can say that \\(A\\) is independent of \\(E\\) when \\(P(A)=0\\), while \\(P(E\\mid A)\\) remains undefined.",
     "bridge": "The product formula for events is the template for independent random variables: information about one leaves the distribution of the other unchanged.",
     "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 3 (independent events)."
+  },
+  {
+    "id": "K05",
+    "title": "Conditional independence",
+    "cluster": "Conditional probability",
+    "question": "Can two events become independent, or dependent, after we learn how an experiment was run?",
+    "prerequisites": [
+      "K02",
+      "K04"
+    ],
+    "results": [
+      "conditional-independence",
+      "total-probability"
+    ],
+    "summary": "Events \\(A\\) and \\(B\\) are conditionally independent given \\(C\\) when their probabilities multiply inside the reduced probability space \\(C\\). This condition can hold while marginal independence fails. It can also fail for events that were independent before conditioning.",
+    "intuition": "A shared operating condition can explain why two outcomes tend to occur together. Once that condition is fixed, there may be no further connection. Conditioning on a selected outcome can instead create a connection.",
+    "definition": [
+      "For \\(P(C)>0\\), events \\(A\\) and \\(B\\) are conditionally independent given \\(C\\) if \\[P(A\\cap B\\mid C)=P(A\\mid C)P(B\\mid C).\\] Every term uses the same conditioning event. This is ordinary independence for the probability \\(Q(E)=P(E\\mid C)\\).",
+      "If \\(C_1,\\ldots,C_m\\) is a partition with positive probabilities, conditional independence given the partition means that the equality holds within every \\(C_i\\). The phrase does not mean that \\(A\\), \\(B\\), and the events \\(C_i\\) are mutually independent.",
+      "Marginal independence asks whether \\(P(A\\cap B)=P(A)P(B)\\) before a condition is specified. Averaging products of conditional probabilities generally gives a different answer from multiplying their separate averages."
+    ],
+    "theorem": "If \\(P(C)>0\\) and \\(P(B\\cap C)>0\\), then \\(A\\) and \\(B\\) are conditionally independent given \\(C\\) if and only if \\[P(A\\mid B\\cap C)=P(A\\mid C).\\] Under conditional independence, replacing either or both of \\(A,B\\) by its complement preserves conditional independence given \\(C\\). Conditional independence does not in general imply marginal independence, nor does marginal independence imply conditional independence.",
+    "hypotheses": [
+      "The event \\(C\\) has positive probability. The equivalence involving \\(P(A\\mid B\\cap C)\\) also requires \\(P(B\\cap C)>0\\).",
+      "The partition version requires the factorization in every positive-probability part. A check in only one part does not establish the partition version.",
+      "The assertion concerns the stated events and the stated information. Changing the conditioning event requires a new check."
+    ],
+    "proof": [
+      "Apply the conditional-probability ratio twice: \\[P(A\\mid B\\cap C)=\\frac{P(A\\cap B\\cap C)}{P(B\\cap C)}=\\frac{P(A\\cap B\\mid C)}{P(B\\mid C)}.\\] The denominator is positive. Substituting the factorization gives \\(P(A\\mid C)\\). Multiplying the displayed ratio by \\(P(B\\mid C)\\) proves the converse.",
+      "For complements, work inside \\(C\\). If \\(a=P(A\\mid C)\\) and \\(b=P(B\\mid C)\\), then \\(P(A\\cap B^c\\mid C)=a-ab=a(1-b)\\). Swapping \\(A,B\\) gives the other one-complement case. Subtracting the union gives \\(P(A^c\\cap B^c\\mid C)=1-a-b+ab=(1-a)(1-b)\\).",
+      "The worked example gives conditional independence without marginal independence. For the converse failure, toss two independent fair coins. Let \\(A\\) be heads on the first coin, \\(B\\) heads on the second, and \\(C\\) the event that the coins agree. Marginally \\(P(A\\cap B)=1/4=P(A)P(B)\\). Inside \\(C=\\{HH,TT\\}\\), however, \\(P(A\\cap B\\mid C)=1/2\\), while \\(P(A\\mid C)P(B\\mid C)=1/4\\). Thus neither implication holds. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "A device runs in a quiet mode or a busy mode, each with probability \\(1/2\\). Within either mode, its two sensors signal independently. Each sensor signals with probability \\(1/5\\) in quiet mode and \\(4/5\\) in busy mode. Are the two signal events \\(A,B\\) independent before the mode is observed?",
+      "steps": [
+        "Conditional independence is part of the model. Within quiet mode the intersection probability is \\((1/5)^2=1/25\\). Within busy mode it is \\((4/5)^2=16/25\\).",
+        "The law of total probability gives \\(P(A)=P(B)=\\tfrac12(1/5)+\\tfrac12(4/5)=1/2\\). It gives \\(P(A\\cap B)=\\tfrac12(1/25)+\\tfrac12(16/25)=17/50\\).",
+        "The product of the marginal probabilities is \\(1/4\\), which differs from \\(17/50\\). In fact \\(P(B\\mid A)=(17/50)/(1/2)=17/25\\), greater than \\(P(B)=1/2\\). A signal makes the busy mode more plausible."
+      ],
+      "conclusion": "The events are conditionally independent within each mode, but dependent overall. The common mode accounts for the change."
+    },
+    "practice": {
+      "prompt": "Roll two independent fair dice. Let \\(A\\) mean that the first die is even, \\(B\\) that the second is even, and \\(C=A\\cup B\\). Verify marginal independence, then decide whether \\(A,B\\) are conditionally independent given \\(C\\).",
+      "hints": [
+        "Each parity pair is equally likely. The event \\(C\\) excludes only the odd-odd pair.",
+        "Calculate \\(P(A\\mid C)\\), \\(P(B\\mid C)\\), and \\(P(A\\cap B\\mid C)\\) separately."
+      ],
+      "answer": "Independence of the dice gives \\(P(A)=P(B)=1/2\\) and \\(P(A\\cap B)=1/4\\), so \\(A,B\\) are marginally independent. Also \\(P(C)=3/4\\). Since \\(A\\subset C\\), \\(P(A\\mid C)=(1/2)/(3/4)=2/3\\), and the same holds for \\(B\\). But \\(P(A\\cap B\\mid C)=(1/4)/(3/4)=1/3\\), whereas the product of the conditional marginals is \\(4/9\\). They are not conditionally independent given \\(C\\). Learning that at least one die is even changes how information about one die affects the other."
+    },
+    "caution": "Never drop the conditioning event from one factor. \\(P(A\\cap B\\mid C)=P(A\\mid C)P(B)\\) is not the definition. Also, two signals that are independent within every operating mode can remain dependent when the mode is hidden.",
+    "bridge": "The same distinction applies to random variables. Later, joint and conditional distributions let us state it for whole collections of numerical outcomes.",
+    "reference": "Background reading: Introduction to Probability, Statistics, and Random Processes, Section 1.4.4 (conditional independence)."
   }
 ]

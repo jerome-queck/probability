@@ -10,14 +10,15 @@
     ],
     "results": [
       "inclusion-exclusion",
-      "continuity-of-probability"
+      "continuity-of-probability",
+      "fundamental-theorem-calculus"
     ],
     "summary": "The joint distribution records how random variables behave together. A joint cdf turns rectangle probabilities into arithmetic, a joint pmf or density is summed or integrated to recover each marginal, and the probability of a region is an integral of the joint density over that region.",
     "intuition": "One random variable spreads probability along a line. Two random variables spread it over the plane, and the marginal of either one is what remains after you collapse that plane onto a single axis.",
     "definition": [
       "The joint cumulative distribution function of random variables \\(X\\) and \\(Y\\) is \\(F(a,b)=P(X\\le a,\\, Y\\le b)\\), defined for all real \\(a\\) and \\(b\\). It is the probability that the random point \\((X,Y)\\) lands in the southwest quadrant with corner \\((a,b)\\).",
       "If \\(X\\) and \\(Y\\) are discrete, their joint probability mass function is \\(p(x,y)=P(X=x,\\, Y=y)\\). The marginal pmfs are obtained by summing out the other variable: \\(p_X(x)=\\sum_y p(x,y)\\) and \\(p_Y(y)=\\sum_x p(x,y)\\). Both sums include every value the omitted variable can take, and each marginal sums to 1.",
-      "\\(X\\) and \\(Y\\) are jointly continuous when there is a nonnegative function \\(f\\), the joint density, such that \\(P((X,Y)\\in C)=\\iint_C f(x,y)\\,dx\\,dy\\) for every region \\(C\\) for which the integral is defined, and \\(\\iint_{\\mathbb{R}^2} f=1\\). Then \\(F(a,b)=\\int_{-\\infty}^{a}\\int_{-\\infty}^{b} f(u,v)\\,dv\\,du\\), and \\(f(a,b)=\\partial^2 F/\\partial a\\,\\partial b\\) at every point \\((a,b)\\) where \\(f\\) is continuous. The marginal densities are \\(f_X(x)=\\int_{-\\infty}^{\\infty} f(x,y)\\,dy\\) and \\(f_Y(y)=\\int_{-\\infty}^{\\infty} f(x,y)\\,dx\\).",
+      "\\(X\\) and \\(Y\\) are jointly continuous when there is a nonnegative function \\(f\\), the joint density, such that \\(P((X,Y)\\in C)=\\iint_C f(x,y)\\,dx\\,dy\\) for every region \\(C\\) for which the integral is defined, and \\(\\iint_{\\mathbb{R}^2} f=1\\). Then \\(F(a,b)=\\int_{-\\infty}^{a}\\int_{-\\infty}^{b} f(u,v)\\,dv\\,du\\), and \\(f(a,b)=\\partial^2 F/\\partial a\\,\\partial b\\) almost everywhere. The marginal densities are \\(f_X(x)=\\int_{-\\infty}^{\\infty} f(x,y)\\,dy\\) and \\(f_Y(y)=\\int_{-\\infty}^{\\infty} f(x,y)\\,dx\\).",
       "For random variables \\(X_1,\\dots,X_n\\) the joint cdf is \\(F(a_1,\\dots,a_n)=P(X_1\\le a_1,\\dots,X_n\\le a_n)\\). In the discrete case the joint pmf is \\(p(x_1,\\dots,x_n)=P(X_1=x_1,\\dots,X_n=x_n)\\), and a marginal pmf is a sum over the unwanted coordinates. In the jointly continuous case a nonnegative joint density on \\(\\mathbb{R}^n\\) satisfies \\(P((X_1,\\dots,X_n)\\in C)=\\int_C f\\), and the marginal density of one coordinate is the integral of \\(f\\) over the other \\(n-1\\) coordinates."
     ],
     "theorem": "For all real \\(a_1<a_2\\) and \\(b_1<b_2\\), \\[P(a_1<X\\le a_2,\\, b_1<Y\\le b_2)=F(a_2,b_2)-F(a_1,b_2)-F(a_2,b_1)+F(a_1,b_1).\\] The marginal cdfs are limits of the joint cdf: \\(F_X(a)=\\lim_{b\\to\\infty} F(a,b)\\) and \\(F_Y(b)=\\lim_{a\\to\\infty} F(a,b)\\). The same alternating pattern gives orthant-corner probabilities in higher dimensions. For three variables, \\[P(a_1<X\\le a_2,\\, b_1<Y\\le b_2,\\, c_1<Z\\le c_2)\\] equals \\(F(a_2,b_2,c_2)-F(a_1,b_2,c_2)-F(a_2,b_1,c_2)-F(a_2,b_2,c_1)+F(a_1,b_1,c_2)+F(a_1,b_2,c_1)+F(a_2,b_1,c_1)-F(a_1,b_1,c_1)\\).",
@@ -85,7 +86,7 @@
     "proof": [
       "Suppose the event definition holds. Taking \\(A=(-\\infty,a]\\) and \\(B=(-\\infty,b]\\) gives \\(F(a,b)=F_X(a)F_Y(b)\\). Conversely, if the cdfs factor, the rectangle formula becomes \\[P(a_1<X\\le a_2,\\, b_1<Y\\le b_2)=\\big(F_X(a_2)-F_X(a_1)\\big)\\big(F_Y(b_2)-F_Y(b_1)\\big),\\] because the alternating sum of products factors as a difference in \\(a\\) times a difference in \\(b\\). Finite disjoint unions of rectangles therefore factor, and monotone limits extend the identity from rectangles to the events used in computations with random variables.",
       "If \\(X\\) and \\(Y\\) are discrete and \\(p(x,y)=p_X(x)p_Y(y)\\) for every pair, then for any sets \\(A\\) and \\(B\\) \\[P(X\\in A,\\, Y\\in B)=\\sum_{x\\in A}\\sum_{y\\in B} p_X(x)p_Y(y)=P(X\\in A)P(Y\\in B).\\] Conversely, singleton sets recover \\(p(x,y)=p_X(x)p_Y(y)\\).",
-      "If a joint density equals the product of the marginal densities, integrating over \\(A\\times B\\) gives the event definition. Conversely, independence gives \\(F(a,b)=F_X(a)F_Y(b)\\), and differentiating both sides where the densities are continuous produces \\(f(x,y)=f_X(x)f_Y(y)\\).",
+      "If a joint density equals the product of the marginal densities, integrating over \\(A\\times B\\) gives the event definition. Conversely, independence says that the joint density and the product \\(f_X(x)f_Y(y)\\) assign the same probability to every rectangle. The standard uniqueness property of densities then gives \\(f(x,y)=f_X(x)f_Y(y)\\) almost everywhere. This argument does not assume continuity of the densities.",
       "Suppose \\(f(x,y)=g(x)h(y)\\) almost everywhere, with \\(G=\\int g\\) and \\(H=\\int h\\). Then \\(GH=\\iint f=1\\), \\(f_X(x)=g(x)H\\) and \\(f_Y(y)=G h(y)\\), so \\(f_X(x)f_Y(y)=g(x)h(y)=f(x,y)\\). The previous step yields independence. If the positive set of \\(f\\) is contained in a rectangle and \\(f\\) factors there, multiply \\(g\\) and \\(h\\) by the indicators of the two sides: the product still equals \\(f\\) off the rectangle, where both sides are zero.",
       "Now let \\(f\\) be positive exactly on the open triangle \\(T=\\{x>0,\\ y>0,\\ x+y<1\\}\\). The event \\(\\{X\\ge 1/2,\\ Y\\ge 1/2\\}\\) lies outside \\(T\\), so it has probability \\(0\\), while \\(P(X\\ge 1/2)P(Y\\ge 1/2)>0\\) since \\(T\\cap\\{x>1/2\\}\\) and \\(T\\cap\\{y>1/2\\}\\) also have positive area. The event definition fails on a pair of events of positive probability, so no almost-everywhere factorisation exists and the coordinates are not independent. \\(\\square\\)"
     ],
@@ -130,17 +131,17 @@
     "summary": "Independence turns the law of a sum into a convolution. Poisson rates add, binomial counts with a shared success probability add, gamma shapes with a shared rate add, the sum of two independent uniform random variables has a triangular density, and independent normals add in both mean and variance.",
     "intuition": "A sum can land at a value in many ways, one for each way of splitting that value between the two summands. Independence makes those splits multiply, and adding the splits is convolution.",
     "definition": [
-      "The convolution of pmfs \\(p_X\\) and \\(p_Y\\) is \\((p_X\\ast p_Y)(k)=\\sum_j p_X(j)p_Y(k-j)\\), summed over every integer \\(j\\) at which the summand can be nonzero. The convolution of densities is \\((f_X\\ast f_Y)(a)=\\int_{-\\infty}^{\\infty} f_X(a-y)f_Y(y)\\,dy\\).",
+      "Let \\(S_X\\) be a finite or countable set with \\(P(X\\in S_X)=1\\). The convolution of discrete mass functions is \\[(p_X\\ast p_Y)(z)=\\sum_{x\\in S_X}p_X(x)p_Y(z-x),\\qquad z\\in\\mathbb R,\\] where a mass function is zero outside its support. The summation variable need not be an integer. For integer-valued variables this is the usual \\(\\sum_{j\\in\\mathbb Z}p_X(j)p_Y(z-j)\\). The convolution of densities is \\((f_X\\ast f_Y)(a)=\\int_{-\\infty}^{\\infty}f_X(a-y)f_Y(y)\\,dy\\).",
       "Write \\(X\\sim\\mathrm{Poisson}(\\lambda)\\) for the pmf \\(e^{-\\lambda}\\lambda^k/k!\\) on \\(k=0,1,2,\\dots\\). Write \\(X\\sim\\mathrm{Bin}(n,p)\\) for \\(\\binom{n}{k}p^k(1-p)^{n-k}\\). The gamma density with shape \\(\\alpha>0\\) and rate \\(\\lambda>0\\) is \\(\\lambda e^{-\\lambda x}(\\lambda x)^{\\alpha-1}/\\Gamma(\\alpha)\\) for \\(x>0\\), where \\(\\Gamma(\\alpha)=\\int_0^{\\infty} t^{\\alpha-1}e^{-t}\\,dt\\). An exponential random variable of rate \\(\\lambda\\) is gamma\\((1,\\lambda)\\). A normal random variable \\(N(\\mu,\\sigma^2)\\) has density \\((2\\pi\\sigma^2)^{-1/2}\\exp\\big(-(x-\\mu)^2/(2\\sigma^2)\\big)\\)."
     ],
-    "theorem": "If \\(X\\) and \\(Y\\) are independent and discrete, then \\(P(X+Y=k)=\\sum_j p_X(j)p_Y(k-j)\\). If they are independent and have densities, then \\[f_{X+Y}(a)=\\int_{-\\infty}^{\\infty} f_X(a-y)f_Y(y)\\,dy,\\] provided the integral is continuous at \\(a\\), which holds for the densities used below. Consequently: if \\(X\\sim\\mathrm{Poisson}(\\lambda_1)\\) and \\(Y\\sim\\mathrm{Poisson}(\\lambda_2)\\) are independent, then \\(X+Y\\sim\\mathrm{Poisson}(\\lambda_1+\\lambda_2)\\); if \\(X\\sim\\mathrm{Bin}(n,p)\\) and \\(Y\\sim\\mathrm{Bin}(m,p)\\) are independent with the same \\(p\\), then \\(X+Y\\sim\\mathrm{Bin}(n+m,p)\\); if \\(X\\sim\\mathrm{gamma}(\\alpha,\\lambda)\\) and \\(Y\\sim\\mathrm{gamma}(\\beta,\\lambda)\\) are independent with the same rate, then \\(X+Y\\sim\\mathrm{gamma}(\\alpha+\\beta,\\lambda)\\); if \\(X\\) and \\(Y\\) are independent and uniform on \\((0,1)\\), then \\(f_{X+Y}(a)=a\\) for \\(0<a\\le 1\\), \\(f_{X+Y}(a)=2-a\\) for \\(1<a<2\\), and \\(f_{X+Y}(a)=0\\) otherwise; if \\(X\\sim N(\\mu_1,\\sigma_1^2)\\) and \\(Y\\sim N(\\mu_2,\\sigma_2^2)\\) are independent, then \\[X+Y\\sim N(\\mu_1+\\mu_2,\\,\\sigma_1^2+\\sigma_2^2).\\]",
+    "theorem": "If \\(X\\) and \\(Y\\) are independent and discrete, then for every real \\(z\\), \\(P(X+Y=z)=\\sum_{x\\in S_X}p_X(x)p_Y(z-x)\\), where \\(S_X\\) is a countable support of \\(X\\). If they are independent and have densities, then \\[f_{X+Y}(a)=\\int_{-\\infty}^{\\infty} f_X(a-y)f_Y(y)\\,dy,\\] provided the integral is continuous at \\(a\\), which holds for the densities used below. Consequently: if \\(X\\sim\\mathrm{Poisson}(\\lambda_1)\\) and \\(Y\\sim\\mathrm{Poisson}(\\lambda_2)\\) are independent, then \\(X+Y\\sim\\mathrm{Poisson}(\\lambda_1+\\lambda_2)\\); if \\(X\\sim\\mathrm{Bin}(n,p)\\) and \\(Y\\sim\\mathrm{Bin}(m,p)\\) are independent with the same \\(p\\), then \\(X+Y\\sim\\mathrm{Bin}(n+m,p)\\); if \\(X\\sim\\mathrm{gamma}(\\alpha,\\lambda)\\) and \\(Y\\sim\\mathrm{gamma}(\\beta,\\lambda)\\) are independent with the same rate, then \\(X+Y\\sim\\mathrm{gamma}(\\alpha+\\beta,\\lambda)\\); if \\(X\\) and \\(Y\\) are independent and uniform on \\((0,1)\\), then \\(f_{X+Y}(a)=a\\) for \\(0<a\\le 1\\), \\(f_{X+Y}(a)=2-a\\) for \\(1<a<2\\), and \\(f_{X+Y}(a)=0\\) otherwise; if \\(X\\sim N(\\mu_1,\\sigma_1^2)\\) and \\(Y\\sim N(\\mu_2,\\sigma_2^2)\\) are independent, then \\[X+Y\\sim N(\\mu_1+\\mu_2,\\,\\sigma_1^2+\\sigma_2^2).\\]",
     "hypotheses": [
       "Every closure statement assumes independence. The convolution formulas also assume that one is using the marginal pmf or density of each summand.",
       "The binomial sum requires one common success probability. The gamma sum requires one common rate. Shapes add only when the rates agree, and counts add in the binomial family only when the success probabilities agree.",
       "Differentiating under the integral in the continuous convolution is justified when the marginal densities are piecewise continuous, as they are for the uniform and normal laws and for gamma laws with shape at least 1, at every continuity point of the resulting density. For gamma shapes below 1 the density is unbounded at 0, and the closure result still holds by evaluating the convolution integral directly."
     ],
     "proof": [
-      "For discrete independent \\(X\\) and \\(Y\\), condition on the value of \\(X\\): \\(P(X+Y=k)=\\sum_j P(X=j,\\, Y=k-j)=\\sum_j P(X=j)P(Y=k-j)\\), which is the discrete convolution.",
+      "For discrete independent \\(X\\) and \\(Y\\), the events \\(\\{X=x,Y=z-x\\}\\), indexed by \\(x\\in S_X\\), are disjoint and exhaust \\(\\{X+Y=z\\}\\) up to an event of probability zero. Countable additivity and independence give \\[P(X+Y=z)=\\sum_{x\\in S_X}P(X=x,Y=z-x)=\\sum_{x\\in S_X}p_X(x)p_Y(z-x).\\] For example, if both variables equal \\(1/2\\) with probability 1, the term \\(x=1/2\\) gives \\(P(X+Y=1)=1\\). An integer-only sum would miss that term.",
       "Let \\(X\\sim\\mathrm{Poisson}(\\lambda_1)\\) and \\(Y\\sim\\mathrm{Poisson}(\\lambda_2)\\) be independent, and set \\(k\\ge 0\\). The convolution runs over \\(j=0,\\dots,k\\): \\[P(X+Y=k)=\\sum_{j=0}^k e^{-\\lambda_1}\\frac{\\lambda_1^j}{j!}\\, e^{-\\lambda_2}\\frac{\\lambda_2^{k-j}}{(k-j)!}=e^{-(\\lambda_1+\\lambda_2)}\\sum_{j=0}^k \\frac{\\lambda_1^j\\lambda_2^{k-j}}{j!\\,(k-j)!}.\\] Multiply and divide by \\(k!\\): that sum equals \\(\\sum_{j=0}^k\\binom{k}{j}\\lambda_1^j\\lambda_2^{k-j}/k!=(\\lambda_1+\\lambda_2)^k/k!\\) by the binomial theorem. Therefore \\(P(X+Y=k)=e^{-(\\lambda_1+\\lambda_2)}(\\lambda_1+\\lambda_2)^k/k!\\).",
       "If \\(X\\sim\\mathrm{Bin}(n,p)\\) and \\(Y\\sim\\mathrm{Bin}(m,p)\\) are independent, the same split gives \\[P(X+Y=k)=\\sum_j \\binom{n}{j}p^j(1-p)^{n-j}\\binom{m}{k-j}p^{k-j}(1-p)^{m-k+j},\\] with the convention that a binomial coefficient is 0 when the bottom index is outside \\(\\{0,\\dots,\\text{top}\\}\\). The powers of \\(p\\) and \\(1-p\\) collect into \\(p^k(1-p)^{n+m-k}\\), and Vandermonde’s identity \\(\\sum_j \\binom{n}{j}\\binom{m}{k-j}=\\binom{n+m}{k}\\) supplies the remaining factor. Combinatorially, the number of ways to choose \\(k\\) positions out of \\(n+m\\) equals the sum over \\(j\\) of the ways to choose \\(j\\) of them from the first \\(n\\).",
       "For independent densities, \\(F_{X+Y}(a)=P(X+Y\\le a)=\\int_{-\\infty}^{\\infty} f_Y(y)\\Big(\\int_{-\\infty}^{a-y} f_X(x)\\,dx\\Big)dy=\\int_{-\\infty}^{\\infty} f_Y(y)F_X(a-y)\\,dy\\). Differentiating in \\(a\\) by the fundamental theorem, at a continuity point of the integrand’s integral, produces \\(f_{X+Y}(a)=\\int_{-\\infty}^{\\infty} f_X(a-y)f_Y(y)\\,dy\\).",
@@ -240,7 +241,8 @@
       "R06"
     ],
     "results": [
-      "linearity-of-expectation"
+      "linearity-of-expectation",
+      "order-statistic-law"
     ],
     "summary": "For iid random variables the cdf of the maximum is the common cdf raised to the \\(n\\)th power, and the cdf of the minimum is one minus the \\(n\\)th power of the common survival function. The minimum of independent exponentials is exponential with rate equal to the sum of the rates. The joint density of the minimum and the maximum is explicit, and for \\(n\\) independent uniforms on \\([0,1]\\) the expected range is \\((n-1)/(n+1)\\).",
     "intuition": "The maximum is at most \\(u\\) only when every sample point is at most \\(u\\), and independence turns that into a product. The minimum has failed to exceed \\(u\\) as soon as any one sample point has done so.",
@@ -283,5 +285,115 @@
     "caution": "The survival formula \\(P(V>v)=(1-F(v))^n\\) uses a strict inequality and the cdf value \\(F(v)=P(X_i\\le v)\\). Replacing it by \\(F(v)^n\\) computes the cdf of the maximum, not the minimum. A second boundary is dependence: the identity \\(P(\\min_i X_i>t)=\\prod_i P(X_i>t)\\) requires independence. If \\(X_2=X_1\\) with \\(X_1\\) exponential of rate \\(\\lambda\\), the minimum equals \\(X_1\\) and still has rate \\(\\lambda\\), whereas independence would have given rate \\(2\\lambda\\).",
     "bridge": "These exact laws for a finite iid sample are the finite-\\(n\\) input to approximation theorems about extremes, while the convolution laws of the previous lessons remain the tool for sums.",
     "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 6 (order statistics)."
+  },
+  {
+    "id": "J06",
+    "title": "Joint transformations and Jacobians",
+    "cluster": "Joint distributions",
+    "question": "How does a change of two coordinates alter both density and support?",
+    "prerequisites": [
+      "J02",
+      "J03",
+      "R08"
+    ],
+    "results": [
+      "joint-change-of-variables",
+      "change-of-variables",
+      "factorisation-criterion"
+    ],
+    "summary": "For a smooth one-to-one transformation of a pair, evaluate the old density at the inverse coordinates and multiply by the absolute determinant of the inverse Jacobian. The transformed support is part of the answer. Ignoring it can turn dependent coordinates into a false independence claim.",
+    "intuition": "A coordinate change distorts small areas. A region with the same probability may occupy more or less area in the new coordinates, so its density must change by the inverse area scale.",
+    "definition": [
+      "Let \\((X,Y)\\) have joint density \\(f_{X,Y}\\) on an open region \\(D\\), with probability 1 in \\(D\\). Set \\((U,V)=T(X,Y)\\). To use a single inverse, require \\(T\\) to be one-to-one on \\(D\\), continuously differentiable, and to have a nonzero determinant there. Write the inverse as \\((x,y)=H(u,v)\\).",
+      "The inverse Jacobian determinant is \\[J_H(u,v)=\\det\\begin{pmatrix}\\partial x/\\partial u&\\partial x/\\partial v\\\\ \\partial y/\\partial u&\\partial y/\\partial v\\end{pmatrix}=\\frac{\\partial x}{\\partial u}\\frac{\\partial y}{\\partial v}-\\frac{\\partial x}{\\partial v}\\frac{\\partial y}{\\partial u}.\\] The multivariable change-of-variables theorem is a calculus prerequisite quoted here. Its area factor is \\(|J_H|\\).",
+      "Find the new support \\(T(D)\\) by substituting the inverse expressions into every inequality defining \\(D\\). A formula in \\(u,v\\) without these restrictions does not specify a density.",
+      "If a map is many-to-one, one inverse branch is insufficient. When the original region can be partitioned into finitely many smooth one-to-one branches, apart from sets of probability zero, add their density contributions at each new point. Singular maps such as \\((X,Y)\\mapsto(X,X)\\) need a different description and need not have a two-dimensional density."
+    ],
+    "theorem": "Under the one-to-one smoothness and nonzero-determinant conditions above, \\[(U,V)=T(X,Y)\\quad\\Longrightarrow\\quad f_{U,V}(u,v)=f_{X,Y}(H(u,v))|J_H(u,v)|\\] for \\((u,v)\\in T(D)\\), and the density is zero outside \\(T(D)\\). The density is defined up to changes on sets of area zero. To obtain the density of \\(U\\) alone, integrate this joint density over all \\(v\\) allowed by the transformed support.",
+    "hypotheses": [
+      "\\((X,Y)\\) has a joint density and \\(P((X,Y)\\in D)=1\\). The theorem assumes a continuously differentiable bijection from \\(D\\) onto \\(T(D)\\), with a continuously differentiable inverse and nonzero determinant.",
+      "The inverse and its determinant must be evaluated at the new coordinates. If instead the forward determinant is used, take its reciprocal at the inverse point.",
+      "Independence of the original coordinates is optional. Independence of the new coordinates must be checked from their complete joint law, including support."
+    ],
+    "proof": [
+      "For a region \\(A\\subseteq T(D)\\), the event \\(\\{(U,V)\\in A\\}\\) is \\(\\{(X,Y)\\in H(A)\\}\\). Hence \\[P((U,V)\\in A)=\\iint_{H(A)}f_{X,Y}(x,y)\\,dx\\,dy.\\]",
+      "The quoted calculus change-of-variables theorem changes this integral to \\[\\iint_A f_{X,Y}(H(u,v))|J_H(u,v)|\\,du\\,dv.\\] Thus the integrand is the new density. With \\(A=T(D)\\), the integral is 1. Outside \\(T(D)\\), the probability is zero.",
+      "If finitely many one-to-one regions contribute to the same transformed point, their preimage events are disjoint. Additivity adds the corresponding integrals and therefore the branch densities. This explains why choosing only one square-root branch, for example, can lose probability. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "Let \\(X,Y\\) be independent exponential variables with a common rate \\(\\lambda>0\\). Set \\(U=X+Y\\) and \\(V=X/(X+Y)\\). Find their joint density and decide whether \\(U,V\\) are independent.",
+      "steps": [
+        "The inverse is \\(x=uv\\), \\(y=u(1-v)\\). The conditions \\(x>0,y>0\\) become \\(u>0\\) and \\(0<v<1\\), a rectangular product of intervals.",
+        "The determinant is \\(v(-u)-u(1-v)=-u\\), so its absolute value is \\(u\\). The old density at the inverse point is \\(\\lambda^2e^{-\\lambda uv}e^{-\\lambda u(1-v)}=\\lambda^2e^{-\\lambda u}\\). Thus \\(f_{U,V}(u,v)=\\lambda^2u e^{-\\lambda u}\\) on the stated support.",
+        "The joint density factors as the gamma density with shape 2 and rate \\(\\lambda\\), multiplied by the uniform density 1 on \\((0,1)\\). Each factor integrates to 1. By the factorisation criterion, \\(U,V\\) are independent, with these respective laws."
+      ],
+      "conclusion": "The total waiting time has law \\(\\operatorname{gamma}(2,\\lambda)\\), and the fraction contributed by the first wait is independent and uniform on \\((0,1)\\)."
+    },
+    "practice": {
+      "prompt": "Now let \\(X,Y\\) be independent uniform variables on \\((0,1)\\), and use the same \\(U=X+Y\\), \\(V=X/(X+Y)\\). Find the transformed support and joint density. Then find the marginal density of \\(V\\) and decide whether it is uniform.",
+      "hints": [
+        "The inverse and Jacobian are unchanged. Translate \\(0<uv<1\\) and \\(0<u(1-v)<1\\).",
+        "For a fixed \\(v\\in(0,1)\\), integrate \\(u\\) from 0 to \\(1/\\max(v,1-v)\\)."
+      ],
+      "answer": "The support is \\(0<v<1\\), \\(0<u<\\min(1/v,1/(1-v))=1/\\max(v,1-v)\\). The original density is 1 on the unit square, so \\(f_{U,V}(u,v)=u\\) on this support and zero elsewhere. Therefore \\[f_V(v)=\\int_0^{1/\\max(v,1-v)}u\\,du=\\frac1{2\\max(v,1-v)^2},\\quad0<v<1.\\] Equivalently it is \\(1/(2(1-v)^2)\\) below \\(1/2\\) and \\(1/(2v^2)\\) above \\(1/2\\). Each half integrates to \\(1/2\\), so total mass is 1, but the density is not constant. The coordinates are also dependent. For \\(U>3/2\\), both inequalities force \\(1/3<V<2/3\\), while the marginal law gives positive probability outside that interval."
+    },
+    "caution": "The determinant can be negative. Its absolute value preserves a nonnegative density. Even when the displayed expression factors algebraically, a nonrectangular support can prevent independence. A transformation of two coordinates needs two output coordinates before a two-dimensional Jacobian formula applies.",
+    "bridge": "Order statistics also transform collections of observations. Their permutations create multiple branches, which counting will handle directly.",
+    "reference": "Background reading: Introduction to Probability, Statistics, and Random Processes, Section 6.1.5 (random vectors and transformations)."
+  },
+  {
+    "id": "J07",
+    "title": "General order statistics and sample medians",
+    "cluster": "Joint distributions",
+    "question": "What is the distribution of the kth smallest observation in an independent sample?",
+    "prerequisites": [
+      "J05",
+      "D04",
+      "R09",
+      "R02"
+    ],
+    "results": [
+      "order-statistic-law",
+      "beta-moments",
+      "tail-formula"
+    ],
+    "summary": "The \\(k\\)th order statistic is at most \\(x\\) exactly when at least \\(k\\) observations are at most \\(x\\). This converts its CDF into a binomial tail. For a uniform sample its density is beta, which gives exact moments and median probabilities.",
+    "intuition": "Fix a threshold and count observations below it. The rank question becomes a success-count question before any differentiation is needed.",
+    "definition": [
+      "For a sample \\(X_1,\\ldots,X_n\\), write its sorted values as \\(X_{(1)}\\le\\cdots\\le X_{(n)}\\), retaining repeated values. The variable \\(X_{(k)}\\) is the \\(k\\)th order statistic. The parentheses indicate rank, not the original observation label.",
+      "The minimum is \\(X_{(1)}\\), and the maximum is \\(X_{(n)}\\). If \\(n=2m+1\\), the sample median is \\(X_{(m+1)}\\). For even sample sizes, a median defined as the average of the two middle values is a different random variable from either one alone.",
+      "For iid observations with CDF \\(F\\), the count \\(N_x=\\sum_{i=1}^n\\mathbf1_{\\{X_i\\le x\\}}\\) has law \\(\\operatorname{Bin}(n,F(x))\\). This remains true for a discrete parent distribution. A common density is needed only for the density formula below."
+    ],
+    "theorem": "Let \\(X_1,\\ldots,X_n\\) be iid with CDF \\(F\\), where \\(1\\le k\\le n\\). Then \\[P(X_{(k)}\\le x)=\\sum_{j=k}^n\\binom nj F(x)^j(1-F(x))^{n-j}.\\] If the parent has density \\(f\\), the order statistic has density \\[f_{(k)}(x)=\\frac{n!}{(k-1)!(n-k)!}F(x)^{k-1}(1-F(x))^{n-k}f(x).\\] In particular, for iid uniforms on \\((0,1)\\), \\[X_{(k)}\\sim\\operatorname{Beta}(k,n+1-k),\\quad E[X_{(k)}]=\\frac{k}{n+1},\\quad \\operatorname{Var}(X_{(k)})=\\frac{k(n+1-k)}{(n+1)^2(n+2)}.\\]",
+    "hypotheses": [
+      "The sample size \\(n\\) is a fixed positive integer and the rank \\(k\\) is an integer from 1 to \\(n\\). The observations are independent with a common CDF.",
+      "The CDF formula allows ties. The density formula requires a parent density and holds wherever the relevant derivatives exist, hence almost everywhere.",
+      "The beta law and the displayed moments are for a uniform parent on the unit interval. A different parent generally has different order-statistic moments."
+    ],
+    "proof": [
+      "The event \\(X_{(k)}\\le x\\) says that at least \\(k\\) observations are at most \\(x\\). Each indicator has success probability \\(F(x)\\), and independence makes their sum binomial. Its upper tail gives the CDF formula.",
+      "For the derivative, put \\(u=F(x)\\). Differentiate \\(\\sum_{j=k}^n\\binom nj u^j(1-u)^{n-j}\\). The identities \\(j\\binom nj=n\\binom{n-1}{j-1}\\) and \\((n-j)\\binom nj=n\\binom{n-1}{j}\\) turn the derivative into two sums. They cancel term by term except for \\[n\\binom{n-1}{k-1}u^{k-1}(1-u)^{n-k}.\\] Multiplying by \\(F'(x)=f(x)\\) gives the density. Terms with a zero coefficient at an endpoint are omitted before differentiation.",
+      "For the uniform parent, \\(F(x)=x\\) and \\(f(x)=1\\) on \\((0,1)\\). The coefficient is \\(1/B(k,n+1-k)\\), by the factorial formula in R09. Thus the density is beta, and its mean and variance follow from the beta moment formulas. Taking \\(k=1\\) or \\(k=n\\) recovers the extreme-value formulas in J05. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "Five independent sensors report fractions uniformly distributed on \\((0,1)\\). Let \\(M\\) be their median. Find its density, mean, variance, and \\(P(M\\le1/4)\\).",
+      "steps": [
+        "The median is rank 3 out of 5. Hence \\(M\\sim\\operatorname{Beta}(3,3)\\), with density \\(30x^2(1-x)^2\\) on \\((0,1)\\).",
+        "The mean is \\(3/6=1/2\\), and the variance is \\(3\\cdot3/(6^2\\cdot7)=1/28\\). Symmetry agrees with the mean.",
+        "The event \\(M\\le1/4\\) requires at least three of the five observations to be at most \\(1/4\\). Its probability is \\[\\binom53(1/4)^3(3/4)^2+\\binom54(1/4)^4(3/4)+(1/4)^5=\\frac{90+15+1}{1024}=\\frac{53}{512}.\\]"
+      ],
+      "conclusion": "The median is beta with shapes 3 and 3. Its variance is \\(1/28\\), and its probability of falling below one quarter is about \\(0.10352\\)."
+    },
+    "practice": {
+      "prompt": "Four independent lifetimes are exponential with rate 2. Let \\(W=X_{(2)}\\) be the second failure time. Find \\(P(W>t)\\) for \\(t\\ge0\\), its density for \\(t>0\\), and its mean.",
+      "hints": [
+        "\\(W>t\\) means zero or one lifetimes have ended by \\(t\\). A single lifetime survives to \\(t\\) with probability \\(e^{-2t}\\).",
+        "Use the tail formula \\(E[W]=\\int_0^\\infty P(W>t)\\,dt\\)."
+      ],
+      "answer": "Put \\(q=e^{-2t}\\). The number of failures by \\(t\\) is binomial with parameters 4 and \\(1-q\\). Thus \\(P(W>t)=q^4+4(1-q)q^3=4e^{-6t}-3e^{-8t}\\) for \\(t\\ge0\\). Differentiating the negative survival function gives \\(f_W(t)=24e^{-6t}-24e^{-8t}=24(1-e^{-2t})e^{-6t}\\) for \\(t>0\\), and zero otherwise. The tail integral is \\(E[W]=4/6-3/8=7/24\\). The second failure time is not the sum of two original lifetimes; the ranks depend on the whole sample."
+    },
+    "caution": "The density formula counts observations on both sides of the rank. Using \\(F(x)^k\\) would give the CDF of a maximum of \\(k\\) observations, not the \\(k\\)th smallest of \\(n\\). A discrete parent can have ties, so use the binomial CDF formula rather than differentiating a step function.",
+    "bridge": "Order statistics select values by rank. Expectation identities and inequalities next summarize functions of observations without requiring their whole transformed distribution.",
+    "reference": "Background reading: Probability, Mathematical Statistics, and Stochastic Processes, Random Samples, Order Statistics."
   }
 ]

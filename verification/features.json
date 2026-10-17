@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "shared": [
+    "package*.json",
+    "vite.config.ts",
+    "tsconfig.json",
+    "app/layout.tsx",
+    "app/StudyApp.tsx",
+    "app/**/page.tsx",
+    "src/App.tsx",
+    "src/theme.css",
+    "src/MathText.tsx",
+    "src/mathBreaks.ts",
+    "src/routes.ts",
+    "src/state.ts",
+    "src/progress.ts",
+    "src/LessonPage.tsx",
+    "src/content/**",
+    "scripts/**",
+    ".github/**",
+    ".openai/**",
+    "build/**",
+    "verification/**",
+    ".agents/**",
+    ".cursor/skills/verify-probability/**",
+    "next.config.ts",
+    "biome.json"
+  ],
+  "features": [
+    {
+      "id": "home",
+      "purpose": "Start, resume and understand the course boundary.",
+      "owners": [
+        "src/AtlasViews.tsx"
+      ]
+    },
+    {
+      "id": "lessons",
+      "purpose": "Read complete mathematics, navigate prerequisites and search concepts.",
+      "owners": [
+        "src/LessonPage.tsx",
+        "src/Sidebar.tsx"
+      ]
+    },
+    {
+      "id": "practice",
+      "purpose": "Attempt bounded practice, reveal hints and study chapter checkpoints.",
+      "owners": [
+        "src/AtlasViews.tsx",
+        "src/StudyViews.tsx",
+        "src/LessonPage.tsx"
+      ]
+    },
+    {
+      "id": "reference",
+      "purpose": "Look up results, conditions and distribution parameters.",
+      "owners": [
+        "src/AtlasViews.tsx",
+        "src/StudyViews.tsx"
+      ]
+    },
+    {
+      "id": "routing",
+      "purpose": "Use deep links, history, keyboard navigation and the mobile drawer.",
+      "owners": [
+        "src/Sidebar.tsx"
+      ]
+    },
+    {
+      "id": "labs",
+      "purpose": "Predict, change controls and compare numerical and chart results.",
+      "owners": [
+        "src/Labs.tsx",
+        "src/math/**"
+      ]
+    },
+    {
+      "id": "progress",
+      "purpose": "Preserve guest marks and honest self-ratings through reloads.",
+      "owners": [
+        "src/progress.ts",
+        "src/progress*.test.ts"
+      ]
+    },
+    {
+      "id": "accounts",
+      "purpose": "Sign in, isolate cloud progress, import guest marks and recover failed saves.",
+      "owners": [
+        "src/AccountPanel.tsx",
+        "src/progress.ts",
+        "server/**",
+        "app/api/**",
+        "app/chatgpt-auth.ts",
+        "db/**",
+        "drizzle/**"
+      ]
+    }
+  ]
+}

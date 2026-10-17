@@ -7,7 +7,9 @@
     "prerequisites": [
       "D01"
     ],
-    "results": [],
+    "results": [
+      "fundamental-theorem-calculus"
+    ],
     "summary": "A continuous random variable is described by a density: a nonnegative function that integrates to 1. Probabilities are areas under that curve, the distribution function is the running area from the left, and every single point has probability 0.",
     "intuition": "Probability is area under the density. The height \\(f(x)\\) records how tightly that area is packed near \\(x\\), so the height itself need not be smaller than 1.",
     "definition": [
@@ -237,7 +239,7 @@
       "Let \\(0<p<1\\) and let \\(S_n\\) be binomial with parameters \\(n\\) and \\(p\\): \\(P(S_n=k)=\\binom{n}{k} p^k (1-p)^{n-k}\\) for \\(k=0,1,\\ldots,n\\). Then \\(E[S_n]=np\\) and \\(\\operatorname{Var}(S_n)=np(1-p)\\). Write \\(\\mu=np\\) and \\(\\sigma=\\sqrt{np(1-p)}\\).",
       "The continuity correction matches the bar of height \\(P(S_n=k)\\), which sits over the unit interval centred at the integer \\(k\\), with normal area on that interval. For integers \\(c\\le d\\) and \\(Y\\sim N(\\mu,\\sigma^2)\\), \\[P(S_n=c)\\approx P(c-1/2<Y<c+1/2),\\] \\[P(S_n\\le c)\\approx P(Y\\le c+1/2),\\qquad P(S_n\\ge c)\\approx P(Y\\ge c-1/2),\\] and \\(P(c\\le S_n\\le d)\\approx P(c-1/2<Y<d+1/2)\\). In standardised form the last of these is \\(\\Phi((d+1/2-\\mu)/\\sigma)-\\Phi((c-1/2-\\mu)/\\sigma)\\).",
       "Two different limits hide inside the binomial family. If \\(p\\) stays fixed in \\((0,1)\\) and \\(n\\to\\infty\\), the standardised count approaches a normal. If instead \\(p\\) shrinks so that \\(np\\to\\lambda\\in(0,\\infty)\\), the count approaches a Poisson random variable with mean \\(\\lambda\\). The Poisson approximation compares two integer-valued laws, so it uses no continuity correction.",
-      "A practical rule of thumb for the normal approximation is \\(np(1-p)\\ge 10\\). Because \\(\\min(np,n(1-p))=np(1-p)/\\max(p,1-p)\\) and the denominator is at most 1, this single inequality forces both \\(np\\ge 10\\) and \\(n(1-p)\\ge 10\\). When \\(np(1-p)<10\\), especially when \\(p\\) is small and \\(\\lambda=np\\) is moderate, the Poisson approximation is the appropriate one."
+      "A practical rule of thumb for the normal approximation is \\(np(1-p)\\ge 10\\). Because \\(\\min(np,n(1-p))=np(1-p)/\\max(p,1-p)\\) and the denominator is at most 1, this inequality forces both \\(np\\ge 10\\) and \\(n(1-p)\\ge 10\\). Failure of this rule does not select another model. A Poisson approximation is useful in a rare-success regime with small \\(p\\), large \\(n\\), and a suitable mean \\(np\\). When \\(p\\) is near 1, consider the failure count \\(n-S_n\\), whose success probability is \\(1-p\\), or use the exact binomial law. Accuracy still depends on the event being estimated."
     ],
     "theorem": "De Moivre-Laplace theorem. Let \\(0<p<1\\) be fixed and let \\(S_n\\) be binomial with parameters \\(n\\) and \\(p\\). For any fixed real numbers \\(a<b\\), \\[\\lim_{n\\to\\infty} P\\left(a\\le \\frac{S_n-np}{\\sqrt{np(1-p)}}\\le b\\right)=\\Phi(b)-\\Phi(a).\\] One-sided statements follow by sending an endpoint to \\(\\pm\\infty\\), using \\(\\Phi(z)\\to 1\\) as \\(z\\to\\infty\\) and \\(\\Phi(z)\\to 0\\) as \\(z\\to-\\infty\\).",
     "hypotheses": [
@@ -264,14 +266,15 @@
       "conclusion": "\\(P(20\\le X\\le 35)\\approx 0.8464\\) by the normal approximation with continuity correction. For the rare failures, the Poisson approximation gives \\(P(Y=0)\\approx e^{-2}\\)."
     },
     "practice": {
-      "prompt": "Each of 625 invited readers replies independently with probability \\(1/5\\). Let \\(X\\) be the number of replies. Using a continuity correction and \\(\\Phi(1.55)=0.9394\\), approximate \\(P(110\\le X\\le 140)\\). Explain why a Poisson approximation is a weaker choice for this count.",
+      "prompt": "Each of 625 invited readers replies independently with probability \\(1/5\\). Let \\(X\\) be the number of replies. Using a continuity correction and \\(\\Phi(1.55)=0.9394\\), approximate \\(P(110\\le X\\le 140)\\). Explain why a Poisson approximation is a weaker choice for this count. Separately, a batch of 10 readers each replies independently with probability \\(0.9\\). Does its variance below 10 justify a Poisson approximation to the reply count? Give an exact expression for the probability that all 10 reply.",
       "hints": [
         "Compute \\(np\\) and \\(np(1-p)\\). The standard deviation is 10, and the continuity correction replaces the integer window by \\((109.5, 140.5)\\).",
-        "A Poisson model with the same mean would have variance equal to that mean. Compare it with \\(np(1-p)\\), and check whether \\(p\\) is small."
+        "A Poisson model with the same mean would have variance equal to that mean. Compare it with \\(np(1-p)\\), and check whether \\(p\\) is small.",
+        "A small variance can come from \\(p\\) near 1. For the second batch compare the reply probability with the rare-success assumption, then use independence for all 10 replies."
       ],
-      "answer": "\\(np=625/5=125\\) and \\(np(1-p)=625\\cdot(1/5)\\cdot(4/5)=100\\ge 10\\), so \\(\\sigma=10\\) and the normal approximation is justified. Then \\((109.5-125)/10=-1.55\\) and \\((140.5-125)/10=1.55\\), hence \\(P(110\\le X\\le 140)\\approx \\Phi(1.55)-\\Phi(-1.55)=0.9394-(1-0.9394)=0.9394-0.0606=0.8788\\). A Poisson approximation with mean 125 would assign variance 125 rather than 100, and \\(p=1/5\\) is not small, so the Poisson limit is the wrong regime."
+      "answer": "\\(np=625/5=125\\) and \\(np(1-p)=625\\cdot(1/5)\\cdot(4/5)=100\\ge 10\\), so \\(\\sigma=10\\) and the normal approximation meets this rule of thumb. Then \\((109.5-125)/10=-1.55\\) and \\((140.5-125)/10=1.55\\), hence \\(P(110\\le X\\le 140)\\approx \\Phi(1.55)-\\Phi(-1.55)=0.9394-(1-0.9394)=0.9394-0.0606=0.8788\\). A Poisson approximation with mean 125 would assign variance 125 rather than 100, and \\(p=1/5\\) is not small, so the Poisson limit is the wrong regime. For the second batch, \\(np(1-p)=10(0.9)(0.1)=0.9\\), but \\(p=0.9\\) is not small. A low variance alone does not justify Poisson. The exact probability of all replies is \\(0.9^{10}\\approx0.34868\\). A Poisson law with mean 9 would give \\(e^{-9}9^{10}/10!\\approx0.11858\\), a poor answer for this event."
     },
-    "caution": "Omitting the continuity correction shifts every endpoint by half a unit before dividing by \\(\\sigma\\). For a single point probability, such as \\(P(X=30)\\) in the die example, that half-unit is the whole approximation: one uses \\(P(29.5<Y<30.5)\\), not the normal density at 30. A second boundary is the rule of thumb. If \\(np(1-p)<10\\), forcing a normal curve, especially onto a count that piles up near 0, misrepresents the skew. Use Poisson there, with no half-unit correction.",
+    "caution": "Omitting the continuity correction shifts every endpoint by half a unit before dividing by \\(\\sigma\\). For a single point probability, use normal area over the unit interval, not the normal density at the point. The threshold \\(np(1-p)\\ge10\\) is a rule of thumb, not an error guarantee. A small variance alone does not justify Poisson: \\(\\operatorname{Bin}(10,0.9)\\) has variance \\(0.9\\), but its success probability is not small. Check the rare-success assumptions. Use the exact binomial when neither approximation is suitable.",
     "bridge": "The normal law approximates a count. The next family is already continuous: the exponential law for a waiting time.",
     "lab": "normal-approximation",
     "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 5 (normal approximation to the binomial)."
@@ -379,7 +382,7 @@
       "answer": "\\(T\\sim\\operatorname{gamma}(2,3)\\), with density \\(f(t)=9 t e^{-3t}\\) for \\(t>0\\). Then \\(E[T]=2/3\\) and \\(\\operatorname{Var}(T)=2/9\\). And \\(P(T>1)=e^{-3}(1+3)=4e^{-3}\\). As a check of the second moment, \\(E[T^2]=\\alpha(\\alpha+1)/\\lambda^2=2\\cdot 3/9=2/3\\), so \\(\\operatorname{Var}(T)=2/3-(2/3)^2=2/3-4/9=2/9\\)."
     },
     "caution": "The factorial in the integer case is \\((n-1)!\\), not \\(n!\\). Using \\(n!\\) in the denominator makes the density fail to integrate to 1. A second boundary is the parameterisation: if a formula was derived for a scale parameter \\(\\theta\\), its mean is \\(\\alpha\\theta\\), which matches \\(\\alpha/\\lambda\\) only after \\(\\theta=1/\\lambda\\). Mixing the two conventions doubles or squares the rate in the wrong place.",
-    "bridge": "The gamma and exponential laws are densities of waiting times. The same cdf-then-differentiate step finds the density of a function of any continuous random variable.",
+    "bridge": "The gamma and exponential laws are densities of waiting times. The cdf method also finds the distribution of a function of a continuous random variable. Differentiate only when the transformed law is absolutely continuous; keep any point masses as cdf jumps.",
     "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 5 (gamma random variables)."
   },
   {
@@ -393,10 +396,10 @@
       "R06"
     ],
     "results": [],
-    "summary": "The distribution function of \\(Y=g(X)\\) is a probability statement about \\(X\\), and the density of \\(Y\\) is its derivative. When \\(g\\) is strictly monotone and differentiable, that derivative collapses to a single formula involving the inverse of \\(g\\). Squaring, affine maps, and the logarithm each illustrate the method.",
+    "summary": "The distribution function of \\(Y=g(X)\\) is a probability statement about \\(X\\). If the law of \\(Y\\) is absolutely continuous, differentiating its cdf recovers a density almost everywhere. For a differentiable strictly monotone map satisfying the conditions below, this gives a formula involving the inverse of \\(g\\). Squaring, affine maps, and the logarithm illustrate the method.",
     "intuition": "Probability is pushed forward by \\(g\\), and the factor \\(|h'(y)|=1/|g'(h(y))|\\) rescales the density so the area is preserved. Where \\(g\\) is steep, a stretch of \\(y\\)-values comes from a short stretch of \\(x\\)-values, so the probability is spread thin and the density of \\(Y\\) is low. Where \\(g\\) is flat, the same stretch of \\(y\\) collects a long stretch of \\(x\\), and the density of \\(Y\\) is high.",
     "definition": [
-      "Let \\(X\\) have density \\(f_X\\) and distribution function \\(F_X\\), and let \\(Y=g(X)\\) for a real function \\(g\\). The cdf method has two steps. First write \\(F_Y(y)=P(Y\\le y)=P(g(X)\\le y)\\) as a probability about \\(X\\), and express it through \\(F_X\\). Then differentiate: wherever the derivative exists, \\(f_Y(y)=F_Y'(y)\\).",
+      "Let \\(X\\) have density \\(f_X\\) and distribution function \\(F_X\\), and let \\(Y=g(X)\\) for a real function \\(g\\). The cdf method has two steps. First write \\(F_Y(y)=P(Y\\le y)=P(g(X)\\le y)\\) as a probability about \\(X\\), and express it through \\(F_X\\). If the law of Y is absolutely continuous, differentiate its cdf to obtain a density: \\(f_Y(y)=F_Y'(y)\\) almost everywhere. A general transformation can create point masses, whose probabilities remain as jumps in the cdf; its derivative alone then does not describe the whole law.",
       "The method does not require \\(g\\) to be one-to-one. If several stretches of \\(x\\) land in the same \\(y\\), the event \\(g(X)\\le y\\) is a union of those stretches, and the derivative accounts for all of them at once.",
       "Two maps are used constantly. If \\(Y=aX+b\\) with \\(a\\ne 0\\), the inverse is \\(x=(y-b)/a\\) and \\[f_Y(y)=f_X\\left(\\frac{y-b}{a}\\right)\\frac{1}{|a|},\\] on the range of the map. If \\(Y=X^2\\), the event \\(Y\\le y\\) is empty for \\(y<0\\); for \\(y>0\\) it is \\(-\\sqrt{y}\\le X\\le\\sqrt{y}\\), which brings in both the positive and the negative square root."
     ],
@@ -434,5 +437,113 @@
     "caution": "The absolute value in the monotone formula is not optional: a decreasing map has a negative derivative, and a density cannot be negative. Applying the one-branch formula to \\(x\\mapsto x^2\\) on an interval that contains both signs drops the probability of the omitted branch, \\(\\int_{x<0}f_X\\) (half the total when the density is symmetric about 0), or double-counts it. Endpoints also need a glance at integrability. The squared-error density \\(1/(4\\sqrt{y})\\) is unbounded near 0, but the integral \\(\\int_0^1 y^{-1/2}\\,dy\\) converges, so an infinite density at a single point is still a genuine density.",
     "bridge": "Every construction above starts from one random variable. When the new variable depends on two inputs at once, the same probability-first step needs a joint density.",
     "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 5 (distribution of a function of a random variable)."
+  },
+  {
+    "id": "R09",
+    "title": "Beta distributions on a bounded interval",
+    "cluster": "Continuous random variables",
+    "question": "How can a density model a random fraction while allowing more shapes than a uniform law?",
+    "prerequisites": [
+      "R02",
+      "R03",
+      "R08"
+    ],
+    "results": [
+      "beta-moments",
+      "fundamental-theorem-calculus"
+    ],
+    "summary": "A beta density is proportional to \\(x^{\\alpha-1}(1-x)^{\\beta-1}\\) on \\((0,1)\\). Its two positive shape parameters control the behavior near the endpoints. A normalizing integral gives its moments without an approximation.",
+    "intuition": "The power of \\(x\\) controls how much density lies near 0, and the power of \\(1-x\\) controls the behavior near 1. Multiplying both shape parameters by the same factor greater than one keeps the mean fixed and decreases the variance.",
+    "definition": [
+      "For \\(\\alpha,\\beta>0\\), define the beta function by \\[B(\\alpha,\\beta)=\\int_0^1 x^{\\alpha-1}(1-x)^{\\beta-1}\\,dx.\\] This integral is finite and strictly positive. Near 0 the integrand is bounded by a constant times \\(x^{\\alpha-1}\\), and near 1 by a constant times \\((1-x)^{\\beta-1}\\). Both endpoint integrals converge for positive parameters.",
+      "The beta distribution with shapes \\(\\alpha,\\beta\\), written \\(X\\sim\\operatorname{Beta}(\\alpha,\\beta)\\), has density \\[f_X(x)=\\frac{x^{\\alpha-1}(1-x)^{\\beta-1}}{B(\\alpha,\\beta)},\\qquad 0<x<1,\\] and zero density elsewhere. It has no atom at either endpoint, even if the density is unbounded there.",
+      "The special case \\(\\operatorname{Beta}(1,1)\\) is uniform on \\((0,1)\\). If \\(\\alpha=\\beta\\), replacing \\(x\\) by \\(1-x\\) leaves the density unchanged, so the law is symmetric about \\(1/2\\). For shapes below 1, a density can increase without bound near an endpoint while its integral remains finite.",
+      "For positive integers \\(m,n\\), \\(B(m,n)=(m-1)!(n-1)!/(m+n-1)!\\). Real positive shapes are allowed too. A bounded physical quantity on \\((a,b)\\) can be represented by \\(a+(b-a)X\\), using the transformation rule of R08."
+    ],
+    "theorem": "If \\(X\\sim\\operatorname{Beta}(\\alpha,\\beta)\\), then for every real \\(s\\ge0\\), \\[E[X^s]=\\frac{B(\\alpha+s,\\beta)}{B(\\alpha,\\beta)}.\\] In particular \\[E[X]=\\frac\\alpha{\\alpha+\\beta},\\qquad \\operatorname{Var}(X)=\\frac{\\alpha\\beta}{(\\alpha+\\beta)^2(\\alpha+\\beta+1)}.\\] Also \\(1-X\\sim\\operatorname{Beta}(\\beta,\\alpha)\\).",
+    "hypotheses": [
+      "Both shape parameters are strictly positive. Values 0 or negative values do not define the density stated here.",
+      "The moment formula is stated for \\(s\\ge0\\), so the moment is finite because \\(0<X<1\\). Negative powers need a separate endpoint-integrability check.",
+      "The mean and variance formulas refer to the standard interval from 0 to 1. A change of interval changes the moments."
+    ],
+    "proof": [
+      "The density integrates to 1 by the definition of \\(B\\). Multiplying it by \\(x^s\\) and integrating gives \\(E[X^s]=B(\\alpha+s,\\beta)/B(\\alpha,\\beta)\\).",
+      "To evaluate the needed ratios, split \\(1=x+(1-x)\\) inside the defining integral. This yields \\(B(\\alpha,\\beta)=B(\\alpha+1,\\beta)+B(\\alpha,\\beta+1)\\). Integrate the derivative of \\(x^\\alpha(1-x)^\\beta\\) on \\((0,1)\\). Its endpoint values are zero and its derivative is integrable for positive \\(\\alpha,\\beta\\), so \\[\\alpha B(\\alpha,\\beta+1)=\\beta B(\\alpha+1,\\beta).\\] Solving these two equations gives \\(B(\\alpha+1,\\beta)=\\alpha B(\\alpha,\\beta)/(\\alpha+\\beta)\\). Interchanging the parameters gives the corresponding recurrence for the second argument.",
+      "The first ratio is therefore \\(\\alpha/(\\alpha+\\beta)\\). Applying the recurrence twice gives \\(E[X^2]=\\alpha(\\alpha+1)/((\\alpha+\\beta)(\\alpha+\\beta+1))\\). Subtracting \\(E[X]^2\\) gives the stated variance. The same recurrences and \\(B(m,1)=1/m\\) give the factorial formula for positive integers.",
+      "For reflection, substitute \\(x=1-y\\). The absolute derivative is 1, and \\(B(\\alpha,\\beta)=B(\\beta,\\alpha)\\) by the same substitution. Thus \\(f_{1-X}(y)=y^{\\beta-1}(1-y)^{\\alpha-1}/B(\\beta,\\alpha)\\) on \\((0,1)\\). \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "A random filled fraction \\(X\\) has law \\(\\operatorname{Beta}(2,3)\\). Find its density, mean, variance, and the probability that it exceeds one half.",
+      "steps": [
+        "The normalizing constant is \\(B(2,3)=1!2!/4!=1/12\\), so \\(f_X(x)=12x(1-x)^2\\) on \\((0,1)\\).",
+        "The mean is \\(2/(2+3)=2/5\\), and the variance is \\(2\\cdot3/(5^2\\cdot6)=1/25\\).",
+        "Integrating the polynomial gives \\(F(x)=6x^2-8x^3+3x^4\\) for \\(0<x<1\\). Hence \\(F(1/2)=3/2-1+3/16=11/16\\), and \\(P(X>1/2)=5/16\\)."
+      ],
+      "conclusion": "The fraction has mean \\(0.4\\), variance \\(0.04\\), and probability \\(5/16\\) of exceeding one half."
+    },
+    "practice": {
+      "prompt": "A density is \\(f(x)=c x^2(1-x)\\) for \\(0<x<1\\) and zero otherwise. Find \\(c\\), identify the beta parameters, compute the mean and variance, and find \\(P(X<1/2)\\).",
+      "hints": [
+        "Match the exponents with \\(\\alpha-1\\) and \\(\\beta-1\\).",
+        "Integrate the polynomial, or reflect the worked example using \\(1-X\\)."
+      ],
+      "answer": "The powers give \\(\\alpha=3\\) and \\(\\beta=2\\). Since \\(\\int_0^1(x^2-x^3)\\,dx=1/3-1/4=1/12\\), normalization requires \\(c=12\\). The mean is \\(3/5\\), and the variance is \\(6/(25\\cdot6)=1/25\\). Direct integration gives \\(P(X<1/2)=12[x^3/3-x^4/4]_0^{1/2}=1/2-3/16=5/16\\). The same answer follows because \\(1-X\\) has law \\(\\operatorname{Beta}(2,3)\\)."
+    },
+    "caution": "The two parameters are shapes, not a mean and a variance. A density above 1, or an unbounded density near 0 or 1, is compatible with total probability 1. Endpoint probabilities remain zero. A beta model describes a distribution of fractions; choosing it does not by itself establish a sampling or inference model.",
+    "bridge": "Sorting a continuous sample produces random fractions with beta laws when the parent distribution is uniform. General order statistics will make this connection precise.",
+    "reference": "Background reading: Probability, Mathematical Statistics, and Stochastic Processes, Special Distributions, The Beta Distribution."
+  },
+  {
+    "id": "R10",
+    "title": "Mixed distributions and point masses",
+    "cluster": "Continuous random variables",
+    "question": "How do we describe a variable that has both a point mass and a continuous range of values?",
+    "prerequisites": [
+      "R02",
+      "R08",
+      "K02"
+    ],
+    "results": [
+      "mixed-law-formulas",
+      "total-probability"
+    ],
+    "summary": "A mixed distribution combines discrete probability masses with a continuous component. Its CDF records both jumps and continuous changes. A derivative alone loses the jumps, so probabilities and expectations must include both parts.",
+    "intuition": "An insurance payment can be exactly zero when no payment is due, yet range continuously over positive amounts when one is due. The zero outcome needs a probability mass. A density describes the other amounts.",
+    "definition": [
+      "Consider a construction that returns a fixed value \\(a\\) with probability \\(w\\), and otherwise draws from a density \\(g\\), with \\(0<w<1\\). The continuous branch has conditional CDF \\(G\\). This describes an atom-plus-density mixed distribution. It is a model construction, so the two branch probabilities sum to 1.",
+      "Its CDF is \\[F_X(x)=w\\,\\mathbf1_{\\{x\\ge a\\}}+(1-w)G(x).\\] The jump at \\(a\\) has height \\(w\\). Away from that jump, the density contribution is \\((1-w)g(x)\\), whose integral is \\(1-w\\), not 1.",
+      "More generally, finitely many atoms \\(a_i\\) with masses \\(w_i\\) and a nonnegative density contribution \\(h\\) define probabilities when \\(\\sum_i w_i+\\int h(x)\\,dx=1\\). Then \\(P(X\\in A)=\\sum_{a_i\\in A}w_i+\\int_A h(x)\\,dx\\) for the events considered here. This lesson treats these mixtures, without claiming that every possible distribution has this form."
+    ],
+    "theorem": "For the atom-plus-density construction and any function \\(\\varphi\\) with \\(w|\\varphi(a)|+(1-w)\\int|\\varphi(x)|g(x)\\,dx<\\infty\\), \\[E[\\varphi(X)]=w\\varphi(a)+(1-w)\\int\\varphi(x)g(x)\\,dx.\\] If the continuous branch has mean \\(\\mu\\) and variance \\(v<\\infty\\), then \\[E[X]=wa+(1-w)\\mu,\\qquad \\operatorname{Var}(X)=(1-w)v+w(1-w)(a-\\mu)^2.\\]",
+    "hypotheses": [
+      "The branch weight satisfies \\(0<w<1\\), the atom is a finite real number, and \\(g\\) is a nonnegative density of total integral 1.",
+      "The expectation formula assumes absolute integrability. The variance formula assumes a finite second moment on the continuous branch.",
+      "The continuous branch contributes zero mass to each individual point. If several discrete branches share a point, their masses must be added there."
+    ],
+    "proof": [
+      "Partition the experiment according to which branch is used. The law of total probability gives \\(P(X\\le x)=w\\mathbf1_{\\{x\\ge a\\}}+(1-w)G(x)\\). For any interval, adding the atom if it lies in the interval and integrating the continuous contribution gives its probability.",
+      "For a simple function \\(\\varphi\\), multiply each output value by the probability of the region on which it occurs. The branch contributions separate into \\(w\\varphi(a)\\) and \\((1-w)\\int\\varphi(x)g(x)\\,dx\\). Nonnegative functions follow by increasing simple approximations, which is the usual construction of expectation. Splitting an absolutely integrable function into positive and negative parts gives the stated finite expectation formula.",
+      "Use \\(\\varphi(x)=x\\) and \\(\\varphi(x)=x^2\\). Writing \\(m=wa+(1-w)\\mu\\), we obtain \\(E[X^2]=wa^2+(1-w)(v+\\mu^2)\\). Subtracting \\(m^2\\), the terms involving \\(a,\\mu\\) reduce to \\(w(1-w)(a-\\mu)^2\\). This proves the variance formula directly. \\(\\square\\)"
+    ],
+    "example": {
+      "prompt": "A reward is zero with probability \\(1/4\\). Otherwise it is drawn uniformly from \\((0,4)\\). Find its CDF, \\(P(X\\le1)\\), mean, and variance.",
+      "steps": [
+        "The continuous branch has density \\(g(x)=1/4\\) for \\(0<x<4\\). Thus \\(F_X(x)=0\\) for \\(x<0\\), \\(F_X(x)=1/4+3x/16\\) for \\(0\\le x<4\\), and \\(F_X(x)=1\\) for \\(x\\ge4\\). The jump at 0 is \\(1/4\\).",
+        "The event \\(X\\le1\\) includes that jump: \\(P(X\\le1)=1/4+3/16=7/16\\). In contrast, \\(P(0<X\\le1)=3/16\\).",
+        "The uniform branch has mean \\(2\\) and variance \\(4/3\\). Therefore \\(E[X]=(3/4)2=3/2\\), and \\(\\operatorname{Var}(X)=(3/4)(4/3)+(1/4)(3/4)(0-2)^2=1+3/4=7/4\\)."
+      ],
+      "conclusion": "The CDF jumps at zero and then rises linearly. The mean is \\(3/2\\), the variance is \\(7/4\\), and \\(P(X\\le1)=7/16\\)."
+    },
+    "practice": {
+      "prompt": "Let \\(T\\) be exponential with rate 1, and cap it at 1 by setting \\(Y=\\min(T,1)\\). Find the CDF of \\(Y\\), its atom and density contribution, \\(P(Y<1)\\), its mean, and its variance.",
+      "hints": [
+        "For \\(0\\le y<1\\), the events \\(Y\\le y\\) and \\(T\\le y\\) coincide. At \\(y=1\\), the CDF becomes 1.",
+        "The event \\(Y=1\\) is \\(T\\ge1\\). Include that mass when calculating both moments."
+      ],
+      "answer": "The CDF is 0 for \\(y<0\\), \\(1-e^{-y}\\) for \\(0\\le y<1\\), and 1 for \\(y\\ge1\\). Its jump at 1 is \\(e^{-1}\\). The continuous contribution is \\(e^{-y}\\) on \\((0,1)\\), of integral \\(1-e^{-1}\\), so \\(P(Y<1)=1-e^{-1}\\). The mean is \\(\\int_0^1 ye^{-y}\\,dy+e^{-1}=1-2e^{-1}+e^{-1}=1-e^{-1}\\). Likewise \\(E[Y^2]=\\int_0^1y^2e^{-y}\\,dy+e^{-1}=2-5e^{-1}+e^{-1}=2-4e^{-1}\\). Therefore \\(\\operatorname{Var}(Y)=2-4e^{-1}-(1-e^{-1})^2=1-2e^{-1}-e^{-2}\\)."
+    },
+    "caution": "Differentiating a CDF away from its jumps does not recover atom masses. For a mixed law, integrating that derivative over the whole line can give less than 1. The distinction between \\(X<a\\) and \\(X\\le a\\) matters at every atom.",
+    "bridge": "Joint distributions and conditional expectation use the same idea of separating contributions from distinct parts of an experiment.",
+    "reference": "Background reading: Introduction to Probability, Statistics, and Random Processes, Section 4.3.1 (mixed random variables)."
   }
 ]

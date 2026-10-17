@@ -970,10 +970,12 @@ main {
   color: var(--line-strong);
 }
 .bar-primary {
-  fill: var(--accent);
+  color: var(--accent);
+  fill: currentColor;
 }
 .bar-secondary {
-  fill: var(--result);
+  color: var(--result);
+  fill: currentColor;
   opacity: 0.75;
 }
 
@@ -998,6 +1000,7 @@ main {
   overflow-y: hidden;
 }
 .math-block .katex-display > .katex {
+  white-space: normal;
   text-align: center;
 }
 .math-block .katex-display {
@@ -1112,3 +1115,448 @@ main {
 }
 
 /* On phones a long unbroken formula is worse than a wrap: let inline maths break. */
+
+:root {
+  --rail-width: 264px;
+}
+.atlas-hero {
+  padding-bottom: 32px;
+  margin-bottom: 28px;
+}
+.study-dashboard {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 28px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--line);
+}
+.study-dashboard strong,
+.study-dashboard span {
+  display: block;
+}
+.study-dashboard strong {
+  font-size: 1.35rem;
+  color: var(--accent-ink);
+}
+.study-dashboard span,
+.study-dashboard p {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.study-dashboard p {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+.course-scope {
+  padding: 20px 0;
+  color: var(--ink-soft);
+  line-height: 1.65;
+}
+summary {
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  min-height: 36px;
+  padding: 8px 0;
+}
+.study-controls {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  margin: 24px 0 32px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.study-controls label,
+.attempt-field {
+  display: grid;
+  gap: 8px;
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+.study-controls input,
+.study-controls select,
+.attempt-field textarea {
+  font: inherit;
+  min-height: 44px;
+  min-width: 0;
+  max-width: 100%;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.study-controls .check-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.check-control input {
+  width: 20px;
+  min-height: 20px;
+}
+.study-controls p {
+  margin: 0 0 10px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.study-button,
+.reference-switch button {
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--line-strong);
+  color: var(--accent-ink);
+  background: var(--surface);
+  font-size: 0.9rem;
+}
+.reference-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.reference-switch button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.attempt-field {
+  margin: 20px 0;
+}
+.attempt-field textarea {
+  width: 100%;
+  resize: vertical;
+  line-height: 1.6;
+  font-family: var(--serif);
+  font-size: 1rem;
+}
+.attempt-field small {
+  color: var(--muted);
+  line-height: 1.5;
+}
+.checkpoint-set {
+  padding: 12px 20px;
+  margin: 12px 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.checkpoint-problem {
+  padding: 24px 0;
+  border-top: 1px solid var(--line);
+  font-family: var(--serif);
+  line-height: 1.75;
+}
+.checkpoint-problem small {
+  color: var(--muted);
+  font-family: var(--sans);
+}
+.distribution-grid {
+  display: grid;
+  gap: 20px;
+}
+.distribution-card {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px;
+  background: var(--surface);
+  line-height: 1.7;
+}
+.distribution-card dl > div {
+  display: grid;
+  grid-template-columns: 128px minmax(0, 1fr);
+  gap: 12px;
+  padding: 8px 0;
+}
+.distribution-card dt {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.distribution-card dd {
+  margin: 0;
+  min-width: 0;
+}
+.distribution-caution {
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-soft);
+}
+.proof-status {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-family: var(--sans);
+  font-size: 0.85rem;
+}
+.experiment-figure {
+  margin: 18px 0;
+}
+.experiment-figure figcaption,
+.chart-legend {
+  font-family: var(--sans);
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 8px;
+}
+.chart-legend i {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+  background: currentColor;
+}
+.table-scroll {
+  max-height: 320px;
+  overflow: auto;
+}
+.chart-values table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--sans);
+  font-size: 0.8rem;
+}
+.chart-values caption {
+  text-align: left;
+  padding: 8px 0;
+}
+.chart-values th,
+.chart-values td {
+  text-align: left;
+  padding: 6px;
+  border-bottom: 1px solid var(--line);
+}
+.lab-prediction,
+.lab-interpretation {
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+.lab-interpretation {
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+}
+@media (max-width: 520px) {
+  .study-controls {
+    padding: 16px;
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .study-controls input,
+  .study-controls select {
+    width: 100%;
+  }
+  .check-control input {
+    width: 20px;
+    flex-shrink: 0;
+  }
+  .distribution-card {
+    padding: 18px;
+  }
+  .distribution-card dl > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .primary-nav button {
+    font-size: 0.85rem;
+  }
+  .topbar {
+    padding: 0 12px;
+    gap: 8px;
+  }
+}
+
+.account-menu {
+  position: relative;
+  margin-left: auto;
+  font-family: var(--sans);
+  font-size: 0.82rem;
+}
+.account-menu > summary {
+  cursor: pointer;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.account-panel {
+  position: absolute;
+  z-index: 12;
+  right: 0;
+  top: calc(100% + 0.6rem);
+  width: min(360px, calc(100vw - 40px));
+  padding: 1.15rem;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 12px 32px #192d2420;
+  line-height: 1.65;
+}
+.account-panel p {
+  margin: 0.5rem 0;
+}
+.account-actions,
+.guest-import-preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+.account-panel a,
+.account-panel button {
+  font: inherit;
+  color: var(--accent);
+}
+.account-panel button {
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 0.4rem 0.6rem;
+  background: var(--paper);
+  cursor: pointer;
+}
+.account-panel p,
+.guest-import-preview {
+  flex-basis: 100%;
+}
+.guest-import-preview {
+  margin-top: 0.8rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--line);
+}
+button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+@media (max-width: 600px) {
+  .account-menu {
+    margin-left: 0;
+  }
+  .account-panel {
+    position: fixed;
+    top: 60px;
+    right: 20px;
+    max-height: calc(100dvh - 80px);
+    overflow: auto;
+  }
+}
+@media (max-width: 380px) {
+  .topbar {
+    padding: 0 8px;
+    gap: 4px;
+  }
+  .menu-button {
+    width: 28px;
+    flex-shrink: 0;
+  }
+  .primary-nav button {
+    font-size: 0.75rem;
+    padding: 0.6em 0.45em;
+  }
+  .account-menu {
+    font-size: 0.75rem;
+  }
+  .account-menu > summary {
+    padding: 0.55rem 0.45rem;
+  }
+}
+.reference-switch {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.reference-switch legend {
+  font-size: 0.8rem;
+  margin-bottom: 0.45rem;
+  color: var(--muted);
+}
+.chart-frame {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 8px;
+  margin: 14px 0;
+  padding-block: 10px;
+}
+.chart-frame .lab-chart {
+  margin: 0;
+}
+.chart-axis {
+  font: 12px / 1.4 var(--sans);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.chart-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: right;
+}
+.chart-y-axis span:first-child {
+  transform: translateY(-50%);
+}
+.chart-y-axis span:last-child {
+  transform: translateY(50%);
+}
+.chart-x-axis {
+  grid-column: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.chart-axis span {
+  white-space: nowrap;
+}
+@media (max-width: 520px) {
+  .chart-x-axis .middle-tick {
+    display: none;
+  }
+}
+@media (max-width: 380px) {
+  .reading-shell,
+  .overview-shell {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .theorem,
+  .practice,
+  .lab,
+  .intuition-section {
+    padding: 12px;
+  }
+  .math-block .katex {
+    font-size: 0.82em;
+  }
+}
+.math-inline > .katex {
+  font-size: 1.06em;
+}
+@media (max-width: 380px) {
+  .math-inline > .katex {
+    font-size: 0.88em;
+  }
+  .reference-list > div {
+    padding-inline: 8px;
+  }
+  .reference-list .math-inline {
+    display: inline-block;
+    max-width: 100%;
+    vertical-align: middle;
+  }
+  .reference-list .math-inline > .katex {
+    font-size: 1.06em;
+  }
+}

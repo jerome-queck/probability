@@ -1,9 +1,8 @@
 import { useSyncExternalStore } from 'react';
 import { lessons } from './content/lessons';
-import { Practice } from './LessonPage';
-import { MathText } from './MathText';
 import { nextUnstudied, progressStore } from './progress';
 import type { View } from './routes';
+import { CourseReference, PracticeSession } from './StudyViews';
 import { studyStore } from './state';
 
 const clusters = [...new Set(lessons.map((lesson) => lesson.cluster))];
@@ -19,66 +18,11 @@ export function AtlasViews({
     progressStore.subscribe,
     progressStore.getSnapshot,
   );
-  const rank = (id: string) =>
-    progress.practice[id] === 'review'
-      ? 0
-      : progress.practice[id] === 'got-it'
-        ? 2
-        : 1;
   const order = lessons.map((l) => l.id);
   const started = order.some((id) => progress.studied.includes(id));
   const continueId = started ? nextUnstudied(order, progress) : undefined;
-  if (view === 'practice')
-    return (
-      <div className="overview-shell">
-        <header className="overview-heading">
-          <p className="eyebrow">PRACTICE</p>
-          <h1 tabIndex={-1}>One problem per lesson</h1>
-          <p>Try each problem before opening the hints.</p>
-        </header>
-        <div className="practice-list">
-          {[...lessons]
-            .sort((a, b) => rank(a.id) - rank(b.id))
-            .map((lesson) => (
-              <Practice key={lesson.id} lesson={lesson} embedded />
-            ))}
-        </div>
-      </div>
-    );
-  if (view === 'reference')
-    return (
-      <div className="overview-shell">
-        <header className="overview-heading">
-          <p className="eyebrow">REFERENCE</p>
-          <h1 tabIndex={-1}>Every result on one page</h1>
-        </header>
-        {clusters.map((cluster) => (
-          <section className="overview-section" key={cluster}>
-            <h2>{cluster}</h2>
-            <dl className="reference-list">
-              {lessons
-                .filter((lesson) => lesson.cluster === cluster)
-                .map((lesson) => (
-                  <div key={lesson.id}>
-                    <dt>
-                      <button
-                        type="button"
-                        className="text-link"
-                        onClick={() => open(lesson.id)}
-                      >
-                        {lesson.id} · {lesson.title}
-                      </button>
-                    </dt>
-                    <dd>
-                      <MathText text={lesson.theorem} />
-                    </dd>
-                  </div>
-                ))}
-            </dl>
-          </section>
-        ))}
-      </div>
-    );
+  if (view === 'practice') return <PracticeSession />;
+  if (view === 'reference') return <CourseReference open={open} />;
   return (
     <div className="overview-shell">
       <section className="atlas-hero">
@@ -90,9 +34,9 @@ export function AtlasViews({
             <em>under uncertainty.</em>
           </h1>
           <p>
-            From counting outcomes to the central limit theorem: every result
-            stated with its conditions, proved step by step, worked through an
-            example, and tried in an experiment you can control.
+            Build a model, check its conditions, and follow the reasoning. Study
+            definitions, proofs and worked examples across the course, then test
+            your intuition in six experiments. Quoted results are labeled.
           </p>
           <div className="hero-actions">
             {continueId ? (
@@ -118,6 +62,41 @@ export function AtlasViews({
         </div>
         <HeroFigure />
       </section>
+      <section className="study-dashboard" aria-label="Study overview">
+        <div>
+          <strong>
+            {order.filter((id) => progress.studied.includes(id)).length} of{' '}
+            {lessons.length}
+          </strong>
+          <span>lessons marked as studied</span>
+        </div>
+        <div>
+          <strong>
+            {order.filter((id) => progress.practice[id] === 'review').length}
+          </strong>
+          <span>practice problems to revisit</span>
+        </div>
+        <p>
+          Study marks and practice ratings are your own record, not an
+          assessment of mastery.
+        </p>
+      </section>
+      <details className="course-scope">
+        <summary>Course scope and preparation</summary>
+        <p>
+          Start with algebra, sets, and sums. The continuous chapters use
+          derivatives and integrals. Joint densities and transformations also
+          use double integrals and Jacobians. Each lesson links its earlier
+          concepts.
+        </p>
+        <p>
+          The path covers counting, conditioning, discrete and continuous laws,
+          joint distributions, expectation, and limit theorems. Statistical
+          inference, measure theory, and a full stochastic-process course are
+          beyond this first course. Results quoted without a full proof are
+          identified in their lessons.
+        </p>
+      </details>
       <section className="overview-section" aria-labelledby="chapters-heading">
         <p className="eyebrow">{lessons.length} LESSONS</p>
         <h2 id="chapters-heading">Chapters</h2>

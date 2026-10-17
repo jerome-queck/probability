@@ -26,6 +26,9 @@
 /dist/
 /.sites-runtime/
 /.sites-checkout/
+/.wrangler/
+/.vinext/
+/.next/
 *.tar.gz
 
 # Source handouts and private extracts never enter this tree
@@ -35,3 +38,6 @@
 /artifacts/
 /.audit/
 /.verify-run/
+
+# Framework type stub is recreated by Vinext
+/next-env.d.ts

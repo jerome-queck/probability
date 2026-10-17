@@ -46,4 +46,4 @@ One state per lab once a lesson uses it: `<lab-id>-default` and `<lab-id>-moved`
 
 ## Gotchas
 
-A lab exists in code before any lesson uses it; it can only be driven once a lesson references it. `check:drift` requires every lab ID in `src/content/types.ts` to have a row here.
+Chart labs include axis labels, a legend and an accessible values table; Bayes explains expected positive counts in prose. Journeys assert changed numerical results, chart/table labels and deterministic table values. Captures select `#lab`, preserving controls and output rather than the lesson header. A lab exists in code before any lesson uses it; it can only be driven once a lesson references it. `check:drift` requires every lab ID in `src/content/types.ts` to have a row here.

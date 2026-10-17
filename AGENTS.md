@@ -6,15 +6,21 @@ Keep this public probability learning site correct, readable and verified. One c
 
 ## Architecture
 
-React 19, Vite, TypeScript and KaTeX. Lessons are original JSON in `src/content/part*.json`.
-`order.json` sets the study path. `results.json` registers named results and their proof status.
-`src/content/lessons.ts` loads lessons. `src/state.ts` and `src/routes.ts` own browser-history navigation.
-`src/progress.ts` stores guest progress and practice self-ratings in local storage. A self-rating
-does not establish mastery. `MathText`, `mathBreaks.ts` and `src/math/` own formula rendering and
-probability calculations. `Labs.tsx` supplies interactive experiments.
+The supported Sites Vinext host imports the React reader after browser mount. `app/api/` derives
+ChatGPT identity with the supplied server helper; `server/progress.ts` authorizes every D1 read
+and write. Sites owns sign-in, sign-out and callback routes. Never add an application OAuth stack.
 
-The application is browser-only. Read `docs/adr/0002-own-design.md` before changing its design.
-This repository has no deployment workflow.
+Original mathematics lives in `src/content/part*.json`. `order.json` owns the path,
+`results.json` names results and proof status, and checkpoint/reference JSON holds supplementary
+study data. `src/state.ts` and `src/routes.ts` own browser-history navigation. `MathText`,
+`mathBreaks.ts` and `src/math/` own rendering and calculations. `Labs.tsx` supplies experiments.
+
+`src/progress.ts` preserves guest local storage and keeps confirmed account state plus pending
+intents in memory. D1 stores one owner/lesson record. Desired-state writes compare revisions;
+conflicts require an explicit choice. Account failures never fall back to guest storage.
+Self-ratings do not establish mastery. Read `docs/adr/0003-sites-and-account-progress.md` before
+changing hosting, identity or persistence. Publish through supported Sites tooling with exact
+source/version receipts; CI does not deploy.
 
 ## Commands
 
@@ -22,13 +28,14 @@ Node 24 or newer. CI runs the same `npm run check` command as local verification
 
 ```bash
 npm ci
-npm run dev                         # http://127.0.0.1:5173
-npm run build && npm run preview    # http://127.0.0.1:4173
+npm run agent -- help
+npm run dev                         # use the printed loopback URL
 npm run check
 ```
 
 `check` runs forbidden-content, lesson, result-tag, drift and rule checks, then types, lint,
-formatting, unit tests, build and browser smoke. Run a component with `npm run <name>`.
+formatting and behavior tests, then builds the Worker and runs mapped states, the full rendering
+sweep and complete study/account journeys. `verify:source` and `verify:browser` expose those layers.
 
 ## Agent tools and verification
 
@@ -36,11 +43,12 @@ Use configured Codex model and reasoning defaults unless the task explicitly ove
 Record actual runner, model, effort and full session identity. Optional Cursor and Bugbot support
 stays available. Bot status never replaces the independent verdicts below.
 
-Read `.cursor/skills/verify-probability/SKILL.md`. Its feature map and browser driver are shared
-by Codex and Cursor. Prove user-facing changes through the real UI. Inspect screenshots for every
+Read `.agents/skills/verify/SKILL.md`. Cursor compatibility uses the same driver and evidence.
+`verification/features.json` owns feature/source coverage; unknown files require full verification. Prove user-facing changes through the real UI. Inspect screenshots for every
 touched state at desktop and mobile widths, plus a sample of other states. Keep original PNGs
 unchanged. Produce separate inspection copies when needed. Keep the unfiltered browser suite and
-four-width lesson, Practice and Reference sweep. Selected runs supplement full verification.
+four-width lesson, Practice, checkpoint and Reference sweep. Selected runs supplement full
+verification. Local fixture sign-in and hosted ChatGPT authentication are separate release claims.
 
 Each worker uses its own branch or worktree and its own `--data-dir`. Drive and stop only instances
 you launched. The driver chooses a free port. Different `part*.json` files are separate writing
@@ -94,6 +102,7 @@ Do not hand-edit `dist/`, `node_modules/` or `package-lock.json`. Never commit t
 | Explicit complete named-result tags and registered result homes | `scripts/check-results.mjs` + `src/content/results.json` + `scripts/check-results.test.mjs`; semantic completeness requires independent math review |
 | Feature map, drives, baselines, labs, chapters and tests stay synchronized | `scripts/check-drift.mjs` |
 | Rule-table references exist | `scripts/check-rule-table.mjs` |
+| Owner-scoped storage, retries, conflicts and account changes | `src/progressD1.test.ts` against local D1 + `scripts/verify-journeys.mjs` |
 | Correct probability calculations | `src/math/counting.test.ts`, `src/math/distributions.test.ts`, `src/math/simulation.test.ts` |
 | Strict types, lint and format | `tsconfig.json`, `biome.json`, `npm run typecheck`, `npm run lint`, `npm run format:check` |
 | Every mapped feature works and renders at desktop and mobile widths | `scripts/control-probability.mjs` + `.cursor/skills/verify-probability/baselines` |
@@ -108,9 +117,9 @@ Do not hand-edit `dist/`, `node_modules/` or `package-lock.json`. Never commit t
 ## Run log
 
 End every run with four short parts: **Read**, **Did**, **Proof**, **Couldn't do**. Name skipped
-checks and blockers. Keep decisions in git-ignored `.audit/<task>.tsv` with columns
-`ts, phase, decision, why, evidence, result, skills, runner, model, effort, session`. Use actual
-values and evidence pointers. Summarize the same skills and runner details in the PR. Record
+checks and blockers. Keep one append-only decision log in git-ignored `.audit/<task>.tsv`, using
+the canonical `show-me-your-work` format. Keep actual skills, runner, model, effort and full
+session identities in independent reports and the PR. Record
 irreversible design decisions in `docs/adr/`.
 
 ## Known gate gaps

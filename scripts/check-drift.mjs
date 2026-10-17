@@ -1,198 +1,164 @@
 #!/usr/bin/env node
-// Self-maintenance gate: fails when the feature map, the verify skill, the driver CLI,
-// the smoke drives, the routes, the labs, the lesson chapters or the tests drift apart.
-// Each message says which file to update in the same PR.
+import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { commands, viewports } from './control-probability.mjs';
+import { checkMap } from './probability.mjs';
+import { selectSmokeStates } from './smoke-selection.mjs';
 
 const skill = '.cursor/skills/verify-probability';
 const features = `${skill}/features`;
-const read = (p) => readFileSync(p, 'utf8');
-const errors = [];
-
-// 1. Feature index ⇔ feature files.
-const index = read(`${features}/README.md`);
-const indexed = [...index.matchAll(/\]\(([a-z-]+\.md)\)/g)].map((m) => m[1]);
+const read = (path) => readFileSync(path, 'utf8');
+const json = (path) => JSON.parse(read(path));
+const map = json('verification/features.json');
+const smoke = json(`${features}/smoke.json`);
+const paths = execFileSync(
+  'git',
+  ['ls-files', '--cached', '--others', '--exclude-standard', '-z'],
+  { encoding: 'utf8' },
+)
+  .split('\0')
+  .filter(Boolean);
+const errors = checkMap(map, smoke, paths.filter(existsSync));
+try {
+  selectSmokeStates(smoke, undefined, Object.keys(viewports));
+} catch (error) {
+  errors.push(error.message);
+}
+const indexed = [
+  ...read(`${features}/README.md`).matchAll(/\]\(([a-z-]+\.md)\)/g),
+].map((match) => match[1]);
 const files = readdirSync(features).filter(
-  (f) => f.endsWith('.md') && f !== 'README.md',
+  (file) => file.endsWith('.md') && file !== 'README.md',
 );
-for (const f of files)
-  if (!indexed.includes(f))
-    errors.push(`${features}/${f} is not listed in features/README.md`);
-for (const f of indexed)
-  if (!files.includes(f))
-    errors.push(`features/README.md links ${f}, which does not exist`);
-
-// 2. Each feature file has the four required sections.
-for (const f of files) {
-  const text = read(`${features}/${f}`);
-  for (const h of [
+if (new Set(indexed).size !== indexed.length)
+  errors.push('Feature README has duplicate entries.');
+for (const feature of map.features) {
+  const file = `${feature.id}.md`;
+  if (!files.includes(file)) {
+    errors.push(`Missing feature description ${features}/${file}`);
+    continue;
+  }
+  if (!indexed.includes(file))
+    errors.push(`${file} is missing from the feature index.`);
+  const text = read(`${features}/${file}`);
+  for (const heading of [
     '## Sub-features',
     '## How to get to it (user POV)',
     '## Driving it with control-probability',
+    '## Visual states',
     '## Gotchas',
   ])
-    if (!text.includes(h)) errors.push(`${features}/${f} is missing “${h}”`);
-}
-
-// 3. Every top-level view has a feature file.
-const routes = read('src/routes.ts');
-const views = [
-  ...(/views = \[([^\]]*)\]/.exec(routes)?.[1] ?? '').matchAll(/'([a-z-]+)'/g),
-].map((m) => m[1]);
-const viewFeature = { learn: 'home.md' };
-for (const v of views) {
-  const f = viewFeature[v] ?? `${v}.md`;
-  if (!files.includes(f))
-    errors.push(
-      `view “${v}” in src/routes.ts has no feature file ${features}/${f}`,
-    );
-}
-
-// 4. Every lab ID is mapped; every lab used by a lesson is driven by smoke.json.
-const labIds = [
-  ...read('src/content/types.ts').matchAll(/\|\s*'([a-z-]+)'/g),
-].map((m) => m[1]);
-const labsDoc = read(`${features}/labs.md`);
-const labsCode = read('src/Labs.tsx');
-for (const id of labIds) {
-  if (!labsDoc.includes(`\`${id}\``))
-    errors.push(`lab “${id}” has no row in ${features}/labs.md`);
-  if (!labsCode.includes(`'${id}'`) && !labsCode.includes(`${id}:`))
-    errors.push(
-      `lab “${id}” is declared in types.ts but not registered in src/Labs.tsx`,
-    );
-}
-const lessons = readdirSync('src/content')
-  .filter((f) => /^part\d+\.json$/.test(f))
-  .flatMap((f) => JSON.parse(read(`src/content/${f}`)));
-const smoke = JSON.parse(read(`${features}/smoke.json`));
-const usedLabs = new Set(lessons.filter((l) => l.lab).map((l) => l.lab));
-for (const lab of usedLabs)
-  for (const state of [`${lab}-default`, `${lab}-moved`])
-    if (!smoke.some((s) => s.feature === 'labs' && s.id === state))
-      errors.push(
-        `lab “${lab}” is used by a lesson but smoke.json has no labs/${state} state`,
-      );
-
-// 5. Every feature with something to drive appears in smoke.json, and smoke only names mapped features.
-for (const f of files) {
-  const name = f.replace(/\.md$/, '');
-  if (name === 'labs' && usedLabs.size === 0) continue;
-  if (!smoke.some((s) => s.feature === name))
-    errors.push(`feature ${f} has no drive in smoke.json`);
-}
-for (const s of smoke)
-  if (!files.includes(`${s.feature}.md`))
-    errors.push(
-      `smoke.json step ${s.feature}/${s.id} names an unmapped feature`,
-    );
-
-// 5b. Every feature lists visual states; each state is driven and has baselines.
-const viewports = ['desktop', 'mobile'];
-for (const f of files) {
-  const name = f.replace(/\.md$/, '');
-  const text = read(`${features}/${f}`);
-  const section = text.split('## Visual states')[1]?.split('\n## ')[0];
-  if (section === undefined) {
-    errors.push(`${features}/${f} has no “## Visual states” section`);
-    continue;
-  }
-  const listed = [...section.matchAll(/^- `([a-z0-9-]+)`/gm)].map((m) => m[1]);
-  const steps = smoke.filter((s) => s.feature === name);
-  if (listed.length === 0 && !(name === 'labs' && usedLabs.size === 0))
-    errors.push(`${features}/${f} lists no visual states`);
+    if (!text.includes(heading)) errors.push(`${file} needs ${heading}.`);
+  const listed = [
+    ...(text.split('## Visual states')[1]?.split('\n## ')[0] ?? '').matchAll(
+      /^- `([a-z0-9-]+)`/gm,
+    ),
+  ].map((match) => match[1]);
+  const states = smoke.filter((state) => state.feature === feature.id);
+  if (new Set(listed).size !== listed.length)
+    errors.push(`${file} lists duplicate visual states.`);
   for (const id of listed)
-    if (!steps.some((s) => s.id === id))
-      errors.push(
-        `visual state ${name}/${id} is listed but not driven in smoke.json`,
-      );
-  for (const s of steps) {
-    if (!listed.includes(s.id))
-      errors.push(
-        `smoke.json state ${name}/${s.id} is not listed under “Visual states” in ${f}`,
-      );
-    for (const vp of s.viewports ?? viewports)
-      if (!existsSync(`${skill}/baselines/${name}/${s.id}.${vp}.png`))
+    if (!states.some((state) => state.id === id))
+      errors.push(`${feature.id}/${id} is documented but not driven.`);
+  for (const state of states) {
+    if (!listed.includes(state.id))
+      errors.push(`${feature.id}/${state.id} is driven but not documented.`);
+    for (const viewport of state.viewports ?? Object.keys(viewports)) {
+      const path = `${skill}/baselines/${feature.id}/${state.id}.${viewport}.png`;
+      if (!existsSync(path))
         errors.push(
-          `no visual baseline ${skill}/baselines/${name}/${s.id}.${vp}.png (run: node scripts/control-probability.mjs smoke --update-baselines, look at it, commit it)`,
-        );
-  }
-}
-const baselineRoot = `${skill}/baselines`;
-if (existsSync(baselineRoot))
-  for (const feature of readdirSync(baselineRoot))
-    for (const file of readdirSync(`${baselineRoot}/${feature}`)) {
-      const [id, vp] = file.replace(/\.png$/, '').split('.');
-      const step = smoke.find((s) => s.feature === feature && s.id === id);
-      if (!step || !(step.viewports ?? viewports).includes(vp))
-        errors.push(
-          `stale baseline ${baselineRoot}/${feature}/${file}: no matching smoke state`,
+          `Missing visual baseline ${path}; capture, inspect and consciously accept it.`,
         );
     }
-
-// 6. Every lesson chapter is listed in lessons.md, and nothing stale is listed.
-const lessonsDoc = read(`${features}/lessons.md`);
-const listed = [
-  ...(lessonsDoc.split('Chapters currently published')[1] ?? '')
-    .split('##')[0]
-    .matchAll(/^- (.+)$/gm),
-].map((m) => m[1].trim());
-const clusters = [...new Set(lessons.map((l) => l.cluster))];
-for (const c of clusters)
-  if (!listed.includes(c))
-    errors.push(`chapter “${c}” is not listed in ${features}/lessons.md`);
-for (const c of listed)
-  if (!clusters.includes(c))
-    errors.push(
-      `${features}/lessons.md lists chapter “${c}”, which has no lessons`,
+  }
+}
+for (const file of [...new Set([...files, ...indexed])])
+  if (!map.features.some(({ id }) => file === `${id}.md`))
+    errors.push(`Unmapped feature description ${file}.`);
+const baselineRoot = `${skill}/baselines`;
+for (const feature of readdirSync(baselineRoot))
+  for (const file of readdirSync(`${baselineRoot}/${feature}`)) {
+    const [id, viewport] = file.replace(/\.png$/, '').split('.');
+    const state = smoke.find(
+      (item) => item.feature === feature && item.id === id,
     );
-
-// 7. The verify skill documents every driver command, and the driver implements them.
-const skillText = read(`${skill}/SKILL.md`);
-const driver = read('scripts/control-probability.mjs');
-const commands = [
-  ...(/export const commands = \[([^\]]*)\]/.exec(driver)?.[1] ?? '').matchAll(
-    /'([a-z-]+)'/g,
-  ),
-].map((m) => m[1]);
-for (const c of commands) {
-  if (c === 'help') continue;
-  if (!skillText.includes(c))
-    errors.push(`driver command “${c}” is not documented in ${skill}/SKILL.md`);
-}
-for (const section of [
-  '## Launch',
-  '## Doctor',
-  '## Drive',
-  '## Evidence',
-  '## Cleanup',
-  '## Helpers',
-])
-  if (!skillText.includes(section))
-    errors.push(`${skill}/SKILL.md is missing “${section}”`);
-
-// 8. Every math module has behaviour tests; every script check has its npm entry.
-for (const f of readdirSync('src/math').filter(
-  (f) => f.endsWith('.ts') && !f.endsWith('.test.ts'),
-))
-  if (!existsSync(`src/math/${f.replace(/\.ts$/, '.test.ts')}`))
-    errors.push(`src/math/${f} has no ${f.replace(/\.ts$/, '.test.ts')}`);
-const pkg = JSON.parse(read('package.json'));
-for (const f of readdirSync('scripts').filter(
-  (f) => /^check-.*\.mjs$/.test(f) && !f.endsWith('.test.mjs'),
-)) {
-  const script = `node scripts/${f}`;
-  if (!Object.values(pkg.scripts).some((s) => s.includes(script)))
-    errors.push(`scripts/${f} is not wired into package.json`);
-}
-
-if (errors.length) {
-  console.error(errors.map((e) => `drift: ${e}`).join('\n'));
-  console.error(
-    `\n${errors.length} drift error(s). Update the feature map, verify skill, smoke drives or tests in this PR.`,
-  );
-  process.exit(1);
-}
-console.log(
-  `check:drift ok — ${files.length} features, ${smoke.length} drives, ${labIds.length} labs, ${clusters.length} chapters in sync`,
+    if (
+      !state ||
+      !(state.viewports ?? Object.keys(viewports)).includes(viewport)
+    )
+      errors.push(`Stale baseline ${feature}/${file}.`);
+  }
+const lessons = readdirSync('src/content')
+  .filter((file) => /^part\d+\.json$/.test(file))
+  .flatMap((file) => json(`src/content/${file}`));
+const labType =
+  /export type LabId\s*=([\s\S]*?);/.exec(read('src/content/types.ts'))?.[1] ??
+  '';
+const labIds = [...labType.matchAll(/'([a-z-]+)'/g)].map((match) => match[1]);
+const labsDoc = read(`${features}/labs.md`);
+for (const id of labIds)
+  if (!labsDoc.includes(`\`${id}\``))
+    errors.push(`Lab ${id} has no feature description.`);
+for (const lab of new Set(lessons.map((lesson) => lesson.lab).filter(Boolean)))
+  for (const suffix of ['default', 'moved']) {
+    const state = smoke.find(
+      (item) => item.feature === 'labs' && item.id === `${lab}-${suffix}`,
+    );
+    const id = /^\/lessons\/([a-z]\d+)/
+      .exec(state?.url ?? '')?.[1]
+      .toUpperCase();
+    if (
+      !state ||
+      !lessons.some((lesson) => lesson.id === id && lesson.lab === lab)
+    )
+      errors.push(
+        `Lab ${lab} needs a ${suffix} drive on a lesson that contains it.`,
+      );
+    if (state?.captureSelector !== '#lab')
+      errors.push(`Lab ${lab}-${suffix} must capture the experiment.`);
+  }
+const chapterSection =
+  read(`${features}/lessons.md`)
+    .split('Chapters currently published')[1]
+    ?.split('\n## ')[0] ?? '';
+const chapters = [...new Set(lessons.map((lesson) => lesson.cluster))];
+const listedChapters = [...chapterSection.matchAll(/^- (.+)$/gm)].map((match) =>
+  match[1].trim(),
 );
+for (const chapter of new Set([...chapters, ...listedChapters]))
+  if (!chapters.includes(chapter) || !listedChapters.includes(chapter))
+    errors.push(`Lesson chapter list differs at ${chapter}.`);
+for (const path of [`${skill}/SKILL.md`, '.agents/skills/verify/SKILL.md']) {
+  const text = read(path);
+  for (const section of [
+    'Launch',
+    'Doctor',
+    'Drive',
+    'Evidence',
+    'Cleanup',
+    'Helpers',
+  ])
+    if (!text.includes(`## ${section}`))
+      errors.push(`${path} needs ## ${section}.`);
+}
+const compatibility = read(`${skill}/SKILL.md`);
+for (const command of commands.filter((command) => command !== 'help'))
+  if (!compatibility.includes(command))
+    errors.push(`Cursor compatibility skill does not document ${command}.`);
+const pkg = json('package.json');
+for (const file of readdirSync('scripts').filter(
+  (file) => /^check-.*\.mjs$/.test(file) && !file.endsWith('.test.mjs'),
+))
+  if (
+    !Object.values(pkg.scripts).some((script) =>
+      script.includes(`node scripts/${file}`),
+    )
+  )
+    errors.push(`scripts/${file} is not wired into package.json.`);
+if (errors.length) {
+  console.error(errors.map((error) => `drift: ${error}`).join('\n'));
+  process.exitCode = 1;
+} else
+  console.log(
+    `check:drift ok — ${map.features.length} owned features, ${smoke.length} driven visual states, ${labIds.length} labs, ${chapters.length} chapters`,
+  );

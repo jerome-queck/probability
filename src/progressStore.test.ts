@@ -13,7 +13,11 @@ Object.assign(globalThis, {
     },
   },
 });
-const { progressStore } = await import('./progress.ts');
+const { createProgressStore } = await import('./progress.ts');
+const progressStore = createProgressStore({
+  fetch: async () => Response.json({ kind: 'guest' }),
+});
+await progressStore.initialize();
 const key = 'probability.progress.v1';
 
 // Each test starts from the same stored state, whatever ran before it.
