@@ -221,10 +221,10 @@ export function createProgressStore(
     }
   };
   let guest = readStored() ?? empty;
-  let snapshot = guest;
+  let snapshot: Progress = { ...empty, unsaved: true };
   let session: Session = {
-    kind: 'guest',
-    message: 'Guest progress stays in this browser.',
+    kind: 'loading',
+    message: 'Loading account progress. Reading remains available.',
   };
   let accountSnapshot: AccountSnapshot = session;
   let retainedAccount: AccountData | null = null;

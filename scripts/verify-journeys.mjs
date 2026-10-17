@@ -396,13 +396,38 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
     exact: true,
   });
   assert.equal(await signIn.getAttribute('target'), '_top');
-  await Promise.all([
-    page.waitForNavigation({ waitUntil: 'networkidle' }),
-    signIn.click(),
-  ]);
+  let releaseAccount;
+  const discovery = new Promise((resolve) => {
+    releaseAccount = resolve;
+  });
+  await page.route('**/api/account', async (route) => {
+    await discovery;
+    await route.continue();
+  });
+  try {
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+      signIn.click(),
+    ]);
+    await page.locator('.account-panel[data-account-state="loading"]').waitFor({
+      state: 'attached',
+    });
+    const studied = button(page, 'Mark this lesson as studied');
+    assert.equal(await studied.isDisabled(), true);
+    await pressed(studied, false);
+    await reveal(page);
+    for (const name of ['✓ I got it', '↺ Review again']) {
+      const rating = button(page, name);
+      assert.equal(await rating.isDisabled(), true);
+      await pressed(rating, false);
+    }
+    await capture(page, 'account-discovery-pending', '.practice');
+  } finally {
+    releaseAccount();
+  }
   await saved(page);
+  await page.unroute('**/api/account');
   await pressed(button(page, 'Mark this lesson as studied'), false);
-  await reveal(page);
   await pressed(button(page, '↺ Review again'), false);
   await panel(page);
   await button(page, 'Preview guest import').click();
@@ -546,6 +571,7 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
   await panel(page);
   await capture(page, 'signed-out-guest-preserved', '.account-panel');
   record.proved = [
+    'pending account discovery hides guest marks and disables progress controls',
     'unavailable account controls disabled with visible recovery',
     'top-level local sign-in fixture',
     'guest progress does not import automatically',

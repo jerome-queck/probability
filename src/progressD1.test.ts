@@ -521,6 +521,72 @@ test('production progress handler and account store against local D1', async (t)
     );
 
     await t.test(
+      'startup hides guest marks and ignores edits until identity is confirmed',
+      async () => {
+        for (const owner of [null, 'startup']) {
+          const original = { studied: ['F03'], practice: { F03: 'review' } };
+          const storage = localStorageFixture(original);
+          let release!: () => void;
+          const waiting = new Promise<void>((resolve) => {
+            release = resolve;
+          });
+          const base = transport(() => owner);
+          const store = createProgressStore({
+            storage,
+            fetch: async (input, init) => {
+              if (String(input) === '/api/account') await waiting;
+              return base(input, init);
+            },
+          });
+          const blocked = () => {
+            assert.equal(store.getAccountSnapshot().kind, 'loading');
+            assert.equal(store.getLessonSaveState('F01'), 'loading');
+            assert.deepEqual(store.getSnapshot(), {
+              studied: [],
+              practice: {},
+              unsaved: true,
+            });
+            store.toggleStudied('F01');
+            store.setVerdict('F01', 'got-it');
+            store.reload();
+            assert.deepEqual(
+              JSON.parse(storage.getItem('probability.progress.v1') ?? ''),
+              original,
+            );
+            assert.deepEqual(store.getSnapshot().studied, []);
+            assert.deepEqual(store.getSnapshot().practice, {});
+          };
+          blocked();
+          const loading = store.initialize();
+          blocked();
+          release();
+          await loading;
+          assert.equal(
+            store.getAccountSnapshot().kind,
+            owner ? 'account' : 'guest',
+          );
+          assert.deepEqual(
+            store.getSnapshot(),
+            owner ? { studied: [], practice: {} } : original,
+          );
+          await store.toggleStudied('F01');
+          if (owner) {
+            assert.equal(
+              (await readJson(await read(owner))).records[0].studied,
+              true,
+            );
+            assert.deepEqual(
+              JSON.parse(storage.getItem('probability.progress.v1') ?? ''),
+              original,
+            );
+          } else {
+            assert.deepEqual(store.getSnapshot().studied, ['F03', 'F01']);
+          }
+        }
+      },
+    );
+
+    await t.test(
       'account discovery failure blocks account edits without a silent guest save',
       async () => {
         const storage = localStorageFixture({ studied: ['F03'], practice: {} });
