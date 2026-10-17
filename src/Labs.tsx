@@ -34,12 +34,13 @@ function Bars({
 }) {
   const width = 560;
   const height = 180;
+  const left = 52;
   const count = series[0].values.length;
   const slot = width / count;
   return (
     <figure className="experiment-figure">
       <svg
-        viewBox={`0 0 ${width + 48} ${height + 48}`}
+        viewBox={`0 0 ${width + left + 12} ${height + 48}`}
         role="img"
         aria-label={label}
         className="lab-chart"
@@ -48,7 +49,7 @@ function Bars({
         {[0, 0.5, 1].map((fraction) => (
           <text
             key={fraction}
-            x="30"
+            x={left - 6}
             y={12 + height * (1 - fraction) + 5}
             textAnchor="end"
             className="chart-tick"
@@ -56,7 +57,7 @@ function Bars({
             {fmt(max * fraction, 2)}
           </text>
         ))}
-        <g transform="translate(36, 12)">
+        <g transform={`translate(${left}, 12)`}>
           {series.map((s, si) =>
             s.values.map((v, i) => {
               const h = max > 0 ? (v / max) * height : 0;
@@ -83,9 +84,17 @@ function Bars({
           {[0, Math.floor((count - 1) / 2), count - 1].map((index) => (
             <text
               key={index}
-              x={(index + 0.5) * slot}
+              x={
+                index === 0
+                  ? 0
+                  : index === count - 1
+                    ? width
+                    : (index + 0.5) * slot
+              }
               y={height + 24}
-              textAnchor="middle"
+              textAnchor={
+                index === 0 ? 'start' : index === count - 1 ? 'end' : 'middle'
+              }
               className="chart-tick"
             >
               {xLabels[index]}

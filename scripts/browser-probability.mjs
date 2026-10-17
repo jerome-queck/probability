@@ -15,6 +15,19 @@ export async function renderingProblems(page) {
       problems.push(
         `horizontal overflow: page is ${document.documentElement.scrollWidth}px wide in a ${window.innerWidth}px viewport`,
       );
+    for (const text of document.querySelectorAll('main svg text')) {
+      const bounds = text.getBoundingClientRect();
+      const chart = text.ownerSVGElement?.getBoundingClientRect();
+      if (
+        chart &&
+        bounds.width &&
+        (bounds.left < chart.left - 1 ||
+          bounds.right > chart.right + 1 ||
+          bounds.top < chart.top - 1 ||
+          bounds.bottom > chart.bottom + 1)
+      )
+        problems.push(`clipped chart label: “${text.textContent}”`);
+    }
     // A display formula wider than its box is clipped on screen even when the page
     // itself does not scroll sideways, so check each one.
     for (const el of document.querySelectorAll('.katex-display, .math-block')) {
@@ -145,8 +158,19 @@ export async function capturePage(page, path, selector) {
     content:
       '*,*::before,*::after{transition:none!important;animation:none!important;caret-color:transparent!important}html{scroll-behavior:auto!important}',
   });
-  if (selector) await region.screenshot({ path, animations: 'disabled' });
-  else await page.screenshot({ path, fullPage: false, animations: 'disabled' });
+  const chrome =
+    selector && !(await region.evaluate((node) => node.closest('.topbar')))
+      ? await page.addStyleTag({
+          content: '.topbar{visibility:hidden!important}',
+        })
+      : null;
+  try {
+    if (selector) await region.screenshot({ path, animations: 'disabled' });
+    else
+      await page.screenshot({ path, fullPage: false, animations: 'disabled' });
+  } finally {
+    await chrome?.evaluate((node) => node.remove());
+  }
   writeFileSync(
     path.replace(/\.png$/, '.aria.txt'),
     await page.locator('body').ariaSnapshot(),

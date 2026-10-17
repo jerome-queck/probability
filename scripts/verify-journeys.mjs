@@ -357,6 +357,34 @@ async function labs(page, url, record, capture) {
 }
 
 async function accounts(page, url, record, capture, context, expectedHttp) {
+  expectedHttp.push(503);
+  await page.route('**/api/account', (route) =>
+    route.fulfill({
+      status: 503,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: 'account-unavailable' }),
+    }),
+  );
+  await goto(page, url, lesson('F01'));
+  await page
+    .locator('.studied-toggle')
+    .getByText(
+      'Account progress is unavailable. Open Progress to retry before making changes.',
+      { exact: true },
+    )
+    .waitFor();
+  assert.equal(
+    await button(page, 'Mark this lesson as studied').isDisabled(),
+    true,
+  );
+  await reveal(page);
+  assert.equal(await button(page, '✓ I got it').isDisabled(), true);
+  assert.equal(await button(page, '↺ Review again').isDisabled(), true);
+  await capture(page, 'account-unavailable', '.practice');
+  await page.unroute('**/api/account');
+  await panel(page);
+  await button(page, 'Retry account').click();
+  await guest(page);
   await goto(page, url, lesson('F01'));
   await guest(page);
   await button(page, 'Mark this lesson as studied').click();
@@ -518,6 +546,7 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
   await panel(page);
   await capture(page, 'signed-out-guest-preserved', '.account-panel');
   record.proved = [
+    'unavailable account controls disabled with visible recovery',
     'top-level local sign-in fixture',
     'guest progress does not import automatically',
     'cancel and explicit import',
@@ -533,7 +562,12 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
 }
 
 function expectedHttpConsole(message, url, expectedHttp) {
-  if (message.location().url !== `${url}/api/progress`) return false;
+  if (
+    !['/api/progress', '/api/account'].some(
+      (path) => message.location().url === `${url}${path}`,
+    )
+  )
+    return false;
   const status = Number(
     /server responded with a status of (\d+)/.exec(message.text())?.[1],
   );

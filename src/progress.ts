@@ -28,6 +28,7 @@ type PendingState = 'queued' | 'saving' | 'error' | 'conflict';
 export type SaveState =
   | 'guest'
   | 'loading'
+  | 'unavailable'
   | 'saved'
   | 'saving'
   | 'error'
@@ -49,7 +50,7 @@ export type AccountSnapshot =
       records: readonly LessonProgress[];
       pending: readonly {
         lessonId: string;
-        status: Exclude<SaveState, 'guest' | 'loading' | 'saved'>;
+        status: Exclude<PendingState, 'queued'>;
       }[];
     };
 
@@ -546,9 +547,7 @@ export function createProgressStore(
           accountSnapshot.pending.find((item) => item.lessonId === id)
             ?.status ?? 'saved'
         );
-      return accountSnapshot.kind === 'unavailable'
-        ? 'error'
-        : accountSnapshot.kind;
+      return accountSnapshot.kind;
     },
     initialize() {
       initialized ??= loadSession();

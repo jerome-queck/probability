@@ -306,7 +306,7 @@ function SelfCheck({ id }: { id: string }) {
       <button
         type="button"
         className="chip"
-        disabled={state === 'loading'}
+        disabled={state === 'loading' || state === 'unavailable'}
         aria-pressed={verdict === 'got-it'}
         onClick={() => {
           setTouched(true);
@@ -318,7 +318,7 @@ function SelfCheck({ id }: { id: string }) {
       <button
         type="button"
         className="chip"
-        disabled={state === 'loading'}
+        disabled={state === 'loading' || state === 'unavailable'}
         aria-pressed={verdict === 'review'}
         onClick={() => {
           setTouched(true);
@@ -353,6 +353,8 @@ const notSaved =
 const saveMessages = {
   loading:
     'Checking your account. Progress controls will be available shortly.',
+  unavailable:
+    'Account progress is unavailable. Open Progress to retry before making changes.',
   saved: 'Saved to your account.',
   saving: 'Saving to your account…',
   error: 'Not saved. Open Progress to retry. Changes remain in this tab.',
@@ -368,7 +370,7 @@ function StudiedToggle({ id }: { id: string }) {
       <button
         type="button"
         aria-pressed={studied}
-        disabled={state === 'loading'}
+        disabled={state === 'loading' || state === 'unavailable'}
         onClick={() => progressStore.toggleStudied(id)}
       >
         {studied ? '✓ Studied' : 'Mark this lesson as studied'}

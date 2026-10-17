@@ -532,6 +532,7 @@ test('production progress handler and account store against local D1', async (t)
         });
         await store.initialize();
         assert.equal(store.getAccountSnapshot().kind, 'unavailable');
+        assert.equal(store.getLessonSaveState('F01'), 'unavailable');
         store.toggleStudied('F01');
         assert.equal(store.getSnapshot().unsaved, true);
         assert.deepEqual(
