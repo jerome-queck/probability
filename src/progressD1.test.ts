@@ -722,6 +722,7 @@ test('production progress handler and account store against local D1', async (t)
     );
     await t.test(
       'an older account refresh preserves newer acknowledgements and unsaved intents',
+      { timeout: 10000 },
       async () => {
         const owner = 'remote-refresh-race';
         const base = transport(() => owner);
@@ -763,7 +764,10 @@ test('production progress handler and account store against local D1', async (t)
         failures.delete('F01');
         release();
         await loading;
-        assert.deepEqual(store.getSnapshot().studied.sort(), ['F02', 'F03']);
+        assert.deepEqual([...store.getSnapshot().studied].sort(), [
+          'F02',
+          'F03',
+        ]);
         assert.equal(store.getSnapshot().practice.F01, 'review');
         assert.equal(store.getLessonSaveState('F02'), 'saved');
         assert.equal(store.getLessonSaveState('F03'), 'error');
@@ -788,6 +792,88 @@ test('production progress handler and account store against local D1', async (t)
           )?.studied,
           true,
         );
+      },
+    );
+    await t.test(
+      'a delayed write acknowledgement cannot replace a newer confirmed revision',
+      { timeout: 10000 },
+      async () => {
+        const owner = 'late-acknowledgement';
+        const base = transport(() => owner);
+        let holdCheck = false;
+        let startCheck = () => {};
+        let releaseCheck = () => {};
+        let startAck = () => {};
+        let releaseAck = () => {};
+        const checking = new Promise<void>((resolve) => {
+          startCheck = resolve;
+        });
+        const checkGate = new Promise<void>((resolve) => {
+          releaseCheck = resolve;
+        });
+        const acknowledging = new Promise<void>((resolve) => {
+          startAck = resolve;
+        });
+        const ackGate = new Promise<void>((resolve) => {
+          releaseAck = resolve;
+        });
+        const fetch: typeof globalThis.fetch = async (input, init) => {
+          if (String(input) === '/api/account' && holdCheck) {
+            startCheck();
+            await checkGate;
+          }
+          if (init?.method === 'PATCH') {
+            const { lessonId } = JSON.parse(String(init.body));
+            if (lessonId === 'F02') throw new Error('offline write');
+            const response = await base(input, init);
+            startAck();
+            await ackGate;
+            return response;
+          }
+          return base(input, init);
+        };
+        const store = createProgressStore({
+          storage: localStorageFixture({}),
+          fetch,
+        });
+        await store.initialize();
+        await store.toggleStudied('F02');
+        holdCheck = true;
+        const loading = store.acceptRemote('F02');
+        await checking;
+        const saving = store.toggleStudied('F01');
+        await acknowledging;
+        await send(owner, { ...mutation(owner, 'F01', 1), value: false });
+        let unsubscribe = () => {};
+        const newerRead = new Promise<void>((resolve) => {
+          unsubscribe = store.subscribe(() => {
+            const account = store.getAccountSnapshot();
+            if (
+              account.kind === 'account' &&
+              account.records.some(
+                (row) => row.lessonId === 'F01' && row.revision === 2,
+              )
+            )
+              resolve();
+          });
+        });
+        releaseCheck();
+        await newerRead;
+        unsubscribe();
+        releaseAck();
+        await Promise.all([saving, loading]);
+        const account = store.getAccountSnapshot();
+        assert.equal(account.kind, 'account');
+        assert.equal(
+          account.kind === 'account' &&
+            account.records.find((row) => row.lessonId === 'F01')?.revision,
+          2,
+        );
+        assert.equal(store.getSnapshot().studied.includes('F01'), false);
+        assert.equal(store.getLessonSaveState('F01'), 'saved');
+        const persisted = (await readJson(await read(owner))).records;
+        assert.equal(persisted[0].revision, 2);
+        assert.equal(persisted[0].studied, false);
       },
     );
   } finally {

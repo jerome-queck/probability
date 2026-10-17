@@ -314,6 +314,11 @@ export function createProgressStore(
     session.kind === 'account' &&
     session.data === data;
 
+  function mergeRecord(data: AccountData, row: LessonProgress) {
+    if (row.revision >= (data.records.get(row.lessonId)?.revision ?? 0))
+      data.records.set(row.lessonId, row);
+  }
+
   async function loadSession() {
     const version = ++generation;
     controller.abort();
@@ -368,7 +373,7 @@ export function createProgressStore(
               running: new Map(),
               notice: '',
             };
-      data.records = records;
+      for (const row of records.values()) mergeRecord(data, row);
       data.running.clear();
       data.notice = changed
         ? 'Account changed. Unsaved changes for the previous account were discarded.'
@@ -473,7 +478,7 @@ export function createProgressStore(
           const row = parseRecord(body.record);
           if (row.lessonId !== lessonId)
             throw new Error('Invalid progress response.');
-          data.records.set(lessonId, row);
+          mergeRecord(data, row);
           if (response.status === 409) {
             item.status = 'conflict';
             publish();
@@ -625,9 +630,7 @@ export function createProgressStore(
         if (!response.ok) throw new Error('Progress unavailable.');
         const records = parseRecords(await response.json(), data.owner);
         if (!active(data, version)) return;
-        for (const [id, row] of records)
-          if (row.revision >= (data.records.get(id)?.revision ?? 0))
-            data.records.set(id, row);
+        for (const row of records.values()) mergeRecord(data, row);
         for (const [id, queue] of data.pending) {
           for (let index = queue.length - 1; index >= 0; index--)
             if (discarded.has(queue[index]) && queue[index].status !== 'saving')
