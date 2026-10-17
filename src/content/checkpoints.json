@@ -261,7 +261,7 @@
           "The inverse is \\(x=u/v,y=v\\). Translate both unit-interval restrictions.",
           "For fixed \\(u\\), the allowed \\(v\\) runs from \\(u\\) to 1."
         ],
-        "answer": "The inverse determinant is \\(1/v\\). The new support is \\(0<u<v<1\\), and \\(f_{U,V}(u,v)=1/v\\) there. Integrating gives \\(f_U(u)=\\int_u^1dv/v=-\\log u\\) for \\(0<u<1\\), and zero elsewhere. Its integral is \\([-u\\log u+u]_0^1=1\\), since \\(u\\log u\\to0\\) as \\(u\\downarrow0\\). Using the entire unit square as the transformed support would be wrong."
+        "answer": "The inverse is \\(x=u/v\\), \\(y=v\\) on the transformed support, where \\(v>0\\). The inverse determinant is \\(1/v\\). The new support is \\(0<u<v<1\\), and \\(f_{U,V}(u,v)=1/v\\) there. Integrating gives \\(f_U(u)=\\int_u^1dv/v=-\\log u\\) for \\(0<u<1\\), and zero elsewhere. Its integral is \\([-u\\log u+u]_0^1=1\\), since \\(u\\log u\\to0\\) as \\(u\\downarrow0\\). Using the entire unit square as the transformed support would be wrong."
       },
       {
         "id": "J-check-3",

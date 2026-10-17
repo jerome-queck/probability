@@ -7,7 +7,9 @@
     "prerequisites": [
       "D01"
     ],
-    "results": [],
+    "results": [
+      "fundamental-theorem-calculus"
+    ],
     "summary": "A continuous random variable is described by a density: a nonnegative function that integrates to 1. Probabilities are areas under that curve, the distribution function is the running area from the left, and every single point has probability 0.",
     "intuition": "Probability is area under the density. The height \\(f(x)\\) records how tightly that area is packed near \\(x\\), so the height itself need not be smaller than 1.",
     "definition": [
@@ -380,7 +382,7 @@
       "answer": "\\(T\\sim\\operatorname{gamma}(2,3)\\), with density \\(f(t)=9 t e^{-3t}\\) for \\(t>0\\). Then \\(E[T]=2/3\\) and \\(\\operatorname{Var}(T)=2/9\\). And \\(P(T>1)=e^{-3}(1+3)=4e^{-3}\\). As a check of the second moment, \\(E[T^2]=\\alpha(\\alpha+1)/\\lambda^2=2\\cdot 3/9=2/3\\), so \\(\\operatorname{Var}(T)=2/3-(2/3)^2=2/3-4/9=2/9\\)."
     },
     "caution": "The factorial in the integer case is \\((n-1)!\\), not \\(n!\\). Using \\(n!\\) in the denominator makes the density fail to integrate to 1. A second boundary is the parameterisation: if a formula was derived for a scale parameter \\(\\theta\\), its mean is \\(\\alpha\\theta\\), which matches \\(\\alpha/\\lambda\\) only after \\(\\theta=1/\\lambda\\). Mixing the two conventions doubles or squares the rate in the wrong place.",
-    "bridge": "The gamma and exponential laws are densities of waiting times. The same cdf-then-differentiate step finds the density of a function of any continuous random variable.",
+    "bridge": "The gamma and exponential laws are densities of waiting times. The cdf method also finds the distribution of a function of a continuous random variable. Differentiate only when the transformed law is absolutely continuous; keep any point masses as cdf jumps.",
     "reference": "Background reading: Sheldon Ross, A First Course in Probability, Chapter 5 (gamma random variables)."
   },
   {
@@ -394,10 +396,10 @@
       "R06"
     ],
     "results": [],
-    "summary": "The distribution function of \\(Y=g(X)\\) is a probability statement about \\(X\\), and the density of \\(Y\\) is its derivative. When \\(g\\) is strictly monotone and differentiable, that derivative collapses to a single formula involving the inverse of \\(g\\). Squaring, affine maps, and the logarithm each illustrate the method.",
+    "summary": "The distribution function of \\(Y=g(X)\\) is a probability statement about \\(X\\). If the law of \\(Y\\) is absolutely continuous, differentiating its cdf recovers a density almost everywhere. For a differentiable strictly monotone map satisfying the conditions below, this gives a formula involving the inverse of \\(g\\). Squaring, affine maps, and the logarithm illustrate the method.",
     "intuition": "Probability is pushed forward by \\(g\\), and the factor \\(|h'(y)|=1/|g'(h(y))|\\) rescales the density so the area is preserved. Where \\(g\\) is steep, a stretch of \\(y\\)-values comes from a short stretch of \\(x\\)-values, so the probability is spread thin and the density of \\(Y\\) is low. Where \\(g\\) is flat, the same stretch of \\(y\\) collects a long stretch of \\(x\\), and the density of \\(Y\\) is high.",
     "definition": [
-      "Let \\(X\\) have density \\(f_X\\) and distribution function \\(F_X\\), and let \\(Y=g(X)\\) for a real function \\(g\\). The cdf method has two steps. First write \\(F_Y(y)=P(Y\\le y)=P(g(X)\\le y)\\) as a probability about \\(X\\), and express it through \\(F_X\\). Then differentiate: wherever the derivative exists, \\(f_Y(y)=F_Y'(y)\\).",
+      "Let \\(X\\) have density \\(f_X\\) and distribution function \\(F_X\\), and let \\(Y=g(X)\\) for a real function \\(g\\). The cdf method has two steps. First write \\(F_Y(y)=P(Y\\le y)=P(g(X)\\le y)\\) as a probability about \\(X\\), and express it through \\(F_X\\). If the law of Y is absolutely continuous, differentiate its cdf to obtain a density: \\(f_Y(y)=F_Y'(y)\\) almost everywhere. A general transformation can create point masses, whose probabilities remain as jumps in the cdf; its derivative alone then does not describe the whole law.",
       "The method does not require \\(g\\) to be one-to-one. If several stretches of \\(x\\) land in the same \\(y\\), the event \\(g(X)\\le y\\) is a union of those stretches, and the derivative accounts for all of them at once.",
       "Two maps are used constantly. If \\(Y=aX+b\\) with \\(a\\ne 0\\), the inverse is \\(x=(y-b)/a\\) and \\[f_Y(y)=f_X\\left(\\frac{y-b}{a}\\right)\\frac{1}{|a|},\\] on the range of the map. If \\(Y=X^2\\), the event \\(Y\\le y\\) is empty for \\(y<0\\); for \\(y>0\\) it is \\(-\\sqrt{y}\\le X\\le\\sqrt{y}\\), which brings in both the positive and the negative square root."
     ],

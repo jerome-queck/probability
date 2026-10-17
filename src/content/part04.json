@@ -61,7 +61,8 @@
       "D01"
     ],
     "results": [
-      "linearity-of-expectation"
+      "linearity-of-expectation",
+      "lotus"
     ],
     "summary": "The expectation of a discrete random variable is the sum of each value times its probability. The same weights compute the expectation of a function of the variable, and expectation is linear under scaling and shifting.",
     "intuition": "Expectation is the balance point of the probability masses, and it is the average value you settle on if each number \\(x\\) keeps appearing with frequency \\(p(x)\\).",
@@ -322,7 +323,9 @@
     "prerequisites": [
       "D04"
     ],
-    "results": [],
+    "results": [
+      "vandermonde"
+    ],
     "summary": "When \\(n\\) items are drawn without replacement from a population of size \\(N\\) containing \\(m\\) marked items, the number of marked items in the sample is hypergeometric. Its mean is \\(nm/N\\), and its variance is the binomial variance multiplied by the finite-population factor \\((N-n)/(N-1)\\).",
     "intuition": "Each seat in the sample has the same chance \\(m/N\\) of being filled by a marked item, which fixes the mean at \\(nm/N\\). Once the sample contains more than one item, a marked item already drawn cannot appear again, so the count varies less than a with-replacement count.",
     "definition": [

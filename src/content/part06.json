@@ -10,7 +10,8 @@
     ],
     "results": [
       "inclusion-exclusion",
-      "continuity-of-probability"
+      "continuity-of-probability",
+      "fundamental-theorem-calculus"
     ],
     "summary": "The joint distribution records how random variables behave together. A joint cdf turns rectangle probabilities into arithmetic, a joint pmf or density is summed or integrated to recover each marginal, and the probability of a region is an integral of the joint density over that region.",
     "intuition": "One random variable spreads probability along a line. Two random variables spread it over the plane, and the marginal of either one is what remains after you collapse that plane onto a single axis.",
@@ -85,7 +86,7 @@
     "proof": [
       "Suppose the event definition holds. Taking \\(A=(-\\infty,a]\\) and \\(B=(-\\infty,b]\\) gives \\(F(a,b)=F_X(a)F_Y(b)\\). Conversely, if the cdfs factor, the rectangle formula becomes \\[P(a_1<X\\le a_2,\\, b_1<Y\\le b_2)=\\big(F_X(a_2)-F_X(a_1)\\big)\\big(F_Y(b_2)-F_Y(b_1)\\big),\\] because the alternating sum of products factors as a difference in \\(a\\) times a difference in \\(b\\). Finite disjoint unions of rectangles therefore factor, and monotone limits extend the identity from rectangles to the events used in computations with random variables.",
       "If \\(X\\) and \\(Y\\) are discrete and \\(p(x,y)=p_X(x)p_Y(y)\\) for every pair, then for any sets \\(A\\) and \\(B\\) \\[P(X\\in A,\\, Y\\in B)=\\sum_{x\\in A}\\sum_{y\\in B} p_X(x)p_Y(y)=P(X\\in A)P(Y\\in B).\\] Conversely, singleton sets recover \\(p(x,y)=p_X(x)p_Y(y)\\).",
-      "If a joint density equals the product of the marginal densities, integrating over \\(A\\times B\\) gives the event definition. Conversely, independence gives \\(F(a,b)=F_X(a)F_Y(b)\\), and differentiating both sides where the densities are continuous produces \\(f(x,y)=f_X(x)f_Y(y)\\).",
+      "If a joint density equals the product of the marginal densities, integrating over \\(A\\times B\\) gives the event definition. Conversely, independence says that the joint density and the product \\(f_X(x)f_Y(y)\\) assign the same probability to every rectangle. The standard uniqueness property of densities then gives \\(f(x,y)=f_X(x)f_Y(y)\\) almost everywhere. This argument does not assume continuity of the densities.",
       "Suppose \\(f(x,y)=g(x)h(y)\\) almost everywhere, with \\(G=\\int g\\) and \\(H=\\int h\\). Then \\(GH=\\iint f=1\\), \\(f_X(x)=g(x)H\\) and \\(f_Y(y)=G h(y)\\), so \\(f_X(x)f_Y(y)=g(x)h(y)=f(x,y)\\). The previous step yields independence. If the positive set of \\(f\\) is contained in a rectangle and \\(f\\) factors there, multiply \\(g\\) and \\(h\\) by the indicators of the two sides: the product still equals \\(f\\) off the rectangle, where both sides are zero.",
       "Now let \\(f\\) be positive exactly on the open triangle \\(T=\\{x>0,\\ y>0,\\ x+y<1\\}\\). The event \\(\\{X\\ge 1/2,\\ Y\\ge 1/2\\}\\) lies outside \\(T\\), so it has probability \\(0\\), while \\(P(X\\ge 1/2)P(Y\\ge 1/2)>0\\) since \\(T\\cap\\{x>1/2\\}\\) and \\(T\\cap\\{y>1/2\\}\\) also have positive area. The event definition fails on a pair of events of positive probability, so no almost-everywhere factorisation exists and the coordinates are not independent. \\(\\square\\)"
     ],
@@ -240,7 +241,8 @@
       "R06"
     ],
     "results": [
-      "linearity-of-expectation"
+      "linearity-of-expectation",
+      "order-statistic-law"
     ],
     "summary": "For iid random variables the cdf of the maximum is the common cdf raised to the \\(n\\)th power, and the cdf of the minimum is one minus the \\(n\\)th power of the common survival function. The minimum of independent exponentials is exponential with rate equal to the sum of the rates. The joint density of the minimum and the maximum is explicit, and for \\(n\\) independent uniforms on \\([0,1]\\) the expected range is \\((n-1)/(n+1)\\).",
     "intuition": "The maximum is at most \\(u\\) only when every sample point is at most \\(u\\), and independence turns that into a product. The minimum has failed to exceed \\(u\\) as soon as any one sample point has done so.",
