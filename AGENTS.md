@@ -67,7 +67,7 @@ and reviewer verdicts. Session records use the fixed forms in `.github/pull_requ
    not author the change. Use different models when available and allowed by the task.
 3. CI `check` passes on a head up to date with `main`.
 4. The PR body records verdicts, full reviewed SHAs, actual runner/model/effort, full session
-   identities, skills and evidence. Feature changes link the successful exact-head check run
+   identities, skills and evidence. Every PR links the successful exact-head check run
    whose nonexpired `verify-evidence` artifact contains the driver run and screenshots inspected.
 
 Codex identities are full UUIDs or full canonical paths such as `/root/reviewer_one`.
@@ -89,7 +89,7 @@ Do not hand-edit `dist/`, `node_modules/` or `package-lock.json`. Never commit t
 
 | Rule | Enforcer |
 | --- | --- |
-| No private source identifiers in tree, history, branch or PR text | `scripts/check-forbidden.mjs` + `scripts/check-forbidden.test.mjs` |
+| No private source identifiers in tree, history, branch or PR text | `scripts/check-forbidden.mjs` + `scripts/check-forbidden.test.mjs`; `scripts/check-evidence.mjs` checks live PR text from the trusted base branch |
 | Complete lessons, unique IDs, earlier prerequisites and valid math syntax | `scripts/check-content.mjs` |
 | Explicit complete named-result tags and registered result homes | `scripts/check-results.mjs` + `src/content/results.json` + `scripts/check-results.test.mjs`; semantic completeness requires independent math review |
 | Feature map, drives, baselines, labs, chapters and tests stay synchronized | `scripts/check-drift.mjs` |

@@ -17,7 +17,7 @@
 - Review: <!-- clean / open items; independent review summary and resolved findings. A clean summary cannot override CHANGES NEEDED. -->
 - Reviewer verdicts: <!-- one entry per completed independent session, separated by “;”: R1 codex gpt-6.1-sol effort max CLEAN (session /root/reviewer_one) on <full head SHA>; R2 codex gpt-6.1-sol effort max CLEAN (session /root/reviewer_two) on <full head SHA>. These are syntax examples, not receipts. Use actual runner/model/effort and full Codex UUID or canonical task path. Cursor runner cursor-agent requires its full UUID. Each reviewer and the verifier must be separate sessions that did not author the change. Rerun dropped reviewers. Every verdict must be CLEAN. Notes go in Review. -->
 - Math review: <!-- content PRs: clean - <runner> <model> effort <effort> (session <full identity>) on <full checked commit SHA>; source check and corrections. Run independently while authoring, before verification/review, and again after any lesson edit. The checked commit must be an ancestor with unchanged PR lesson text at the head. -->
-- Verify evidence: <!-- CI run URL (verify-evidence artifact) + the screenshots you opened and inspected, e.g. lessons/open.desktop.png -->
+- Verify evidence: <!-- Every PR: successful check workflow run URL for the exact current head, with a nonempty, nonexpired verify-evidence artifact, plus the screenshots you opened and inspected, e.g. lessons/open.desktop.png -->
 - Skills used: <!-- e.g. poteto-mode, verify-probability, interrogate; runner codex, model gpt-6.1-sol, effort max. Record actual runner, model and effort for each role that differs. -->
 - Evidence: <!-- CI run URL, smoke drives, artifacts, transcripts -->
 
