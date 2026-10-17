@@ -34,30 +34,23 @@ function Bars({
 }) {
   const width = 560;
   const height = 180;
-  const left = 52;
   const count = series[0].values.length;
   const slot = width / count;
   return (
     <figure className="experiment-figure">
-      <svg
-        viewBox={`0 0 ${width + left + 12} ${height + 48}`}
-        role="img"
-        aria-label={label}
-        className="lab-chart"
-      >
-        <title>{label}</title>
-        {[0, 0.5, 1].map((fraction) => (
-          <text
-            key={fraction}
-            x={left - 6}
-            y={12 + height * (1 - fraction) + 5}
-            textAnchor="end"
-            className="chart-tick"
-          >
-            {fmt(max * fraction, 2)}
-          </text>
-        ))}
-        <g transform={`translate(${left}, 12)`}>
+      <div className="chart-frame">
+        <div className="chart-axis chart-y-axis" aria-hidden="true">
+          {[1, 0.5, 0].map((fraction) => (
+            <span key={fraction}>{fmt(max * fraction, 2)}</span>
+          ))}
+        </div>
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          role="img"
+          aria-label={label}
+          className="lab-chart"
+        >
+          <title>{label}</title>
           {series.map((s, si) =>
             s.values.map((v, i) => {
               const h = max > 0 ? (v / max) * height : 0;
@@ -81,27 +74,18 @@ function Bars({
             y2={height}
             stroke="currentColor"
           />
+        </svg>
+        <div className="chart-axis chart-x-axis" aria-hidden="true">
           {[0, Math.floor((count - 1) / 2), count - 1].map((index) => (
-            <text
+            <span
               key={index}
-              x={
-                index === 0
-                  ? 0
-                  : index === count - 1
-                    ? width
-                    : (index + 0.5) * slot
-              }
-              y={height + 24}
-              textAnchor={
-                index === 0 ? 'start' : index === count - 1 ? 'end' : 'middle'
-              }
-              className="chart-tick"
+              className={index > 0 && index < count - 1 ? 'middle-tick' : ''}
             >
               {xLabels[index]}
-            </text>
+            </span>
           ))}
-        </g>
-      </svg>
+        </div>
+      </div>
       <figcaption>
         {xLabel} horizontally. {yLabel} vertically.
       </figcaption>

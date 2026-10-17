@@ -49,6 +49,8 @@ Automated runs create fresh directories under `artifacts/smoke/` and `artifacts/
 
 Mapped states capture the relevant region (`captureSelector`), such as the revealed answer, account panel or experiment. Full release smoke retains pixel comparison against committed baselines. Inspect every changed desktop and mobile screenshot. A passing DOM assertion or generated baseline is not a visual verdict.
 
+Content-region captures keep the declared width and temporarily grow viewport height to show the complete card. Sticky navigation is hidden outside its own captures; the original viewport is restored afterward. Rendering checks require readable axis labels, nonoverlapping ticks and legend colors matching their plotted series.
+
 For intended changes, `smoke --update-baselines` generates candidates; inspect every changed image before accepting it. Preserve originals until that decision. Missing or differing baselines fail release checks. New visual states require smoke drives, feature documentation and inspected baselines together.
 
 Changed mathematical text requires independent review on its final contents. Keep verifier, reviewer, mathematical and hosted-authentication evidence separate and truthful.

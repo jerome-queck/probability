@@ -28,6 +28,42 @@ export async function renderingProblems(page) {
       )
         problems.push(`clipped chart label: “${text.textContent}”`);
     }
+    for (const figure of document.querySelectorAll('.experiment-figure')) {
+      const outside = figure.getBoundingClientRect();
+      for (const label of figure.querySelectorAll('.chart-axis span')) {
+        const bounds = label.getBoundingClientRect();
+        if (!bounds.width) continue;
+        if (
+          parseFloat(getComputedStyle(label).fontSize) < 12 ||
+          bounds.left < outside.left - 1 ||
+          bounds.right > outside.right + 1 ||
+          bounds.top < outside.top - 1 ||
+          bounds.bottom > outside.bottom + 1
+        )
+          problems.push(`unreadable chart label: “${label.textContent}”`);
+      }
+      const ticks = [...figure.querySelectorAll('.chart-x-axis span')]
+        .map((label) => label.getBoundingClientRect())
+        .filter((bounds) => bounds.width);
+      if (
+        ticks.some(
+          (bounds, index) => index && bounds.left < ticks[index - 1].right,
+        )
+      )
+        problems.push('overlapping chart labels');
+      for (const swatch of figure.querySelectorAll('.chart-legend i')) {
+        const bar = figure.querySelector(
+          `rect.${CSS.escape(swatch.className)}`,
+        );
+        if (
+          !bar ||
+          getComputedStyle(bar).fill !==
+            getComputedStyle(swatch).backgroundColor ||
+          getComputedStyle(bar).opacity !== getComputedStyle(swatch).opacity
+        )
+          problems.push('chart legend does not match its series');
+      }
+    }
     // A display formula wider than its box is clipped on screen even when the page
     // itself does not scroll sideways, so check each one.
     for (const el of document.querySelectorAll('.katex-display, .math-block')) {
@@ -153,6 +189,12 @@ export function watchErrors(page, expectedConsole = () => false) {
 export async function capturePage(page, path, selector) {
   mkdirSync(dirname(path), { recursive: true });
   const region = selector ? page.locator(selector) : page.locator('body');
+  const viewport = page.viewportSize();
+  const content =
+    selector &&
+    (await region.evaluate(
+      (node) => !!node.closest('main') && !node.closest('.topbar'),
+    ));
   if (selector) await region.scrollIntoViewIfNeeded();
   await page.addStyleTag({
     content:
@@ -165,11 +207,35 @@ export async function capturePage(page, path, selector) {
         })
       : null;
   try {
+    if (content && viewport) {
+      const box = await region.boundingBox();
+      if (box && box.height + 32 > viewport.height)
+        await page.setViewportSize({
+          width: viewport.width,
+          height: Math.ceil(box.height + 32),
+        });
+      await region.evaluate((node) =>
+        window.scrollTo({
+          top: window.scrollY + node.getBoundingClientRect().top - 16,
+          behavior: 'instant',
+        }),
+      );
+      const visible = await region.boundingBox();
+      if (
+        !visible ||
+        visible.y < -1 ||
+        visible.y + visible.height > page.viewportSize().height + 1
+      )
+        throw new Error(
+          `capture region is not fully visible: ${selector} ${JSON.stringify({ visible, viewport: page.viewportSize() })}`,
+        );
+    }
     if (selector) await region.screenshot({ path, animations: 'disabled' });
     else
       await page.screenshot({ path, fullPage: false, animations: 'disabled' });
   } finally {
     await chrome?.evaluate((node) => node.remove());
+    if (viewport) await page.setViewportSize(viewport);
   }
   writeFileSync(
     path.replace(/\.png$/, '.aria.txt'),

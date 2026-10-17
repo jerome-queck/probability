@@ -970,10 +970,12 @@ main {
   color: var(--line-strong);
 }
 .bar-primary {
-  fill: var(--accent);
+  color: var(--accent);
+  fill: currentColor;
 }
 .bar-secondary {
-  fill: var(--result);
+  color: var(--result);
+  fill: currentColor;
   opacity: 0.75;
 }
 
@@ -1316,10 +1318,7 @@ summary {
   width: 12px;
   height: 12px;
   margin-right: 6px;
-  background: var(--accent);
-}
-.chart-legend .bar-secondary {
-  background: #919edc;
+  background: currentColor;
 }
 .table-scroll {
   max-height: 320px;
@@ -1485,10 +1484,46 @@ button:disabled {
   margin-bottom: 0.45rem;
   color: var(--muted);
 }
-.chart-tick {
-  fill: var(--muted);
-  font-family: var(--sans);
-  font-size: 16px;
+.chart-frame {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 8px;
+  margin: 14px 0;
+  padding-block: 10px;
+}
+.chart-frame .lab-chart {
+  margin: 0;
+}
+.chart-axis {
+  font: 12px / 1.4 var(--sans);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.chart-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: right;
+}
+.chart-y-axis span:first-child {
+  transform: translateY(-50%);
+}
+.chart-y-axis span:last-child {
+  transform: translateY(50%);
+}
+.chart-x-axis {
+  grid-column: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.chart-axis span {
+  white-space: nowrap;
+}
+@media (max-width: 520px) {
+  .chart-x-axis .middle-tick {
+    display: none;
+  }
 }
 @media (max-width: 380px) {
   .reading-shell,
