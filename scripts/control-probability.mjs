@@ -17,7 +17,9 @@ import {
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { orphanProblems } from './orphans.mjs';
+import { selectSmokeStates } from './smoke-selection.mjs';
 
 export const commands = [
   'launch',
@@ -31,7 +33,7 @@ export const commands = [
   'smoke',
   'help',
 ];
-const root = resolve(dirname(new URL(import.meta.url).pathname), '..');
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
 const cmd = args[0] ?? 'help';
 const opt = (name, fallback) => {
@@ -383,10 +385,8 @@ async function compare(actualPath, baselinePath, diffPath) {
 }
 
 async function smoke() {
-  const base = mkdtempSync(join(tmpdir(), 'probability-smoke-'));
-  dataDir = base;
   const update = args.includes('--update-baselines');
-  const only = opt('only');
+  const only = args.includes('--only') ? (opt('only') ?? '') : undefined;
   const out = resolve(opt('artifacts', join(root, 'artifacts/smoke')));
   keptLog = join(out, 'server.log');
   const fx = JSON.parse(
@@ -395,6 +395,13 @@ async function smoke() {
       'utf8',
     ),
   );
+  const steps = selectSmokeStates(fx, only, Object.keys(viewports));
+  const expectedShots = steps.reduce(
+    (n, step) => n + (step.viewports ?? Object.keys(viewports)).length,
+    0,
+  );
+  const base = mkdtempSync(join(tmpdir(), 'probability-smoke-'));
+  dataDir = base;
   const failures = [];
   let shots = 0;
   let browserApp;
@@ -420,8 +427,7 @@ async function smoke() {
     await doctor();
     if (process.exitCode) throw new Error('doctor failed');
     const { url } = readState();
-    for (const step of fx) {
-      if (only && !`${step.feature}/${step.id}`.includes(only)) continue;
+    for (const step of steps) {
       for (const vp of step.viewports ?? Object.keys(viewports)) {
         const page = await browserApp.newPage({
           viewport: viewports[vp],
@@ -503,7 +509,7 @@ async function smoke() {
     }
     // Sweep: every lesson at both widths gets the rendering checks, so a clipped or
     // orphaned formula on a page that has no smoke state still fails.
-    if (!only) {
+    if (only === undefined) {
       const contentDir = join(root, 'src/content');
       const slug = (t) =>
         t
@@ -571,6 +577,8 @@ async function smoke() {
     }
     rmSync(base, { recursive: true, force: true });
   }
+  if (shots !== expectedShots)
+    failures.push(`captured ${shots} screenshots; expected ${expectedShots}`);
   if (failures.length) {
     console.error(failures.map((f) => `smoke: ${f}`).join('\n'));
     throw new Error(
@@ -632,7 +640,7 @@ const run = {
   snapshot --url PATH --path FILE      save the ARIA snapshot of <main>
   screenshot --url PATH --path FILE    save a PNG
   stop                                 stop only the instance this data dir started; artifacts stay
-  smoke [--only F/ID] [--update-baselines]   every visual state at desktop and mobile: drive, check rendering, screenshot, compare with baselines`),
+  smoke [--only F/ID] [--update-baselines]   all visual states, or one exact feature/state; unknown or empty selections fail`),
 };
 
 if (!run[cmd]) {

@@ -8,250 +8,279 @@ import {
   MATH_EXAMPLE,
   mathReviewErrors,
   reviewerErrors,
+  skillsUsedErrors,
   staleMathErrors,
+  verifiedHeadErrors,
+  verifierErrors,
 } from './evidence-rules.mjs';
 
-// PR #18's merged body: the review line says both second-opinion sessions dropped, and there
-// was no per-reviewer record. That merge should not have passed.
+const head = '0747d3d290bf08c57b35fb458c8d410994137dad';
+const oldHead = '1b4a785399e55446fb71214551587e77c95bab6f';
+const first = `R1 codex gpt-6.1-sol effort max CLEAN (session /root/reviewer_one) on ${head}`;
+const second = `R2 codex gpt-6.1-sol effort max CLEAN (session /root/reviewer_two) on ${head}`;
+const verifier = `VERIFIED codex gpt-6.1-sol effort max (session /root/verifier) on ${head}`;
+const math = `clean - codex gpt-6.1-sol effort max (session /root/math_check) on ${head}`;
 const pr18 = readFileSync('scripts/fixtures/pr18-review-line.txt', 'utf8');
-
-test('PR #18: a lead-only review with dropped reviewers fails', () => {
-  const field = /^- Reviewer verdicts:\s*(.+)$/m.exec(pr18)?.[1];
-  assert.equal(field, undefined);
-  assert.ok(reviewerErrors(field).length > 0);
-});
-
-const ok =
-  'R1 grok-4.7-high CLEAN (session 5e19ac26-2c3f); R2 grok-4.7-high CHANGES NEEDED (session 3cbed3fe)';
-
-test('every reviewer reported, in the fixed form: passes', () => {
-  assert.deepEqual(reviewerErrors(ok), []);
-});
-
-test('one reviewer is not enough', () => {
-  assert.match(
-    reviewerErrors('R1 grok-4.7-high CLEAN (session 5e19ac26)').join('\n'),
-    /at least 2/,
-  );
-});
-
-// Every phrasing the verifiers of #20 got past the earlier word-matching rules (r1, r2).
-test('dropped, silent or annotated entries fail', () => {
-  for (const bad of [
-    'R2 grok-4.7-high dropped before reporting',
-    'R2 grok-4.7-high CLEAN (silent)',
-    'R2 grok-4.7-high CLEAN (timed-out)',
-    'R2 grok-4.7-high CLEAN, not reported',
-    'R2 grok-4.7-high CLEAN, silently',
-    'R2 grok-4.7-high CLEAN (no verdicts)',
-    'R2 CLEAN (session 3cbed3fe)',
-  ])
-    assert.match(
-      reviewerErrors(`R1 grok-4.7-high CLEAN (session 5e19ac26); ${bad}`).join(
-        '\n',
-      ),
-      /must have the form/,
-      bad,
-    );
-});
-
-test('-fast, xhigh and slash tiers fail', () => {
-  for (const t of [
-    'grok-4.7-high-fast',
-    'grok-4.7-xhigh',
-    'grok-4.7-high/fast',
-  ])
-    assert.match(
-      reviewerErrors(
-        `R1 grok-4.7-high CLEAN (session 5e19ac26); R2 ${t} CLEAN (session 3cbed3fe)`,
-      ).join('\n'),
-      /must have the form/,
-      t,
-    );
-});
-
-test('the same reviewer twice does not make two', () => {
-  assert.match(
-    reviewerErrors(
-      'R1 grok-4.7-high CLEAN (session 5e19ac26); R1 grok-4.7-high CLEAN (session 5e19ac27)',
-    ).join('\n'),
-    /R1 twice/,
-  );
-});
-
-// Found by #20 verifier r3: one session listed twice, R01 beside R1, a task id, a zero id or a
-// trailing hyphen all counted as separate reported reviewers.
-test('one session listed twice does not make two reviewers', () => {
-  for (const second of ['5e19ac26', '5e19ac26-2c3f'])
-    assert.match(
-      reviewerErrors(
-        `R1 grok-4.7-high CLEAN (session 5e19ac26); R2 grok-4.7-high CLEAN (session ${second})`,
-      ).join('\n'),
-      /session 5e19ac26 twice/,
-      second,
-    );
-});
-
-test('R01, task ids, zero ids and trailing hyphens fail', () => {
-  for (const bad of [
-    'R01 grok-4.7-high CLEAN (session 3cbed3fe)',
-    'R2 grok-4.7-high CLEAN (task 3cbed3fe)',
-    'R2 grok-4.7-high CLEAN (session 3cbed3fe-)',
-    'R2 grok-4.7-high CLEAN (session 3CBED3FE)',
-  ])
-    assert.match(
-      reviewerErrors(`R1 grok-4.7-high CLEAN (session 5e19ac26); ${bad}`).join(
-        '\n',
-      ),
-      /must have the form/,
-      bad,
-    );
-  assert.match(
-    reviewerErrors(
-      'R1 grok-4.7-high CLEAN (session 5e19ac26); R2 grok-4.7-high CLEAN (session 00000000)',
-    ).join('\n'),
-    /not a real session id/,
-  );
-});
-
-// PR #20 reviewer 2 (081b7938): the shape the errors showed did not pass the check, and the
-// "rerun" advice did not say how, so an agent reran the same dropping Task path.
-test('every error shows a form that passes and says how to rerun', () => {
-  assert.deepEqual(reviewerErrors(EXAMPLE), []);
-  const cases = {
-    missing: reviewerErrors(undefined),
-    malformed: reviewerErrors(
-      'R1 grok-4.7-high CLEAN (session 5e19ac26); R2 dropped',
-    ),
-    sameSession: reviewerErrors(
-      'R1 grok-4.7-high CLEAN (session 5e19ac26); R2 grok-4.7-high CLEAN (session 5e19ac26)',
-    ),
-  };
-  for (const [name, errors] of Object.entries(cases)) {
-    const text = errors.join('\n');
-    assert.match(text, /own top-level session/, name);
-    assert.match(text, /one reviewer at a time/, name);
-    assert.match(text, /no Task subagents/, name);
-  }
-  // The form quoted in the malformed-entry error passes as written (with a second reviewer).
-  const quoted = /form “([^”]+)”/.exec(cases.malformed.join('\n'))?.[1];
-  assert.ok(quoted);
-  assert.deepEqual(
-    reviewerErrors(
-      `${quoted}; ${quoted.replace('R1', 'R2').replace('5e19ac26', '3cbed3fe')}`,
-    ),
-    [],
-  );
-  assert.ok(cases.missing.join('\n').includes(EXAMPLE));
-});
-
-test('duplicate number and fake id errors name the correction', () => {
-  assert.match(
-    reviewerErrors(
-      'R1 grok-4.7-high CLEAN (session 5e19ac26); R1 grok-4.7-high CLEAN (session 3cbed3fe)',
-    ).join('\n'),
-    /number the reviewers R1, R2, … once each/,
-  );
-  assert.match(
-    reviewerErrors(
-      'R1 grok-4.7-high CLEAN (session 5e19ac26); R2 grok-4.7-high CLEAN (session 00000000)',
-    ).join('\n'),
-    /session= id agent-run\.sh printed/,
-  );
-});
-
-// PR #13 merged with its math check on daf7a37 and E03 (src/content/part07.json) edited after it.
 const pr13 = JSON.parse(
   readFileSync('scripts/fixtures/pr13-math-review.json', 'utf8'),
 );
 
+test('PR #18: a lead-only review with dropped reviewers fails', () => {
+  const field = /^- Reviewer verdicts:\s*(.+)$/m.exec(pr18)?.[1];
+  assert.equal(field, undefined);
+  assert.ok(reviewerErrors(field, head).length > 0);
+});
+
+test('two completed Codex reviewers on the exact head pass', () => {
+  assert.deepEqual(reviewerErrors(`${first}; ${second}`, head), []);
+  assert.deepEqual(reviewerErrors(EXAMPLE, head), []);
+});
+
+test('one completed reviewer is insufficient', () => {
+  assert.match(reviewerErrors(first, head).join('\n'), /at least 2/);
+});
+
+test('CHANGES NEEDED fails even when the other reviewer is clean', () => {
+  assert.match(
+    reviewerErrors(
+      `${first}; ${second.replace('CLEAN', 'CHANGES NEEDED')}`,
+      head,
+    ).join('\n'),
+    /reported CHANGES NEEDED/,
+  );
+});
+
+test('dropped, silent and annotated reviewers fail', () => {
+  for (const bad of [
+    'R2 dropped before reporting',
+    second.replace('CLEAN', 'CLEAN (silent)'),
+    second.replace('CLEAN', 'CLEAN, not reported'),
+    `${second}; no verdict`,
+  ])
+    assert.match(
+      reviewerErrors(`${first}; ${bad}`, head).join('\n'),
+      /must have the form/,
+      bad,
+    );
+});
+
+test('reviewer numbers and full session identities must be distinct', () => {
+  assert.match(
+    reviewerErrors(`${first}; ${second.replace('R2', 'R1')}`, head).join('\n'),
+    /R1 twice/,
+  );
+  assert.match(
+    reviewerErrors(
+      `${first}; ${second.replace('/root/reviewer_two', '/root/reviewer_one')}`,
+      head,
+    ).join('\n'),
+    /repeats session/,
+  );
+  assert.match(
+    reviewerErrors(`${first}; ${second}`, head, '/root/reviewer_one').join(
+      '\n',
+    ),
+    /separate independent sessions/,
+  );
+});
+
+test('full UUIDs and nested canonical Codex task identities are accepted', () => {
+  for (const session of [
+    '5e19ac26-2c3f-4de0-9840-96c135a1e1b8',
+    '/root/review_round/reviewer_one',
+  ])
+    assert.deepEqual(
+      reviewerErrors(
+        `${first.replace('/root/reviewer_one', session)}; ${second}`,
+        head,
+      ),
+      [],
+    );
+});
+
+test('full sessions sharing an eight-character prefix remain distinct', () => {
+  const one = first.replace(
+    '/root/reviewer_one',
+    '5e19ac26-2c3f-4de0-9840-96c135a1e1b8',
+  );
+  const two = second.replace(
+    '/root/reviewer_two',
+    '5e19ac26-2c3f-4de0-9840-96c135a1e1b9',
+  );
+  assert.deepEqual(reviewerErrors(`${one}; ${two}`, head), []);
+});
+
+test('truncated, malformed, nil and noncanonical identities fail', () => {
+  for (const session of [
+    '5e19ac26',
+    '5e19ac26-2c3f',
+    '5e19ac26-2c3f-4de0-9840-96c135a1e1b8-',
+    '5E19AC26-2C3F-4DE0-9840-96C135A1E1B8',
+    '00000000-0000-0000-0000-000000000000',
+    '/root',
+    '/root/reviewer-one',
+    '/root/reviewer_one/',
+  ])
+    assert.ok(
+      reviewerErrors(
+        `${first}; ${second.replace('/root/reviewer_two', session)}`,
+        head,
+      ).length > 0,
+      session,
+    );
+});
+
+test('legacy aliases, omitted effort and unsupported effort fail', () => {
+  for (const bad of [
+    second.replace('R2', 'R02'),
+    second.replace('(session ', '(task '),
+    second.replace(' effort max', ''),
+    second.replace('effort max', 'effort inherit'),
+    second.replace('codex ', 'unknown-runner '),
+  ])
+    assert.match(
+      reviewerErrors(`${first}; ${bad}`, head).join('\n'),
+      /must have the form/,
+      bad,
+    );
+});
+
+test('Cursor remains usable with a full UUID and explicit model and effort', () => {
+  const cursor = second
+    .replace('codex', 'cursor-agent')
+    .replace('/root/reviewer_two', '3cbed3fe-2c3f-4de0-9840-96c135a1e1b8');
+  assert.deepEqual(reviewerErrors(`${first}; ${cursor}`, head), []);
+  assert.ok(
+    reviewerErrors(`${first}; ${second.replace('codex', 'cursor-agent')}`, head)
+      .length > 0,
+  );
+});
+
+test('stale and shortened reviewer head SHAs fail', () => {
+  assert.match(
+    reviewerErrors(`${first}; ${second.replace(head, oldHead)}`, head).join(
+      '\n',
+    ),
+    /must review the current head/,
+  );
+  assert.ok(
+    reviewerErrors(`${first}; ${second.replace(head, head.slice(0, 7))}`, head)
+      .length > 0,
+  );
+});
+
+test('verifier requires a complete independent exact-head record', () => {
+  assert.deepEqual(verifierErrors(verifier, head), {
+    errors: [],
+    session: '/root/verifier',
+  });
+  for (const bad of [
+    'VERIFIED by the lead',
+    verifier.replace('VERIFIED', 'INCONCLUSIVE'),
+    verifier.replace('VERIFIED', 'NOT VERIFIED'),
+    verifier.replace(head, head.slice(0, 7)),
+    verifier.replace(head, oldHead),
+    verifier.replace('/root/verifier', '5e19ac26'),
+  ])
+    assert.ok(verifierErrors(bad, head).errors.length > 0, bad);
+});
+
+test('the verified-head field requires the exact full head', () => {
+  assert.deepEqual(verifiedHeadErrors(head, head), []);
+  for (const bad of ['', head.slice(0, 7), `${head}0`, oldHead])
+    assert.ok(verifiedHeadErrors(bad, head).length > 0, bad);
+});
+
+test('skills record the actual runner, model and effort', () => {
+  assert.deepEqual(
+    skillsUsedErrors(
+      'poteto-mode, verify-probability, interrogate; runner codex, model gpt-6.1-sol, effort max',
+    ),
+    [],
+  );
+  for (const bad of [
+    'verify-probability',
+    'verify-probability; runner codex, model gpt-6.1-sol',
+    'verify-probability; runner codex, model gpt-6.1-sol, effort unknown',
+    'poteto-mode; runner codex, model gpt-6.1-sol, effort max',
+  ])
+    assert.ok(skillsUsedErrors(bad).length > 0, bad);
+});
+
 test('PR #13: free-text math review fails the fixed form', () => {
   assert.match(
     mathReviewErrors(pr13.mathReview).errors.join('\n'),
-    /must read “clean — grok-4\.7-high \(session 74c693ac\) on 7b6bf0c/,
+    /must read/,
   );
 });
 
-test('PR #13: lesson text changed after the math check fails', () => {
+test('PR #13: changed lesson text after the math check fails', () => {
   assert.match(
-    staleMathErrors('daf7a37', pr13.compare, pr13.prFiles).join('\n'),
-    /content changed after the math check on daf7a37: src\/content\/part07\.json; run the math check on the head/,
+    staleMathErrors(head, pr13.compare, pr13.prFiles).join('\n'),
+    /content changed after the math check .*src\/content\/part07\.json/,
   );
 });
 
-test('the example and a math check on the head pass', () => {
-  assert.deepEqual(mathReviewErrors(MATH_EXAMPLE), {
-    errors: [],
-    sha: '7b6bf0c',
-  });
+test('clean math records require the full checked commit', () => {
+  assert.deepEqual(mathReviewErrors(MATH_EXAMPLE), { errors: [], sha: head });
+  assert.deepEqual(mathReviewErrors(math), { errors: [], sha: head });
   assert.deepEqual(
-    mathReviewErrors(
-      'clean - grok-4.7-high (session c2b59ec2-c4a2-4af6-a4ec-435f15363ca7) on daf7a37',
-    ).errors,
+    staleMathErrors(head, { status: 'identical', files: [] }, pr13.prFiles),
     [],
   );
+});
+
+test('only lesson files this PR changes affect math freshness', () => {
   assert.deepEqual(
     staleMathErrors(
-      '7b6bf0c',
-      { status: 'identical', files: [] },
+      head,
+      {
+        status: 'ahead',
+        files: ['src/content/part03.json', 'scripts/x.mjs', 'baseline.png'],
+      },
       pr13.prFiles,
     ),
     [],
   );
 });
 
-test('only lesson files this PR changes count; a non-ancestor commit fails', () => {
-  const compare = {
-    status: 'ahead',
-    files: ['src/content/part03.json', 'scripts/x.mjs', 'baseline.png'],
-  };
-  assert.deepEqual(staleMathErrors('daf7a37', compare, pr13.prFiles), []);
-  assert.match(
-    staleMathErrors(
-      'daf7a37',
-      { status: 'diverged', files: [] },
-      pr13.prFiles,
-    ).join('\n'),
-    /not an ancestor of the head/,
-  );
+test('a non-ancestor math commit fails', () => {
+  for (const status of ['behind', 'diverged'])
+    assert.match(
+      staleMathErrors(head, { status, files: [] }, pr13.prFiles).join('\n'),
+      /not an ancestor of the head/,
+    );
 });
 
-test('malformed math reviews fail', () => {
+test('incomplete and failed math records fail', () => {
   for (const bad of [
     'clean',
-    'clean — grok-4.7-high on 7b6bf0c',
-    'clean — grok-4.7-xhigh (session 74c693ac) on 7b6bf0c',
-    'clean — grok-4.7-high (session 74c693ac) on 7b6bf0cz',
-    'clean — grok-4.7-high (session 74C693AC) on 7b6bf0c',
-    'CHANGES NEEDED — grok-4.7-high (session 74c693ac) on 7b6bf0c',
-    'clean — grok-4.7-high (session 00000000) on 7b6bf0c',
-    'clean — grok-4.7-high (session 74c693ac) on 7b6bf0c, then edited',
+    math.replace(' effort max', ''),
+    math.replace(head, head.slice(0, 7)),
+    math.replace(head, `${head}z`),
+    math.replace('clean', 'CHANGES NEEDED'),
+    math.replace('/root/math_check', '74c693ac'),
+    math.replace('/root/math_check', '00000000-0000-0000-0000-000000000000'),
+    `${math}, then edited`,
   ])
     assert.ok(mathReviewErrors(bad).errors.length > 0, bad);
 });
 
-// PR #22 reviewer 1 (7c821cb5): a failed compare named neither GitHub's error nor the fix, and a
-// truncated compare list could hide a changed lesson.
-test('a compare that GitHub cannot resolve names its error and the fix', () => {
-  const stderr = 'gh: Not Found (HTTP 404)\n';
+test('a failed GitHub compare names its error and correction', () => {
   assert.match(
-    compareFailedErrors('0000000', stderr).join('\n'),
-    /commit 0000000 was not found on GitHub \(gh: Not Found \(HTTP 404\)\); push it, or run the math check on the head/,
+    compareFailedErrors(head, 'gh: Not Found (HTTP 404)\n').join('\n'),
+    /was not found on GitHub .*push it, or run an independent math check/,
   );
   assert.match(
-    compareFailedErrors('7b6bf0c', 'gh: Service Unavailable (HTTP 503)').join(
-      '\n',
-    ),
-    /could not compare .*\(gh: Service Unavailable \(HTTP 503\)\); re-run the evidence job/,
+    compareFailedErrors(head, 'gh: Service Unavailable (HTTP 503)').join('\n'),
+    /could not compare .*HTTP 503.*re-run the evidence job/,
   );
 });
 
-test("a compare list at GitHub's file cap fails closed", () => {
+test("a compare at GitHub's file cap fails closed", () => {
   const files = Array.from({ length: COMPARE_FILE_CAP }, (_, i) => `f${i}`);
   assert.match(
-    staleMathErrors('daf7a37', { status: 'ahead', files }, pr13.prFiles).join(
-      '\n',
-    ),
-    /lists 300 files, GitHub's cap, so it may be incomplete/,
+    staleMathErrors(head, { status: 'ahead', files }, pr13.prFiles).join('\n'),
+    /lists 300 files, GitHub's cap/,
   );
 });
