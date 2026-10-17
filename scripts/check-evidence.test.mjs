@@ -24,7 +24,11 @@ writeFileSync(
   join(directory, 'gh'),
   `#!/usr/bin/env node
 const fixture = JSON.parse(process.env.PROBABILITY_GATE_FIXTURE);
-process.stdout.write(JSON.stringify(process.argv[2] === 'api' ? fixture.compare : fixture.pr));
+const fields = process.argv[process.argv.indexOf('--json') + 1]?.split(',') ?? [];
+const result = process.argv[2] === 'api'
+  ? fixture.compare
+  : Object.fromEntries(fields.map((field) => [field, fixture.pr[field]]));
+process.stdout.write(JSON.stringify(result));
 `,
   { mode: 0o755 },
 );
@@ -44,6 +48,7 @@ after(() => rmSync(directory, { recursive: true, force: true }));
 function gate(overrides = {}) {
   const fixture = {
     pr: {
+      title: 'Require complete verification evidence',
       body,
       headRefOid: head,
       files: [{ path: 'src/content/part01.json' }],
@@ -117,6 +122,38 @@ test('the evidence event must still match the live PR head', () => {
   assert.match(result.stderr, /PR head changed or is invalid/);
 });
 
+test('every PR change requires CI artifact evidence', () => {
+  for (const path of [
+    'app/api/progress/route.ts',
+    'docs/verification.md',
+    'future/new-surface.ts',
+  ]) {
+    const pr = { files: [{ path }] };
+    const valid = gate({ pr });
+    assert.equal(valid.status, 0, valid.stderr);
+    const missing = gate({ pr, artifacts: [] });
+    assert.equal(missing.status, 1, missing.stderr || missing.stdout);
+    assert.match(missing.stderr, /no verify-evidence artifact/);
+  }
+});
+
+test('CI evidence must name its run and inspected screenshots', () => {
+  for (const invalidBody of [
+    body.replace(/^- Verify evidence:.*$/m, ''),
+    body.replace(
+      'https://github.com/example/probability/actions/runs/123',
+      'no CI run',
+    ),
+    body.replaceAll('.png', '.txt'),
+  ]) {
+    const result = gate({
+      pr: { body: invalidBody, files: [{ path: 'docs/verification.md' }] },
+    });
+    assert.equal(result.status, 1, result.stderr || result.stdout);
+    assert.match(result.stderr, /Verify evidence.*must link/);
+  }
+});
+
 test('a successful CI run for an old head cannot supply current proof', () => {
   const result = gate({ run: { head_sha: previousHead } });
   assert.equal(result.status, 1, result.stderr);
@@ -146,6 +183,32 @@ test('missing, expired, empty and wrong artifacts cannot supply proof', () => {
     assert.equal(result.status, 1, result.stderr);
     assert.match(result.stderr, /no verify-evidence artifact/);
   }
+});
+
+test('live PR title and raw body must satisfy the public-content rule', () => {
+  const forbidden = ['QQ', '1234'].join('');
+  for (const pr of [
+    { title: `Explain ${forbidden}` },
+    { body: `${body}\nPrivate reference ${forbidden}` },
+    { body: `${body}\n<!-- Private reference ${forbidden} -->` },
+  ]) {
+    const result = gate({ pr });
+    assert.equal(result.status, 1, result.stderr || result.stdout);
+    assert.match(result.stderr, /forbidden course code.*pull-request-text/);
+  }
+});
+
+test('commented verdict records still cannot supply evidence', () => {
+  const result = gate({
+    pr: {
+      body: body.replace(
+        /- Verifier verdict: (.*)/,
+        '<!-- - Verifier verdict: $1 -->',
+      ),
+    },
+  });
+  assert.equal(result.status, 1, result.stderr);
+  assert.match(result.stderr, /Verifier verdict/);
 });
 
 test('a clean summary cannot override a failed reviewer in the complete gate', () => {
