@@ -38,6 +38,7 @@ Automated runs preserve immutable PNG/ARIA files, logs and structured results in
 Smoke captures the changed region, including answers and lab controls. Full release runs compare pixels with committed baselines. Inspect changed desktop/mobile images before a visual verdict or baseline acceptance. `--capture` and `--update-baselines` never count as release comparison. Preserve original baselines until consciously accepting inspected replacements.
 
 Content-region captures keep the declared width and temporarily grow viewport height to show the complete card. Sticky navigation is hidden outside its own captures; the original viewport is restored afterward. Rendering checks require readable axis labels, nonoverlapping ticks and legend colors matching their plotted series.
+Requested hover and keyboard focus are asserted after capture positioning; hover captures restore the intended pointer target and require its computed background to change.
 
 Changed content needs independent mathematical review on its final text. Keep verifier, two reviewer verdicts, actual runner/model/effort/session and exact reviewed contents distinct. Bugbot adds feedback; it does not replace independent verdicts.
 

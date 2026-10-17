@@ -186,7 +186,7 @@ export function watchErrors(page, expectedConsole = () => false) {
   return errors;
 }
 
-export async function capturePage(page, path, selector) {
+export async function capturePage(page, path, selector, beforeCapture) {
   mkdirSync(dirname(path), { recursive: true });
   const region = selector ? page.locator(selector) : page.locator('body');
   const viewport = page.viewportSize();
@@ -220,6 +220,9 @@ export async function capturePage(page, path, selector) {
           behavior: 'instant',
         }),
       );
+    }
+    await beforeCapture?.();
+    if (content && viewport) {
       const visible = await region.boundingBox();
       if (
         !visible ||

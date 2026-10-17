@@ -383,11 +383,14 @@ async function stop() {
 const baselineDir = join(root, '.cursor/skills/verify-probability/baselines');
 const maxDiffRatio = Number(process.env.VISUAL_MAX_DIFF ?? 0.002);
 
+function actionTarget(page, action) {
+  return action.role
+    ? page.getByRole(action.role, { name: action.name, exact: true }).first()
+    : page.locator(action.selector).first();
+}
+
 async function act(page, action) {
-  const target = (a) =>
-    a.role
-      ? page.getByRole(a.role, { name: a.name, exact: true }).first()
-      : page.locator(a.selector).first();
+  const target = (a) => actionTarget(page, a);
   if (action.click) await target(action.click).click();
   if (action.hover) await target(action.hover).hover();
   if (action.focus) {
@@ -682,7 +685,43 @@ async function smoke() {
               `expected ${step.expectPath}, got ${record.path}`,
             );
           record.failures.push(...(await renderingProblems(page)));
-          await capturePage(page, shot, step.captureSelector);
+          await capturePage(page, shot, step.captureSelector, async () => {
+            const action = step.actions?.at(-1);
+            if (action?.hover) {
+              const target = actionTarget(page, action.hover);
+              await page.mouse.move(0, 0);
+              const resting = await target.evaluate(
+                (node) => getComputedStyle(node).backgroundColor,
+              );
+              await target.hover();
+              const observed = await target.evaluate((node) => ({
+                hovered: node.matches(':hover'),
+                backgroundColor: getComputedStyle(node).backgroundColor,
+              }));
+              if (!observed.hovered || observed.backgroundColor === resting)
+                throw new Error('requested hover state is not visibly active');
+              record.interaction = { kind: 'hover', resting, ...observed };
+            } else if (action?.focus) {
+              const observed = await actionTarget(page, action.focus).evaluate(
+                (node) => ({
+                  focused: document.activeElement === node,
+                  visible: node.matches(':focus-visible'),
+                  outline: getComputedStyle(node).outlineStyle,
+                  width: parseFloat(getComputedStyle(node).outlineWidth),
+                }),
+              );
+              if (
+                !observed.focused ||
+                !observed.visible ||
+                observed.outline === 'none' ||
+                observed.width <= 0
+              )
+                throw new Error(
+                  'requested keyboard focus is not visibly active',
+                );
+              record.interaction = { kind: 'focus', ...observed };
+            }
+          });
           const baseline = join(
             baselineDir,
             step.feature,
