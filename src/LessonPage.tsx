@@ -1,10 +1,10 @@
-import { lazy, Suspense, useState, useSyncExternalStore } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { lessons } from './content/lessons';
+import results from './content/results.json';
 import type { Lesson } from './content/types';
+import Labs from './Labs';
 import { MathText } from './MathText';
 import { progressStore } from './progress';
-
-const Labs = lazy(() => import('./Labs'));
 
 export function LessonPage({
   lesson,
@@ -88,6 +88,34 @@ export function LessonPage({
           </section>
           <section id="proof" className="content-section">
             <h2>Why it is true</h2>
+            {lesson.results.some((id) =>
+              results.some(
+                (result) => result.id === id && result.status === 'quoted',
+              ),
+            ) && (
+              <details className="proof-status">
+                <summary>Some supporting results are quoted</summary>
+                <ul>
+                  {results
+                    .filter((result) => lesson.results.includes(result.id))
+                    .map((result) => (
+                      <li key={result.id}>
+                        {result.name}:{' '}
+                        {result.status === 'quoted'
+                          ? 'quoted without a full proof'
+                          : result.status === 'proved'
+                            ? `proved in ${result.in}`
+                            : 'background result'}
+                        .
+                      </li>
+                    ))}
+                </ul>
+                <p>
+                  The argument below states which assumptions and supporting
+                  results it uses.
+                </p>
+              </details>
+            )}
             <ol className="worked-steps">
               {lesson.proof.map((text) => (
                 <li key={text}>
@@ -118,9 +146,7 @@ export function LessonPage({
           </section>
           {lesson.lab && (
             <div className="lesson-lab-slot">
-              <Suspense fallback={<p>Loading experiment…</p>}>
-                <Labs id={lesson.lab} />
-              </Suspense>
+              <Labs id={lesson.lab} />
             </div>
           )}
           <Practice lesson={lesson} />
@@ -203,6 +229,7 @@ export function Practice({
 }) {
   const [hints, setHints] = useState(0);
   const [answer, setAnswer] = useState(false);
+  const [attempt, setAttempt] = useState('');
   return (
     <section
       id={embedded ? `practice-${lesson.id}` : 'practice'}
@@ -213,6 +240,20 @@ export function Practice({
       <p>
         <MathText text={lesson.practice.prompt} />
       </p>
+      <label className="attempt-field">
+        Your reasoning
+        <textarea
+          value={attempt}
+          onChange={(event) => setAttempt(event.target.value)}
+          rows={3}
+          maxLength={8000}
+          placeholder="State the model, conditions, and your first step."
+        />
+        <small>
+          Optional scratch work. It stays on this page and clears when you
+          leave.
+        </small>
+      </label>
       {lesson.practice.hints.slice(0, hints).map((hint, i) => (
         <p className="hint" key={hint}>
           <strong>Hint {i + 1}. </strong>
@@ -256,6 +297,7 @@ function useProgress() {
 function SelfCheck({ id }: { id: string }) {
   const { practice, unsaved } = useProgress();
   const verdict = practice[id];
+  const state = progressStore.getLessonSaveState(id);
   // Only announce after a choice made here, not when the answer opens onto an old one.
   const [touched, setTouched] = useState(false);
   return (
@@ -264,6 +306,7 @@ function SelfCheck({ id }: { id: string }) {
       <button
         type="button"
         className="chip"
+        disabled={state === 'loading'}
         aria-pressed={verdict === 'got-it'}
         onClick={() => {
           setTouched(true);
@@ -275,6 +318,7 @@ function SelfCheck({ id }: { id: string }) {
       <button
         type="button"
         className="chip"
+        disabled={state === 'loading'}
         aria-pressed={verdict === 'review'}
         onClick={() => {
           setTouched(true);
@@ -287,15 +331,17 @@ function SelfCheck({ id }: { id: string }) {
         className={`self-check-saved ${unsaved ? 'unsaved' : ''}`}
         aria-live="polite"
       >
-        {unsaved
-          ? notSaved
-          : !touched
-            ? ''
-            : verdict === 'got-it'
-              ? 'Saved. Nice work.'
-              : verdict === 'review'
-                ? 'Saved. Problems to review are listed first on the Practice page.'
-                : 'Cleared.'}
+        {state !== 'guest' && state !== 'saved'
+          ? saveMessages[state]
+          : state === 'guest' && unsaved
+            ? notSaved
+            : !touched
+              ? ''
+              : verdict === 'got-it'
+                ? 'Saved. Nice work.'
+                : verdict === 'review'
+                  ? 'Saved. Problems to review are listed first on the Practice page.'
+                  : 'Cleared.'}
       </span>
     </fieldset>
   );
@@ -304,24 +350,37 @@ function SelfCheck({ id }: { id: string }) {
 const notSaved =
   'Not saved: this browser is blocking storage, so it lasts this visit only.';
 
+const saveMessages = {
+  loading:
+    'Checking your account. Progress controls will be available shortly.',
+  saved: 'Saved to your account.',
+  saving: 'Saving to your account…',
+  error: 'Not saved. Open Progress to retry. Changes remain in this tab.',
+  conflict: 'Another visit changed this lesson. Open Progress to resolve it.',
+};
+
 function StudiedToggle({ id }: { id: string }) {
   const { studied: list, unsaved } = useProgress();
   const studied = list.includes(id);
+  const state = progressStore.getLessonSaveState(id);
   return (
     <div className={`studied-toggle ${studied ? 'done' : ''}`}>
       <button
         type="button"
         aria-pressed={studied}
+        disabled={state === 'loading'}
         onClick={() => progressStore.toggleStudied(id)}
       >
         {studied ? '✓ Studied' : 'Mark this lesson as studied'}
       </button>
       <span className={unsaved ? 'unsaved' : undefined}>
-        {unsaved
-          ? notSaved
-          : studied
-            ? 'Shown with a tick in the chapter list. Press again to undo.'
-            : 'Progress stays in this browser.'}
+        {state !== 'guest'
+          ? saveMessages[state]
+          : unsaved
+            ? notSaved
+            : studied
+              ? 'Shown with a tick in the chapter list. Press again to undo.'
+              : 'Progress stays in this browser.'}
       </span>
     </div>
   );

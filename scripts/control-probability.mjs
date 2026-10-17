@@ -2,7 +2,8 @@
 // Driver CLI for the probability site. Launches the app from its own data dir, checks
 // it, drives it in headless Chrome and saves evidence. See
 // .cursor/skills/verify-probability/SKILL.md for the workflow.
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import {
   closeSync,
   existsSync,
@@ -17,8 +18,23 @@ import {
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { orphanProblems } from './orphans.mjs';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import {
+  capturePage,
+  openDetails,
+  renderingProblems,
+  viewports,
+  watchErrors,
+} from './browser-probability.mjs';
+
+export {
+  capturePage,
+  renderingProblems,
+  viewports,
+  watchErrors,
+} from './browser-probability.mjs';
+
+import { workspaceIdentity } from './probability.mjs';
 import { selectSmokeStates } from './smoke-selection.mjs';
 
 export const commands = [
@@ -36,6 +52,68 @@ export const commands = [
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
 const cmd = args[0] ?? 'help';
+const valueOptions = new Set([
+  'data-dir',
+  'port',
+  'mode',
+  'url',
+  'role',
+  'name',
+  'value',
+  'path',
+  'only',
+  'feature',
+  'artifacts',
+]);
+const flagOptions = new Set(['capture', 'update-baselines', 'migrate']);
+function validateArgs() {
+  const accepted = {
+    launch: ['data-dir', 'port', 'mode', 'migrate'],
+    doctor: ['data-dir'],
+    stop: ['data-dir'],
+    open: ['data-dir', 'url'],
+    click: ['data-dir', 'url', 'role', 'name'],
+    'set-range': ['data-dir', 'url', 'name', 'value'],
+    snapshot: ['data-dir', 'url', 'path'],
+    screenshot: ['data-dir', 'url', 'path'],
+    smoke: ['only', 'feature', 'artifacts', 'capture', 'update-baselines'],
+    help: [],
+  };
+  const seen = new Set();
+  for (let i = 1; i < args.length; i++) {
+    const name = args[i].slice(2);
+    if (
+      !args[i].startsWith('--') ||
+      !(valueOptions.has(name) || flagOptions.has(name)) ||
+      (accepted[cmd] && !accepted[cmd].includes(name))
+    )
+      throw new Error(`unknown option ${args[i]}`);
+    if (seen.has(name)) throw new Error(`Repeated option --${name}`);
+    seen.add(name);
+    if (valueOptions.has(name)) {
+      const value = args[++i];
+      if (!value || value.startsWith('--'))
+        throw new Error(`Missing value for --${name}`);
+    }
+  }
+  if (seen.has('capture') && seen.has('update-baselines'))
+    throw new Error('Choose --capture or --update-baselines.');
+  if (
+    cmd === 'launch' &&
+    seen.has('port') &&
+    (!/^\d+$/.test(opt('port')) || Number(opt('port')) > 65535)
+  )
+    throw new Error('Invalid --port; expected 0 to 65535.');
+  if (['click', 'set-range'].includes(cmd) && !seen.has('name'))
+    throw new Error(`${cmd} requires --name.`);
+  if (cmd === 'set-range' && !seen.has('value'))
+    throw new Error('set-range requires --value.');
+  if (
+    cmd === 'smoke' &&
+    (!Number.isFinite(maxDiffRatio) || maxDiffRatio < 0 || maxDiffRatio > 0.002)
+  )
+    throw new Error('VISUAL_MAX_DIFF must be between 0 and 0.002.');
+}
 const opt = (name, fallback) => {
   const i = args.indexOf(`--${name}`);
   return i >= 0 ? args[i + 1] : fallback;
@@ -72,26 +150,27 @@ async function launch() {
     );
   const port = Number(opt('port', 0)) || (await freePort());
   const mode = opt('mode', 'preview');
-  if (mode === 'preview' && !existsSync(join(root, 'dist/index.html')))
+  if (!['preview', 'dev'].includes(mode))
+    throw new Error(`unknown server mode ${mode}`);
+  if (
+    mode === 'preview' &&
+    !existsSync(join(root, 'dist/server/wrangler.json'))
+  )
     throw new Error(
       'dist/ is missing; run npm run build first, or use --mode dev',
     );
-  const vite = join(root, 'node_modules/vite/bin/vite.js');
-  const viteArgs =
-    mode === 'dev'
-      ? [vite, '--host', '127.0.0.1', '--port', String(port), '--strictPort']
-      : [
-          vite,
-          'preview',
-          '--host',
-          '127.0.0.1',
-          '--port',
-          String(port),
-          '--strictPort',
-        ];
+  if (args.includes('--migrate')) migrateLocalD1();
+  const token = randomUUID();
+  const serverArgs = [
+    join(root, 'scripts/serve-probability.mjs'),
+    token,
+    mode,
+    String(port),
+    join(dataDir, 'storage'),
+  ];
   const log = join(dataDir, 'server.log');
   const logFd = openSync(log, 'a');
-  const child = spawn(process.execPath, viteArgs, {
+  const child = spawn(process.execPath, serverArgs, {
     cwd: root,
     detached: true,
     stdio: ['ignore', logFd, logFd],
@@ -104,6 +183,7 @@ async function launch() {
     JSON.stringify(
       {
         pid: child.pid,
+        token,
         port,
         url,
         mode,
@@ -114,7 +194,8 @@ async function launch() {
       2,
     ),
   );
-  for (let i = 0; i < 100; i += 1) {
+  for (let i = 0; i < 300; i += 1) {
+    if (!alive(child.pid)) break;
     try {
       const res = await fetch(url);
       if (res.ok) {
@@ -127,10 +208,8 @@ async function launch() {
     await new Promise((r) => setTimeout(r, 200));
   }
   // Do not leave an orphan holding the port, or a state file that blocks the next launch.
-  try {
-    process.kill(-child.pid, 'SIGTERM');
-  } catch {}
-  rmSync(statePathOf(), { force: true });
+  if (owns(readState())) await stop();
+  else if (!alive(child.pid)) rmSync(statePathOf(), { force: true });
   throw new Error(`server did not answer on ${url}; see ${keptLog ?? log}`);
 }
 
@@ -143,37 +222,111 @@ function alive(pid) {
   }
 }
 
+function owns(state) {
+  if (
+    !state ||
+    !Number.isInteger(state.pid) ||
+    state.pid < 1 ||
+    !/^[0-9a-f-]{36}$/.test(state.token ?? '') ||
+    !['dev', 'preview'].includes(state.mode) ||
+    !Number.isInteger(state.port) ||
+    state.port < 1 ||
+    state.port > 65535 ||
+    state.url !== `http://127.0.0.1:${state.port}`
+  )
+    return false;
+  try {
+    const row = execFileSync(
+      'ps',
+      ['-p', String(state.pid), '-o', 'pgid=,command='],
+      { encoding: 'utf8' },
+    ).trim();
+    const match = /^(\d+)\s+(.+)$/.exec(row);
+    const expected = [
+      process.execPath,
+      join(root, 'scripts/serve-probability.mjs'),
+      state.token,
+      state.mode,
+      String(state.port),
+      join(dataDir, 'storage'),
+    ].join(' ');
+    return Number(match?.[1]) === state.pid && match?.[2] === expected;
+  } catch {
+    return false;
+  }
+}
+
+function migrateLocalD1() {
+  const built = join(root, 'dist/server/wrangler.json');
+  if (!existsSync(built))
+    throw new Error('Local migrations require npm run build first.');
+  const config = JSON.parse(readFileSync(built, 'utf8'));
+  const path = join(dataDir, 'migrations.wrangler.json');
+  writeFileSync(
+    path,
+    JSON.stringify({
+      name: config.name,
+      compatibility_date: config.compatibility_date,
+      d1_databases: config.d1_databases.map((db) => ({
+        ...db,
+        migrations_dir: join(root, 'drizzle'),
+      })),
+    }),
+  );
+  for (const db of config.d1_databases)
+    execFileSync(
+      process.execPath,
+      [
+        join(root, 'node_modules/wrangler/bin/wrangler.js'),
+        'd1',
+        'migrations',
+        'apply',
+        db.binding,
+        '--local',
+        '--config',
+        path,
+        '--persist-to',
+        join(dataDir, 'storage'),
+      ],
+      { cwd: root, env: process.env, stdio: 'inherit' },
+    );
+}
+
 async function doctor() {
   const s = readState();
   const problems = [];
   if (!s) problems.push(`no launch recorded in ${dataDir}`);
   else {
-    if (!alive(s.pid)) problems.push(`recorded pid ${s.pid} is not running`);
-    try {
-      const html = await (await fetch(s.url)).text();
-      if (!html.includes('<div id="root">'))
-        problems.push('page has no app root');
-      if (!/Probability/.test(html))
-        problems.push('page title is not the probability site');
-      const deep = await fetch(`${s.url}/lessons/f01-sample-spaces-and-events`);
-      if (!deep.ok) problems.push(`deep lesson link returned ${deep.status}`);
-    } catch (e) {
-      problems.push(`cannot reach ${s.url}: ${e.message}`);
-    }
+    if (!owns(s))
+      problems.push(`recorded pid ${s.pid} is not the owned server`);
+    else
+      try {
+        const html = await (await fetch(s.url)).text();
+        if (!html.includes('Probability'))
+          problems.push('page has no Probability shell');
+        if (!/Probability/.test(html))
+          problems.push('page title is not the probability site');
+        const deep = await fetch(
+          `${s.url}/lessons/f01-sample-spaces-and-events`,
+        );
+        if (!deep.ok) problems.push(`deep lesson link returned ${deep.status}`);
+      } catch (e) {
+        problems.push(`cannot reach ${s.url}: ${e.message}`);
+      }
   }
-  if (problems.length) {
-    console.error(`doctor: FAIL\n- ${problems.join('\n- ')}`);
-    process.exitCode = 1;
-  } else console.log(`doctor: OK ${s.url} pid=${s.pid} mode=${s.mode}`);
+  if (problems.length)
+    throw new Error(`doctor: FAIL\n- ${problems.join('\n- ')}`);
+  console.log(`doctor: OK ${s.url} pid=${s.pid} mode=${s.mode}`);
+  return s;
 }
 
 async function browser(fn) {
-  const s = readState();
-  if (!s) throw new Error('launch first');
+  const s = await doctor();
   const { chromium } = await import('playwright-core');
   const executablePath =
     process.env.CHROME_PATH ??
     [
+      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
       '/usr/bin/google-chrome',
       '/usr/bin/google-chrome-stable',
       '/usr/bin/chromium',
@@ -206,7 +359,16 @@ async function stop() {
   const s = readState();
   if (!s) return console.log('nothing to stop');
   try {
-    if (alive(s.pid)) process.kill(-s.pid, 'SIGTERM');
+    if (alive(s.pid)) {
+      if (!owns(s)) throw new Error(`refusing to stop unowned pid ${s.pid}`);
+      process.kill(-s.pid, 'SIGTERM');
+      for (let i = 0; i < 50 && owns(s); i++)
+        await new Promise((r) => setTimeout(r, 100));
+      if (owns(s))
+        throw new Error(
+          `owned server ${s.pid} has not stopped; state retained`,
+        );
+    }
   } catch (error) {
     if (error.code !== 'ESRCH') throw error;
   }
@@ -217,129 +379,9 @@ async function stop() {
 // Drives every state in the feature map at every viewport, checks rendering (overflow,
 // KaTeX, fonts, contrast), saves screenshots and compares them with the committed
 // baselines. Used by `npm run check`. `--update-baselines` rewrites the baselines.
-export const viewports = {
-  desktop: { width: 1280, height: 800 },
-  mobile: { width: 390, height: 844 },
-};
+
 const baselineDir = join(root, '.cursor/skills/verify-probability/baselines');
 const maxDiffRatio = Number(process.env.VISUAL_MAX_DIFF ?? 0.002);
-
-async function renderingProblems(page) {
-  const { problems, inline } = await page.evaluate(async () => {
-    await document.fonts.ready;
-    const problems = [];
-    if (document.documentElement.scrollWidth > window.innerWidth + 1)
-      problems.push(
-        `horizontal overflow: page is ${document.documentElement.scrollWidth}px wide in a ${window.innerWidth}px viewport`,
-      );
-    // A display formula wider than its box is clipped on screen even when the page
-    // itself does not scroll sideways, so check each one.
-    for (const el of document.querySelectorAll('.katex-display, .math-block')) {
-      if (el.getClientRects().length && el.scrollWidth > el.clientWidth + 1)
-        problems.push(
-          `clipped display math: ${el.scrollWidth}px formula in a ${el.clientWidth}px box (“${el.textContent.slice(0, 40)}”)`,
-        );
-    }
-    // Each inline formula's width on every line it spans; scripts/orphans.mjs judges them.
-    const inline = [...document.querySelectorAll('.math-inline .katex-html')]
-      .map((el) => ({
-        text: el.textContent,
-        widths: [...el.getClientRects()]
-          .filter((r) => r.width > 0)
-          .map((r) => Math.round(r.width)),
-      }))
-      .filter((f) => f.widths.length > 1);
-    if (document.querySelector('.math-error'))
-      problems.push('KaTeX reported invalid mathematics');
-    const families = new Set();
-    for (const el of document.querySelectorAll('body *')) {
-      if (!el.childNodes.length || el.closest('.katex')) continue;
-      const own = [...el.childNodes].some(
-        (n) => n.nodeType === 3 && n.textContent.trim(),
-      );
-      if (!own || !el.getClientRects().length) continue;
-      const cs = getComputedStyle(el);
-      families.add(
-        `${cs.fontStyle}|${cs.fontWeight}|${cs.fontFamily.split(',')[0].trim().replace(/"/g, '')}`,
-      );
-    }
-    for (const key of families) {
-      const [style, weight, family] = key.split('|');
-      if (
-        ['Inter', 'Source Serif 4'].includes(family) &&
-        !document.fonts.check(`${style} ${weight} 16px "${family}"`)
-      )
-        problems.push(`font not loaded: ${family} ${weight} ${style}`);
-      else if (
-        !['Inter', 'Source Serif 4'].includes(family) &&
-        family !== 'inherit'
-      )
-        problems.push(`text uses an unbundled font: ${family}`);
-    }
-    const used = [...document.fonts]
-      .filter((f) => f.status === 'loaded')
-      .map((f) => f.family.replace(/"/g, ''));
-    if (
-      document.querySelector('.katex') &&
-      !used.some((f) => f.startsWith('KaTeX'))
-    )
-      problems.push('KaTeX fonts did not load');
-    const rgb = (c) => (c.match(/[\d.]+/g) ?? []).map(Number);
-    const lum = ([r, g, b]) => {
-      const f = (raw) => {
-        const v = raw / 255;
-        return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
-      };
-      return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
-    };
-    const background = (el) => {
-      for (let e = el; e; e = e.parentElement) {
-        const cs = getComputedStyle(e);
-        if (cs.backgroundImage !== 'none') return null;
-        const c = rgb(cs.backgroundColor);
-        if (c.length === 3 || (c.length === 4 && c[3] > 0.9))
-          return c.slice(0, 3);
-      }
-      return [255, 255, 255];
-    };
-    const seen = new Set();
-    for (const el of document.querySelectorAll('main *, aside *')) {
-      if (el.closest('.katex-mathml, svg, [aria-hidden="true"]')) continue;
-      const own = [...el.childNodes].some(
-        (n) => n.nodeType === 3 && n.textContent.trim(),
-      );
-      if (!own) continue;
-      const r = el.getBoundingClientRect();
-      const cs = getComputedStyle(el);
-      if (
-        r.width === 0 ||
-        cs.visibility === 'hidden' ||
-        Number(cs.opacity) < 0.5
-      )
-        continue;
-      const bg = background(el);
-      if (!bg) continue;
-      const fg = rgb(cs.color);
-      if (fg.length === 4 && fg[3] < 0.9) continue;
-      const [a, b] = [lum(fg.slice(0, 3)), lum(bg)].sort((x, y) => y - x);
-      const ratio = (a + 0.05) / (b + 0.05);
-      const size = parseFloat(cs.fontSize);
-      const large =
-        size >= 24 || (size >= 18.66 && Number(cs.fontWeight) >= 700);
-      if (ratio < (large ? 3 : 4.5)) {
-        const key = `${cs.color}/${bg}/${el.textContent.trim().slice(0, 30)}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          problems.push(
-            `low contrast ${ratio.toFixed(2)}:1 for “${el.textContent.trim().slice(0, 40)}”`,
-          );
-        }
-      }
-    }
-    return { problems, inline };
-  });
-  return [...problems, ...orphanProblems(inline)];
-}
 
 async function act(page, action) {
   const target = (a) =>
@@ -384,26 +426,201 @@ async function compare(actualPath, baselinePath, diffPath) {
   return null;
 }
 
+export async function revealPractice(page, lessons) {
+  if ((await page.locator('.practice').count()) !== lessons.length)
+    throw new Error(
+      `expected ${lessons.length} practice problems before revealing answers`,
+    );
+  const hints = lessons.reduce(
+    (sum, lesson) => sum + lesson.practice.hints.length,
+    0,
+  );
+  const show = page.getByRole('button', {
+    name: /^Show (answer|a hint|another hint)/,
+  });
+  for (
+    let remaining = hints + lessons.length;
+    await show.count();
+    remaining--
+  ) {
+    if (remaining <= 0)
+      throw new Error(
+        'practice reveals did not converge to the curriculum inventory',
+      );
+    await show.first().click();
+  }
+  if (
+    (await page.locator('.hint').count()) !== hints ||
+    (await page.locator('.answer').count()) !== lessons.length
+  )
+    throw new Error(
+      `practice reveal coverage differs from ${hints} hints and ${lessons.length} answers`,
+    );
+}
+
+async function sweep(browserApp, url, failures, results) {
+  const contentDir = join(root, 'src/content');
+  const slug = (text) =>
+    text
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+  const all = readdirSync(contentDir)
+    .filter((file) => /^part\d+\.json$/.test(file))
+    .flatMap((file) =>
+      JSON.parse(readFileSync(join(contentDir, file), 'utf8')),
+    );
+  const checkpoints = JSON.parse(
+    readFileSync(join(contentDir, 'checkpoints.json'), 'utf8'),
+  );
+  const distributions = JSON.parse(
+    readFileSync(join(contentDir, 'distributions.json'), 'utf8'),
+  );
+  const routes = [
+    ...all.map((lesson) => ({
+      route: `/lessons/${lesson.id.toLowerCase()}-${slug(lesson.title)}`,
+      lessons: [lesson],
+    })),
+    { route: '/practice', lessons: all },
+    { route: '/reference', lessons: [] },
+  ];
+  const widths = {
+    mobile: viewports.mobile,
+    w600: { width: 600, height: 900 },
+    w860: { width: 860, height: 900 },
+    desktop: viewports.desktop,
+  };
+  for (const [vp, viewport] of Object.entries(widths)) {
+    const page = await browserApp.newPage({
+      viewport,
+      deviceScaleFactor: 1,
+      reducedMotion: 'reduce',
+    });
+    const errors = watchErrors(page);
+    try {
+      for (const { route, lessons } of routes) {
+        const label = `sweep ${route}@${vp}`;
+        const record = { route, viewport: vp, failures: [] };
+        errors.length = 0;
+        try {
+          await page.goto(url + route, { waitUntil: 'networkidle' });
+          if (
+            (await page.locator('h1').first().innerText()) === 'Page not found'
+          )
+            throw new Error('page not found');
+          if (route === '/practice') {
+            await page
+              .getByRole('button', { name: 'Show all problems', exact: true })
+              .click();
+            const expected = checkpoints.reduce(
+              (sum, set) => sum + set.problems.length,
+              0,
+            );
+            await openDetails(page);
+            if (
+              (await page.locator('.checkpoint-problem').count()) !== expected
+            )
+              throw new Error(`expected all ${expected} checkpoint problems`);
+            record.checkpoints = expected;
+          }
+          if (lessons.length) {
+            await revealPractice(page, lessons);
+            await openDetails(page);
+            record.answers = lessons.length;
+            record.hints = lessons.reduce(
+              (sum, lesson) => sum + lesson.practice.hints.length,
+              0,
+            );
+          }
+          if (route === '/reference') {
+            if (
+              (await page.locator('.reference-list > div').count()) !==
+              all.length
+            )
+              throw new Error('reference is missing lesson results');
+            await openDetails(page);
+          }
+          record.failures.push(...(await renderingProblems(page)));
+          if (route === '/reference') {
+            await page
+              .getByRole('button', { name: 'Distribution guide', exact: true })
+              .click();
+            if (
+              (await page.locator('.distribution-card').count()) !==
+              distributions.length
+            )
+              throw new Error('distribution guide is incomplete');
+            record.distributions = distributions.length;
+            record.failures.push(
+              ...(await renderingProblems(page)).map(
+                (problem) => `distribution guide: ${problem}`,
+              ),
+            );
+          }
+        } catch (error) {
+          record.failures.push(error.message.split('\n')[0]);
+        }
+        record.failures.push(
+          ...errors.map((error) => `browser error: ${error}`),
+        );
+        failures.push(
+          ...record.failures.map((problem) => `${label}: ${problem}`),
+        );
+        results.push(record);
+      }
+    } finally {
+      await page.close();
+    }
+    console.log(
+      `sweep: ${routes.length} pages @${viewport.width}px; all hints, answers, checkpoints and reference collections`,
+    );
+  }
+}
+
 async function smoke() {
-  const update = args.includes('--update-baselines');
-  const only = args.includes('--only') ? (opt('only') ?? '') : undefined;
-  const out = resolve(opt('artifacts', join(root, 'artifacts/smoke')));
-  keptLog = join(out, 'server.log');
   const fx = JSON.parse(
     readFileSync(
       join(root, '.cursor/skills/verify-probability/features/smoke.json'),
       'utf8',
     ),
   );
-  const steps = selectSmokeStates(fx, only, Object.keys(viewports));
-  const expectedShots = steps.reduce(
-    (n, step) => n + (step.viewports ?? Object.keys(viewports)).length,
-    0,
+  const selected = selectSmokeStates(
+    fx,
+    opt('only'),
+    Object.keys(viewports),
+    opt('feature'),
   );
+  const capture = args.includes('--capture');
+  const update = args.includes('--update-baselines');
+  const selection = {
+    state: opt('only') ?? null,
+    feature: opt('feature') ?? null,
+  };
+  const complete = !selection.state && !selection.feature;
+  const out = resolve(
+    opt(
+      'artifacts',
+      join(
+        root,
+        'artifacts/smoke',
+        `${new Date().toISOString().replace(/[:.]/g, '-')}-${randomUUID().slice(0, 8)}`,
+      ),
+    ),
+  );
+  if (existsSync(out) && readdirSync(out).length)
+    throw new Error(
+      `evidence directory is not empty: ${out}; choose a new directory`,
+    );
+  mkdirSync(out, { recursive: true });
+  const before = workspaceIdentity();
   const base = mkdtempSync(join(tmpdir(), 'probability-smoke-'));
   dataDir = base;
+  keptLog = join(out, 'server.log');
   const failures = [];
-  let shots = 0;
+  const states = [];
+  const swept = [];
   let browserApp;
   try {
     await launch();
@@ -411,6 +628,7 @@ async function smoke() {
     const executablePath =
       process.env.CHROME_PATH ??
       [
+        '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
         '/usr/bin/google-chrome',
         '/usr/bin/google-chrome-stable',
         '/usr/bin/chromium',
@@ -424,62 +642,47 @@ async function smoke() {
         '--force-color-profile=srgb',
       ],
     });
-    await doctor();
-    if (process.exitCode) throw new Error('doctor failed');
-    const { url } = readState();
-    for (const step of steps) {
+    const { url } = await doctor();
+    for (const step of selected) {
       for (const vp of step.viewports ?? Object.keys(viewports)) {
         const page = await browserApp.newPage({
           viewport: viewports[vp],
           deviceScaleFactor: 1,
           reducedMotion: 'reduce',
         });
-        const errors = [];
-        page.on('pageerror', (e) => errors.push(e.message));
-        page.on(
-          'console',
-          (m) => m.type() === 'error' && errors.push(m.text()),
-        );
+        const errors = watchErrors(page);
         const label = `${step.feature}/${step.id}@${vp}`;
+        const shot = join(out, step.feature, `${step.id}.${vp}.png`);
+        const record = {
+          state: `${step.feature}/${step.id}`,
+          viewport: vp,
+          screenshot: shot,
+          captureSelector: step.captureSelector ?? null,
+          failures: [],
+        };
         try {
           await page.goto(url + step.url, { waitUntil: 'networkidle' });
-          await page.addStyleTag({
-            content:
-              '*,*::before,*::after{transition:none!important;animation:none!important;caret-color:transparent!important}html{scroll-behavior:auto!important}',
-          });
           for (const action of step.actions ?? []) await act(page, action);
-          const h1 = await page.locator('h1').first().innerText();
+          record.path = new URL(page.url()).pathname;
+          record.heading = await page.locator('h1').first().innerText();
           const text = await page.locator('body').innerText();
-          const path = new URL(page.url()).pathname;
           for (const want of step.expect ?? [])
             if (!text.includes(want))
-              failures.push(`${label}: expected “${want}” on ${path}`);
-          for (const sel of step.expectHidden ?? [])
+              record.failures.push(`expected “${want}” on ${record.path}`);
+          for (const selector of step.expectHidden ?? [])
             if (
-              (await page.locator(sel).count()) === 0 ||
-              (await page.locator(sel).isVisible())
+              (await page.locator(selector).count()) !== 1 ||
+              (await page.locator(selector).isVisible())
             )
-              failures.push(`${label}: expected ${sel} to exist and be hidden`);
-          if (step.expectPath && path !== step.expectPath)
-            failures.push(
-              `${label}: expected path ${step.expectPath}, got ${path}`,
+              record.failures.push(
+                `expected ${selector} to exist and be hidden`,
+              );
+          if (step.expectPath && record.path !== step.expectPath)
+            record.failures.push(
+              `expected ${step.expectPath}, got ${record.path}`,
             );
-          for (const p of await renderingProblems(page))
-            failures.push(`${label}: ${p}`);
-          if (errors.length)
-            failures.push(`${label}: browser errors: ${errors.join(' | ')}`);
-          const shot = join(out, step.feature, `${step.id}.${vp}.png`);
-          mkdirSync(dirname(shot), { recursive: true });
-          await page.evaluate(() =>
-            window.scrollTo({ top: 0, behavior: 'instant' }),
-          );
-          await page.waitForTimeout(50);
-          await page.screenshot({ path: shot, fullPage: true });
-          writeFileSync(
-            shot.replace(/\.png$/, '.aria.txt'),
-            await page.locator('body').ariaSnapshot(),
-          );
-          shots += 1;
+          record.failures.push(...(await renderingProblems(page)));
+          await capturePage(page, shot, step.captureSelector);
           const baseline = join(
             baselineDir,
             step.feature,
@@ -488,105 +691,121 @@ async function smoke() {
           if (update) {
             mkdirSync(dirname(baseline), { recursive: true });
             writeFileSync(baseline, readFileSync(shot));
-          } else {
+          } else if (!capture) {
             const problem = await compare(
               shot,
               baseline,
               shot.replace(/\.png$/, '.diff.png'),
             );
-            if (problem) failures.push(`${label}: visual change — ${problem}`);
+            if (problem) record.failures.push(`visual change — ${problem}`);
           }
-          console.log(
-            `${failures.some((f) => f.startsWith(label)) ? 'FAIL' : 'PASS'} ${label} → ${path} “${h1.replace(/\n/g, ' ')}”`,
+        } catch (error) {
+          record.failures.push(error.message.split('\n')[0]);
+          if (!existsSync(shot)) {
+            try {
+              await capturePage(page, shot);
+            } catch {}
+          }
+        } finally {
+          record.failures.push(
+            ...errors.map((error) => `browser error: ${error}`),
           );
-        } catch (e) {
-          failures.push(`${label}: ${e.message.split('\n')[0]}`);
-          console.log(`FAIL ${label}`);
-        } finally {
+          failures.push(
+            ...record.failures.map((problem) => `${label}: ${problem}`),
+          );
+          states.push(record);
+          console.log(
+            `${record.failures.length ? 'FAIL' : 'PASS'} ${label} → ${record.path ?? step.url}`,
+          );
           await page.close();
         }
       }
     }
-    // Sweep: every lesson at both widths gets the rendering checks, so a clipped or
-    // orphaned formula on a page that has no smoke state still fails.
-    if (only === undefined) {
-      const contentDir = join(root, 'src/content');
-      const slug = (t) =>
-        t
-          .normalize('NFKD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/^-|-$/g, '');
-      const all = readdirSync(contentDir)
-        .filter((f) => /^part\d+\.json$/.test(f))
-        .flatMap((f) => JSON.parse(readFileSync(join(contentDir, f), 'utf8')));
-      const routes = [
-        ...all.map((l) => `/lessons/${l.id.toLowerCase()}-${slug(l.title)}`),
-        '/practice',
-        '/reference',
-      ];
-      const sweepWidths = {
-        ...viewports,
-        w600: { width: 600, height: 900 },
-        w860: { width: 860, height: 900 },
-      };
-      for (const vp of Object.keys(sweepWidths)) {
-        const page = await browserApp.newPage({
-          viewport: sweepWidths[vp],
-          deviceScaleFactor: 1,
-          reducedMotion: 'reduce',
-        });
-        try {
-          for (const route of routes) {
-            await page.goto(url + route, { waitUntil: 'networkidle' });
-            if (
-              (await page.locator('h1').first().innerText()) ===
-              'Page not found'
-            )
-              failures.push(`sweep ${route}@${vp}: page not found`);
-            // Open answers and hints too, so their maths is checked as well.
-            const show = page.getByRole('button', {
-              name: /^Show (answer|a hint|another hint)/,
-            });
-            for (let n = 0; n < 60 && (await show.count()); n++)
-              await show.first().click();
-            for (const p of await renderingProblems(page))
-              failures.push(`sweep ${route}@${vp}: ${p}`);
-          }
-        } finally {
-          await page.close();
-        }
-      }
-      console.log(
-        `sweep: ${routes.length} pages checked at ${Object.keys(sweepWidths).length} widths`,
-      );
-    }
+    if (complete) await sweep(browserApp, url, failures, swept);
+  } catch (error) {
+    failures.push(error.message);
   } finally {
     try {
       await browserApp?.close();
-    } catch {}
+    } catch (error) {
+      failures.push(`browser cleanup: ${error.message}`);
+    }
     try {
       await stop();
-    } catch {}
-    // Keep the preview server log with the screenshots before the temp dir goes.
-    const log = join(base, 'server.log');
-    if (existsSync(log)) {
-      mkdirSync(out, { recursive: true });
-      writeFileSync(join(out, 'server.log'), readFileSync(log));
+    } catch (error) {
+      failures.push(`server cleanup: ${error.message}`);
     }
-    rmSync(base, { recursive: true, force: true });
+    const log = join(base, 'server.log');
+    if (existsSync(log)) writeFileSync(keptLog, readFileSync(log));
+    if (!existsSync(statePathOf()))
+      rmSync(base, { recursive: true, force: true });
   }
-  if (shots !== expectedShots)
-    failures.push(`captured ${shots} screenshots; expected ${expectedShots}`);
-  if (failures.length) {
-    console.error(failures.map((f) => `smoke: ${f}`).join('\n'));
-    throw new Error(
-      `${failures.length} failure(s); screenshots and diffs in ${out}`,
+  const after = workspaceIdentity();
+  const comparable = (identity) =>
+    JSON.stringify(
+      identity.files.filter(
+        (file) =>
+          !update ||
+          !file.path.startsWith('.cursor/skills/verify-probability/baselines/'),
+      ),
     );
+  const sourceUnchanged = comparable(before) === comparable(after);
+  const expectedStates = selected.reduce(
+    (sum, step) => sum + (step.viewports ?? Object.keys(viewports)).length,
+    0,
+  );
+  const expectedPages = complete
+    ? (JSON.parse(readFileSync(join(root, 'src/content/order.json'), 'utf8'))
+        .length +
+        2) *
+      4
+    : 0;
+  const coverageComplete =
+    states.length === expectedStates && swept.length === expectedPages;
+  if (!coverageComplete)
+    failures.push(
+      `incomplete coverage: ${states.length}/${expectedStates} states and ${swept.length}/${expectedPages} page-width checks`,
+    );
+  if (!sourceUnchanged || before.buildDigest !== after.buildDigest)
+    failures.push('source or built output changed during verification');
+  const result = {
+    at: new Date().toISOString(),
+    kind: update
+      ? 'baseline-generation'
+      : capture
+        ? 'development-capture'
+        : complete
+          ? 'release-smoke'
+          : 'selected-smoke',
+    full: complete && !capture && !update && coverageComplete,
+    coverage: {
+      expectedStates,
+      states: states.length,
+      expectedPages,
+      pages: swept.length,
+      complete: coverageComplete,
+    },
+    sourceUnchanged,
+    comparison: update
+      ? 'baselines-written-require-inspection'
+      : capture
+        ? 'skipped-development-only'
+        : 'pixelmatch',
+    selection,
+    source: before,
+    after,
+    states,
+    sweep: swept,
+    failures,
+    success: failures.length === 0,
+  };
+  writeFileSync(join(out, 'result.json'), JSON.stringify(result, null, 2));
+  if (failures.length) {
+    console.error(failures.map((failure) => `smoke: ${failure}`).join('\n'));
+    throw new Error(`${failures.length} failure(s); evidence in ${out}`);
   }
   console.log(
-    `smoke ok — ${shots} screenshots ${update ? 'written as baselines' : 'match their baselines'}, evidence in ${out}`,
+    `smoke ok — ${states.length} states; ${result.kind}; comparison=${result.comparison}; evidence in ${out}`,
   );
 }
 
@@ -632,7 +851,7 @@ const run = {
     ),
   help: () =>
     console.log(`control-probability <command> [--data-dir DIR] [--port N]
-  launch [--mode preview|dev]          start the site; prints READY <url>
+  launch [--mode preview|dev] [--migrate]   start owned site; optional generated local D1 migrations
   doctor                               read-only health check of the instance this data dir started
   open --url PATH                      load a route, print path and heading
   click --url PATH --role R --name N   click an accessible element, print the resulting route
@@ -640,16 +859,23 @@ const run = {
   snapshot --url PATH --path FILE      save the ARIA snapshot of <main>
   screenshot --url PATH --path FILE    save a PNG
   stop                                 stop only the instance this data dir started; artifacts stay
-  smoke [--only F/ID] [--update-baselines]   all visual states, or one exact feature/state; unknown or empty selections fail`),
+  smoke [--only F/ID | --feature ID] [--capture] [--artifacts NEW_DIR]
+                                       exact selection; capture skips comparison and is development evidence
+  smoke [--update-baselines]            full release comparison by default; baseline generation requires inspection`),
 };
 
-if (!run[cmd]) {
-  console.error(`unknown command ${cmd}`);
-  process.exit(2);
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(resolve(process.argv[1])).href
+) {
+  await Promise.resolve()
+    .then(() => {
+      validateArgs();
+      if (!run[cmd]) throw new Error(`unknown command ${cmd}`);
+      return run[cmd]();
+    })
+    .catch((error) => {
+      console.error(`${cmd}: ${error.message}`);
+      process.exitCode = 1;
+    });
 }
-await Promise.resolve()
-  .then(() => run[cmd]())
-  .catch((e) => {
-    console.error(`${cmd}: ${e.message}`);
-    process.exitCode = 1;
-  });

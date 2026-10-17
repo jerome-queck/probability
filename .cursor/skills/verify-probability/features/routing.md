@@ -1,6 +1,6 @@
 # Routing and navigation
 
-Client-side routes: `/`, `/practice`, `/reference`, `/lessons/<id>-<slug>`. Unknown paths show “Page not found”. Browser back/forward works through `popstate`. The Vite dev and preview servers serve `index.html` for deep links.
+Client-side routes: `/`, `/practice`, `/reference`, `/lessons/<id>-<slug>`. Unknown paths show “Page not found”. Browser back/forward works through `popstate`. The emitted Worker and Vinext development server serve the application at deep links.
 
 ## Sub-features
 
@@ -28,4 +28,4 @@ Each state is screenshotted at the listed widths, checked for overflow, KaTeX, f
 
 ## Gotchas
 
-The slug after the ID is optional; `/lessons/f01` also opens F01.
+Study journeys also drive browser back/forward, keyboard search, heading focus, drawer autofocus/Escape return and direct `#lab` positioning. The slug after the ID is optional; `/lessons/f01` also opens F01.

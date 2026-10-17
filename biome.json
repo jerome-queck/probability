@@ -14,8 +14,15 @@
       "vite.config.ts",
       "package.json",
       "tsconfig.json",
-      "index.html",
-      "public/favicon.svg"
+      "public/favicon.svg",
+      "app/**/*.ts",
+      "app/**/*.tsx",
+      "server/**/*.ts",
+      "db/**/*.ts",
+      "build/sites-worker.ts",
+      "cloudflare-env.d.ts",
+      "next.config.ts",
+      "drizzle.config.ts"
     ]
   },
   "formatter": {

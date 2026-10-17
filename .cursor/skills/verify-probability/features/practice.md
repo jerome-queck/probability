@@ -1,27 +1,29 @@
-# Practice view
+# Practice
 
-`/practice` lists every lesson’s practice problem with hints and answers.
+`/practice` starts with five problems. Select a chapter, filter self-rated review problems or choose Show all problems. Self-ratings express the reader's judgment, not a grade.
 
 ## Sub-features
 
-- `practice.list` — one problem per lesson, headed “<id> · <title>”.
-- `practice.reveal` — hint and answer buttons work as in a lesson.
+- Chapter/review filters and count feedback; review problems rank first.
+- Optional scratch reasoning, incremental hints, answer reveal and self-rating.
+- Chapter checkpoints with independently opened hints and solutions.
 
 ## How to get to it (user POV)
 
-Top bar → “Practice”, or the “Practise problems” button on the home page.
+Top bar → Practice, or home → Practise problems. Choose a chapter or a bounded set before revealing answers.
 
 ## Driving it with control-probability
 
-- `open --url /practice` → heading “One problem per lesson”.
+`open --url /practice` → “One problem per lesson”. `smoke --feature practice --capture` drives the default, revealed answer and checkpoint solution. Study journeys verify filters and rating persistence. The full semantic sweep chooses Show all problems and asserts every lesson hint/answer and every checkpoint solution was opened.
 
 ## Visual states
 
-Each state is screenshotted at the listed widths, checked for overflow, KaTeX, fonts and contrast, and compared with `baselines/practice/<state>.<width>.png`.
-
 - `load` (desktop, mobile)
 - `answer-shown` (desktop, mobile)
+- `checkpoint-solution` (desktop, mobile)
+
+Captures show the relevant problem/solution region. Full release smoke compares inspected baselines.
 
 ## Gotchas
 
-Each embedded problem has the id `practice-<lesson id>`.
+Embedded problems use `practice-<lesson ID>`. Scratch reasoning clears on navigation/reload; it is not a saved account field. A filtered empty state is legitimate and should explain how to broaden the selection.

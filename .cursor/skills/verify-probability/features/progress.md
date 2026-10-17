@@ -1,31 +1,23 @@
-# Study progress and self-check
+# Study marks and self-ratings
 
-Progress kept in the browser (`localStorage` key `probability.progress.v1`): lessons the reader marks as studied, and their own verdict on each practice problem. Nothing is sent anywhere.
+Guest progress stays in the browser (`probability.progress.v1`). Signed-in progress uses account D1; see [accounts](accounts.md).
 
 ## Sub-features
 
-- `progress.studied` — “Mark this lesson as studied” at the end of every lesson; pressed state reads “✓ Studied” and can be undone.
-- `progress.sidebar` — studied lessons get a tick in the chapter list; chapter counts read “studied/total”.
-- `progress.home` — each chapter card shows a progress bar (“1 of 3 studied”); once anything is studied the main action becomes “Continue with <next unstudied lesson>”.
-- `progress.self-check` — after “Show answer”, “✓ I got it” / “↺ Review again” record a verdict; “Review again” problems are listed first on the Practice page.
-- Pressing the chosen verdict again clears it. Each change re-reads storage first and follows `storage` events, so a second tab never overwrites progress. If storage is blocked the message says “Not saved” instead of “Saved.”.
-- With every lesson studied the home action reads “Every lesson studied: start again”.
+- Studied toggle, sidebar ticks and chapter counts.
+- Home count and next-unread lesson; completing every lesson offers a restart.
+- Revealed answers offer “I got it” or “Review again”. Repeating the choice clears it. Review problems rank first in Practice.
+- A storage failure says Not saved. Account writes expose saving, failure and conflict states.
 
 ## How to get to it (user POV)
 
-Open any lesson and scroll to the end, or open a practice answer.
+Read a lesson, then mark it studied. Attempt a problem, reveal its answer and record an honest self-rating. Use Progress for account actions.
 
 ## Driving it with control-probability
 
-Preconditions: launched instance, doctor OK, empty data dir (fresh browser context per drive).
-
-- Mark studied → `click --url /lessons/f01-sample-spaces-and-events --role button --name "Mark this lesson as studied"` → page shows “✓ Studied”.
-- Self-check → on `/lessons/f03-equally-likely-outcomes` click “Show answer”, then “✓ I got it” → page shows “Saved. Nice work.”
-- Home → mark F01 studied, then click “Learn” → page shows “Continue with F02” and “1 of 3 studied”.
+`smoke --feature progress --capture` drives a studied mark, self-rating and home resume action. Study journeys prove both guest fields survive reload and drive review/chapter filters. Account journeys prove cloud reloads and guest-copy preservation separately.
 
 ## Visual states
-
-Each state is screenshotted at the listed widths, checked for overflow, KaTeX, fonts and contrast, and compared with `baselines/progress/<state>.<width>.png`.
 
 - `studied` (desktop, mobile)
 - `self-check` (desktop, mobile)
@@ -33,4 +25,4 @@ Each state is screenshotted at the listed widths, checked for overflow, KaTeX, f
 
 ## Gotchas
 
-Each smoke drive gets a new browser context, so progress never leaks between states. Counts in the home check change when a chapter gains lessons.
+Each smoke state gets a fresh context. Scratch reasoning is not saved. Guest and account records stay distinct until explicit import; these self-reports are not a mastery assessment.

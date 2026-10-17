@@ -5,6 +5,7 @@ Each lesson at `/lessons/<id>-<slug>` has: idea, definitions, the claim with its
 ## Sub-features
 
 - `lesson.sections` — all section headings render; KaTeX mathematics renders without “Invalid mathematics”.
+- `lesson.proof-status` — quoted supporting results are labeled and expandable; an experiment is not a proof.
 - `lesson.practice` — “Show a hint” reveals hints one at a time; “Show answer” toggles the answer.
 - `lesson.pagination` — previous/next buttons open neighbouring lessons.
 - `lesson.sidebar` — the sidebar lists chapters; search filters lessons by ID or words.
@@ -36,6 +37,7 @@ Each state is screenshotted at the listed widths, checked for overflow, KaTeX, f
 
 - `open` (desktop, mobile)
 - `next` (desktop, mobile)
+- `quoted-result` (desktop, mobile)
 - `hint-shown` (desktop, mobile)
 - `answer-shown` (desktop, mobile)
 - `sidebar-collapsed` (desktop)

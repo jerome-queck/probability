@@ -1,73 +1,64 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
 import { selectSmokeStates } from './smoke-selection.mjs';
 
-const states = JSON.parse(
-  readFileSync(
-    new URL(
-      '../.cursor/skills/verify-probability/features/smoke.json',
-      import.meta.url,
-    ),
-    'utf8',
-  ),
-);
-const viewports = ['desktop', 'mobile'];
+const states = [
+  { feature: 'home', id: 'load' },
+  { feature: 'home', id: 'start' },
+  { feature: 'labs', id: 'birthday-moved', viewports: ['mobile'] },
+];
+const widths = ['desktop', 'mobile'];
 
-test('no selector preserves the complete smoke suite', () => {
-  assert.deepEqual(selectSmokeStates(states, undefined, viewports), states);
-});
-
-test('an exact selector runs only the named state', () => {
-  assert.deepEqual(selectSmokeStates(states, 'home/start', viewports), [
-    states.find((step) => step.feature === 'home' && step.id === 'start'),
-  ]);
-});
-
-test('substrings, empty and unknown state selectors fail', () => {
-  for (const only of ['', 'home', 'start', 'home/star', 'unknown/state'])
-    assert.throws(
-      () => selectSmokeStates(states, only, viewports),
-      /unknown smoke state/,
-      only,
-    );
-});
-
-test('an empty suite and states without runnable viewports fail', () => {
-  assert.throws(
-    () => selectSmokeStates([], undefined, viewports),
-    /no states to run/,
+test('exact state selection and explicit whole-feature selection retain their intended scope', () => {
+  assert.deepEqual(selectSmokeStates(states, undefined, widths), states);
+  assert.deepEqual(selectSmokeStates(states, 'home/load', widths), [states[0]]);
+  assert.deepEqual(
+    selectSmokeStates(states, undefined, widths, 'home'),
+    states.slice(0, 2),
   );
-  for (const widths of [[], ['unknown']])
+  for (const value of ['', 'home', 'load', 'home/load-extra'])
+    assert.throws(
+      () => selectSmokeStates(states, value, widths),
+      /unknown smoke state/,
+    );
+  assert.throws(
+    () => selectSmokeStates(states, undefined, widths, 'missing'),
+    /unknown smoke feature/,
+  );
+  assert.throws(() => selectSmokeStates([], undefined, widths), /no states/);
+  assert.throws(
+    () => selectSmokeStates(states, 'home/load', widths, 'home'),
+    /Choose/,
+  );
+});
+
+test('invalid viewport coverage cannot produce an empty successful run', () => {
+  for (const viewports of [[], ['tablet']])
     assert.throws(
       () =>
         selectSmokeStates(
-          [{ feature: 'home', id: 'load', viewports: widths }],
-          'home/load',
-          viewports,
+          [{ feature: 'home', id: 'load', viewports }],
+          undefined,
+          widths,
         ),
       /invalid viewports/,
     );
 });
 
-test('the CLI rejects invalid selections before launching a server or browser', () => {
-  const driver = fileURLToPath(
-    new URL('./control-probability.mjs', import.meta.url),
-  );
+test('unknown and empty CLI selection fail before starting a server', () => {
   for (const args of [
-    ['--only', 'home'],
-    ['--only', 'unknown/state'],
-    ['--only'],
+    ['--only', 'load'],
+    ['--only', ''],
+    ['--feature', 'missing'],
   ]) {
-    const result = spawnSync(process.execPath, [driver, 'smoke', ...args], {
-      encoding: 'utf8',
-      cwd: '/',
-      timeout: 5000,
-    });
-    assert.equal(result.status, 1, result.stderr);
-    assert.match(result.stderr, /unknown smoke state/);
-    assert.doesNotMatch(result.stdout, /READY|doctor:|smoke ok/);
+    const result = spawnSync(
+      process.execPath,
+      ['scripts/control-probability.mjs', 'smoke', ...args],
+      { encoding: 'utf8' },
+    );
+    assert.equal(result.status, 1);
+    assert.doesNotMatch(result.stdout, /READY/);
+    assert.match(result.stderr, /unknown|Missing/);
   }
 });

@@ -1,37 +1,647 @@
 [
-  {"feature": "home", "id": "load", "url": "/", "expect": ["Learn to reason", "Foundations"]},
-  {"feature": "home", "id": "start-hover", "url": "/", "actions": [{"hover": {"role": "button", "name": "Begin at the beginning"}}]},
-  {"feature": "home", "id": "start-focus", "url": "/", "actions": [{"focus": {"role": "button", "name": "Begin at the beginning"}}]},
-  {"feature": "home", "id": "start", "url": "/", "actions": [{"click": {"role": "button", "name": "Begin at the beginning"}}], "expectPath": "/lessons/f01-sample-spaces-and-events", "expect": ["Sample spaces and events"]},
-  {"feature": "lessons", "id": "open", "url": "/lessons/f02-the-axioms-of-probability", "expect": ["The axioms of probability", "The claim", "Worked example", "Reference"]},
-  {"feature": "lessons", "id": "next", "url": "/lessons/f01-sample-spaces-and-events", "actions": [{"click": {"role": "button", "name": "F02 · The axioms of probability →"}}], "expectPath": "/lessons/f02-the-axioms-of-probability"},
-  {"feature": "lessons", "id": "hint-shown", "url": "/lessons/f03-equally-likely-outcomes", "actions": [{"click": {"role": "button", "name": "Show a hint"}}], "expect": ["Hint 1."]},
-  {"feature": "lessons", "id": "answer-shown", "url": "/lessons/f03-equally-likely-outcomes", "actions": [{"click": {"role": "button", "name": "Show answer"}}], "expect": ["Hide answer"]},
-  {"feature": "lessons", "id": "sidebar-collapsed", "url": "/lessons/f01-sample-spaces-and-events", "viewports": ["desktop"], "actions": [{"click": {"selector": ".chapter-heading button"}}], "expectHidden": ["#chapter-0"]},
-  {"feature": "lessons", "id": "search-results", "url": "/", "viewports": ["desktop"], "actions": [{"type": {"selector": "#lesson-search", "text": "F02"}}], "expect": ["1 matching lesson"]},
-  {"feature": "lessons", "id": "search-empty", "url": "/", "viewports": ["desktop"], "actions": [{"type": {"selector": "#lesson-search", "text": "zebra"}}], "expect": ["No lessons found"]},
-  {"feature": "lessons", "id": "search-chapter-collapsed", "url": "/", "viewports": ["desktop"], "actions": [{"type": {"selector": "#lesson-search", "text": "F0"}}, {"click": {"selector": ".chapter-heading button"}}], "expectHidden": ["#chapter-0"]},
-  {"feature": "practice", "id": "load", "url": "/practice", "expect": ["One problem per lesson", "F01 · Sample spaces and events"]},
-  {"feature": "practice", "id": "answer-shown", "url": "/practice", "actions": [{"click": {"role": "button", "name": "Show answer"}}], "expect": ["Hide answer"]},
-  {"feature": "reference", "id": "load", "url": "/reference", "expect": ["Every result on one page", "Foundations"]},
-  {"feature": "reference", "id": "open", "url": "/reference", "actions": [{"click": {"role": "button", "name": "F02 · The axioms of probability"}}], "expectPath": "/lessons/f02-the-axioms-of-probability"},
-  {"feature": "routing", "id": "not-found", "url": "/lessons/z99-nothing", "expect": ["Page not found"]},
-  {"feature": "routing", "id": "topbar", "url": "/practice", "actions": [{"click": {"role": "button", "name": "Reference"}}], "expectPath": "/reference"},
-  {"feature": "routing", "id": "mobile-drawer-open", "url": "/", "viewports": ["mobile"], "actions": [{"click": {"role": "button", "name": "Open lessons"}}], "expect": ["Browse by chapter"]},
-  {"feature": "routing", "id": "mobile-drawer-closed", "url": "/", "viewports": ["mobile"], "actions": [{"click": {"role": "button", "name": "Open lessons"}}, {"press": "Escape"}]},
-  {"feature": "labs", "id": "birthday-default", "url": "/lessons/c04-counting-in-action-birthdays-and-matchings#lab", "expect": ["P(at least one shared birthday)"]},
-  {"feature": "labs", "id": "birthday-moved", "url": "/lessons/c04-counting-in-action-birthdays-and-matchings#lab", "actions": [{"range": {"name": "people", "value": 40}}], "expect": ["P(at least one shared birthday)"]},
-  {"feature": "progress", "id": "studied", "url": "/lessons/f01-sample-spaces-and-events", "actions": [{"click": {"role": "button", "name": "Mark this lesson as studied"}}], "expect": ["✓ Studied"]},
-  {"feature": "progress", "id": "self-check", "url": "/lessons/f03-equally-likely-outcomes", "actions": [{"click": {"role": "button", "name": "Show answer"}}, {"click": {"role": "button", "name": "✓ I got it"}}], "expect": ["Saved. Nice work."]},
-  {"feature": "progress", "id": "home-continue", "url": "/lessons/f01-sample-spaces-and-events", "actions": [{"click": {"role": "button", "name": "Mark this lesson as studied"}}, {"click": {"role": "button", "name": "Learn"}}], "expectPath": "/", "expect": ["Continue with F02", "1 of 3 studied"]},
-  {"feature": "labs", "id": "bayes-default", "url": "/lessons/k03-bayes-rule#lab", "expect": ["P(D | +)"]},
-  {"feature": "labs", "id": "bayes-moved", "url": "/lessons/k03-bayes-rule#lab", "actions": [{"range": {"name": "prior", "value": 0.2}}], "expect": ["P(D | +)"]},
-  {"feature": "labs", "id": "binomial-poisson-default", "url": "/lessons/d05-poisson-random-variables#lab", "expect": ["p = λ/n = 0.0600"]},
-  {"feature": "labs", "id": "binomial-poisson-moved", "url": "/lessons/d05-poisson-random-variables#lab", "actions": [{"range": {"name": "trials", "value": 200}}], "expect": ["p = λ/n = 0.0150"]},
-  {"feature": "labs", "id": "normal-approximation-default", "url": "/lessons/r05-the-normal-approximation-to-the-binomial#lab", "expect": ["P(X = 20)"]},
-  {"feature": "labs", "id": "normal-approximation-moved", "url": "/lessons/r05-the-normal-approximation-to-the-binomial#lab", "actions": [{"range": {"name": "trials", "value": 100}}], "expect": ["P(X = 50)"]},
-  {"feature": "labs", "id": "law-of-large-numbers-default", "url": "/lessons/l02-the-weak-law-of-large-numbers#lab", "expect": ["Proportion of heads"]},
-  {"feature": "labs", "id": "law-of-large-numbers-moved", "url": "/lessons/l02-the-weak-law-of-large-numbers#lab", "actions": [{"range": {"name": "tosses", "value": 5000}}], "expect": ["Proportion of heads"]},
-  {"feature": "labs", "id": "central-limit-default", "url": "/lessons/l04-the-central-limit-theorem#lab", "expect": ["Largest gap"]},
-  {"feature": "labs", "id": "central-limit-moved", "url": "/lessons/l04-the-central-limit-theorem#lab", "actions": [{"range": {"name": "n", "value": 12}}], "expect": ["Largest gap"]}
+  {
+    "feature": "home",
+    "id": "load",
+    "url": "/",
+    "expect": [
+      "Learn to reason",
+      "Foundations"
+    ],
+    "captureSelector": ".atlas-hero"
+  },
+  {
+    "feature": "home",
+    "id": "start-hover",
+    "url": "/",
+    "actions": [
+      {
+        "hover": {
+          "role": "button",
+          "name": "Begin at the beginning"
+        }
+      }
+    ],
+    "captureSelector": ".atlas-hero"
+  },
+  {
+    "feature": "home",
+    "id": "start-focus",
+    "url": "/",
+    "actions": [
+      {
+        "focus": {
+          "role": "button",
+          "name": "Begin at the beginning"
+        }
+      }
+    ],
+    "captureSelector": ".atlas-hero"
+  },
+  {
+    "feature": "home",
+    "id": "start",
+    "url": "/",
+    "actions": [
+      {
+        "click": {
+          "role": "button",
+          "name": "Begin at the beginning"
+        }
+      }
+    ],
+    "expectPath": "/lessons/f01-sample-spaces-and-events",
+    "expect": [
+      "Sample spaces and events"
+    ],
+    "captureSelector": ".lesson-head"
+  },
+  {
+    "feature": "lessons",
+    "id": "open",
+    "url": "/lessons/f02-the-axioms-of-probability",
+    "expect": [
+      "The axioms of probability",
+      "The claim",
+      "Worked example",
+      "Reference"
+    ],
+    "captureSelector": ".lesson-head"
+  },
+  {
+    "feature": "lessons",
+    "id": "next",
+    "url": "/lessons/f01-sample-spaces-and-events",
+    "actions": [
+      {
+        "click": {
+          "role": "button",
+          "name": "F02 · The axioms of probability →"
+        }
+      }
+    ],
+    "expectPath": "/lessons/f02-the-axioms-of-probability",
+    "captureSelector": ".lesson-head"
+  },
+  {
+    "feature": "lessons",
+    "id": "hint-shown",
+    "url": "/lessons/f03-equally-likely-outcomes",
+    "actions": [
+      {
+        "click": {
+          "role": "button",
+          "name": "Show a hint"
+        }
+      }
+    ],
+    "expect": [
+      "Hint 1."
+    ],
+    "captureSelector": ".practice"
+  },
+  {
+    "feature": "lessons",
+    "id": "answer-shown",
+    "url": "/lessons/f03-equally-likely-outcomes",
+    "actions": [
+      {
+        "click": {
+          "role": "button",
+          "name": "Show answer"
+        }
+      }
+    ],
+    "expect": [
+      "Hide answer"
+    ],
+    "captureSelector": ".practice"
+  },
+  {
+    "feature": "lessons",
+    "id": "sidebar-collapsed",
+    "url": "/lessons/f01-sample-spaces-and-events",
+    "viewports": [
+      "desktop"
+    ],
+    "actions": [
+      {
+        "click": {
+          "selector": ".chapter-heading button"
+        }
+      }
+    ],
+    "expectHidden": [
+      "#chapter-0"
+    ],
+    "captureSelector": "#lesson-sidebar"
+  },
+  {
+    "feature": "lessons",
+    "id": "search-results",
+    "url": "/",
+    "viewports": [
+      "desktop"
+    ],
+    "actions": [
+      {
+        "type": {
+          "selector": "#lesson-search",
+          "text": "F02"
+        }
+      }
+    ],
+    "expect": [
+      "1 matching lesson"
+    ],
+    "captureSelector": "#lesson-sidebar"
+  },
+  {
+    "feature": "lessons",
+    "id": "search-empty",
+    "url": "/",
+    "viewports": [
+      "desktop"
+    ],
+    "actions": [
+      {
+        "type": {
+          "selector": "#lesson-search",
+          "text": "zebra"
+        }
+      }
+    ],
+    "expect": [
+      "No lessons found"
+    ],
+    "captureSelector": "#lesson-sidebar"
+  },
+  {
+    "feature": "lessons",
+    "id": "search-chapter-collapsed",
+    "url": "/",
+    "viewports": [
+      "desktop"
+    ],
+    "actions": [
+      {
+        "type": {
+          "selector": "#lesson-search",
+          "text": "F0"
+        }
+      },
+      {
+        "click": {
+          "selector": ".chapter-heading button"
+        }
+      }
+    ],
+    "expectHidden": [
+      "#chapter-0"
+    ],
+    "captureSelector": "#lesson-sidebar"
+  },
+  {
+    "feature": "practice",
+    "id": "load",
+    "url": "/practice",
+    "expect": [
+      "One problem per lesson",
+      "F01 · Sample spaces and events"
+    ],
+    "captureSelector": ".overview-heading"
+  },
+  {
+    "feature": "practice",
+    "id": "answer-shown",
+    "url": "/practice",
+    "actions": [
+      {
+        "click": {
+          "role": "button",
+          "name": "Show answer"
+        }
+      }
+    ],
+    "expect": [
+      "Hide answer"
+    ],
+    "captureSelector": ".practice-list > section:first-child"
+  },
+  {
+    "feature": "reference",
+    "id": "load",
+    "url": "/reference",
+    "expect": [
+      "Results and distributions",
+      "Lesson results",
+      "Distribution guide"
+    ],
+    "captureSelector": ".overview-heading"
+  },
+  {
+    "feature": "reference",
+    "id": "open",
+    "url": "/reference",
+    "actions": [
+      {
+        "click": {
+          "role": "button",
+          "name": "F02 · The axioms of probability"
+        }
+      }
+    ],
+    "expectPath": "/lessons/f02-the-axioms-of-probability",
+    "captureSelector": ".lesson-head"
+  },
+  {
+    "feature": "routing",
+    "id": "not-found",
+    "url": "/lessons/z99-nothing",
+    "expect": [
+      "Page not found"
+    ]
+  },
+  {
+    "feature": "routing",
+    "id": "topbar",
+    "url": "/practice",
+    "actions": [
+      {
+        "click": {
+          "role": "button",
+          "name": "Reference"
+        }
+      }
+    ],
+    "expectPath": "/reference",
+    "captureSelector": "main .overview-heading"
+  },
+  {
+    "feature": "routing",
+    "id": "mobile-drawer-open",
+    "url": "/",
+    "viewports": [
+      "mobile"
+    ],
+    "actions": [
+      {
+        "click": {
+          "role": "button",
+          "name": "Open lessons"
+        }
+      }
+    ],
+    "expect": [
+      "Browse by chapter"
+    ],
+    "captureSelector": "#lesson-sidebar"
+  },
+  {
+    "feature": "routing",
+    "id": "mobile-drawer-closed",
+    "url": "/",
+    "viewports": [
+      "mobile"
+    ],
+    "actions": [
+      {
+        "click": {
+          "role": "button",
+          "name": "Open lessons"
+        }
+      },
+      {
+        "press": "Escape"
+      }
+    ]
+  },
+  {
+    "feature": "labs",
+    "id": "birthday-default",
+    "url": "/lessons/c04-counting-in-action-birthdays-and-matchings#lab",
+    "expect": [
+      "P(at least one shared birthday)"
+    ],
+    "captureSelector": "#lab"
+  },
+  {
+    "feature": "labs",
+    "id": "birthday-moved",
+    "url": "/lessons/c04-counting-in-action-birthdays-and-matchings#lab",
+    "actions": [
+      {
+        "range": {
+          "name": "people",
+          "value": 40
+        }
+      }
+    ],
+    "expect": [
+      "P(at least one shared birthday)"
+    ],
+    "captureSelector": "#lab"
+  },
+  {
+    "feature": "progress",
+    "id": "studied",
+    "url": "/lessons/f01-sample-spaces-and-events",
+    "actions": [
+      {
+        "click": {
+          "role": "button",
+          "name": "Mark this lesson as studied"
+        }
+      }
+    ],
+    "expect": [
+      "✓ Studied"
+    ],
+    "captureSelector": ".studied-toggle"
+  },
+  {
+    "feature": "progress",
+    "id": "self-check",
+    "url": "/lessons/f03-equally-likely-outcomes",
+    "actions": [
+      {
+        "click": {
+          "role": "button",
+          "name": "Show answer"
+        }
+      },
+      {
+        "click": {
+          "role": "button",
+          "name": "✓ I got it"
+        }
+      }
+    ],
+    "expect": [
+      "Saved. Nice work."
+    ],
+    "captureSelector": ".practice"
+  },
+  {
+    "feature": "progress",
+    "id": "home-continue",
+    "url": "/lessons/f01-sample-spaces-and-events",
+    "actions": [
+      {
+        "click": {
+          "role": "button",
+          "name": "Mark this lesson as studied"
+        }
+      },
+      {
+        "click": {
+          "role": "button",
+          "name": "Learn"
+        }
+      }
+    ],
+    "expectPath": "/",
+    "expect": [
+      "Continue with F02",
+      "1 of 3 studied"
+    ],
+    "captureSelector": ".atlas-hero"
+  },
+  {
+    "feature": "labs",
+    "id": "bayes-default",
+    "url": "/lessons/k03-bayes-rule#lab",
+    "expect": [
+      "P(D | +)"
+    ],
+    "captureSelector": "#lab"
+  },
+  {
+    "feature": "labs",
+    "id": "bayes-moved",
+    "url": "/lessons/k03-bayes-rule#lab",
+    "actions": [
+      {
+        "range": {
+          "name": "prior",
+          "value": 0.2
+        }
+      }
+    ],
+    "expect": [
+      "P(D | +)"
+    ],
+    "captureSelector": "#lab"
+  },
+  {
+    "feature": "labs",
+    "id": "binomial-poisson-default",
+    "url": "/lessons/d05-poisson-random-variables#lab",
+    "expect": [
+      "p = λ/n = 0.0600"
+    ],
+    "captureSelector": "#lab"
+  },
+  {
+    "feature": "labs",
+    "id": "binomial-poisson-moved",
+    "url": "/lessons/d05-poisson-random-variables#lab",
+    "actions": [
+      {
+        "range": {
+          "name": "trials",
+          "value": 200
+        }
+      }
+    ],
+    "expect": [
+      "p = λ/n = 0.0150"
+    ],
+    "captureSelector": "#lab"
+  },
+  {
+    "feature": "labs",
+    "id": "normal-approximation-default",
+    "url": "/lessons/r05-the-normal-approximation-to-the-binomial#lab",
+    "expect": [
+      "P(X = 20)"
+    ],
+    "captureSelector": "#lab"
+  },
+  {
+    "feature": "labs",
+    "id": "normal-approximation-moved",
+    "url": "/lessons/r05-the-normal-approximation-to-the-binomial#lab",
+    "actions": [
+      {
+        "range": {
+          "name": "trials",
+          "value": 100
+        }
+      }
+    ],
+    "expect": [
+      "P(X = 50)"
+    ],
+    "captureSelector": "#lab"
+  },
+  {
+    "feature": "labs",
+    "id": "law-of-large-numbers-default",
+    "url": "/lessons/l02-the-weak-law-of-large-numbers#lab",
+    "expect": [
+      "Proportion of heads"
+    ],
+    "captureSelector": "#lab"
+  },
+  {
+    "feature": "labs",
+    "id": "law-of-large-numbers-moved",
+    "url": "/lessons/l02-the-weak-law-of-large-numbers#lab",
+    "actions": [
+      {
+        "range": {
+          "name": "tosses",
+          "value": 5000
+        }
+      }
+    ],
+    "expect": [
+      "Proportion of heads"
+    ],
+    "captureSelector": "#lab"
+  },
+  {
+    "feature": "labs",
+    "id": "central-limit-default",
+    "url": "/lessons/l04-the-central-limit-theorem#lab",
+    "expect": [
+      "Largest gap"
+    ],
+    "captureSelector": "#lab"
+  },
+  {
+    "feature": "labs",
+    "id": "central-limit-moved",
+    "url": "/lessons/l04-the-central-limit-theorem#lab",
+    "actions": [
+      {
+        "range": {
+          "name": "n",
+          "value": 12
+        }
+      }
+    ],
+    "expect": [
+      "Largest gap"
+    ],
+    "captureSelector": "#lab"
+  },
+  {
+    "feature": "practice",
+    "id": "checkpoint-solution",
+    "url": "/practice",
+    "actions": [
+      {
+        "click": {
+          "selector": ".checkpoint-set > summary"
+        }
+      },
+      {
+        "click": {
+          "selector": ".checkpoint-problem details:nth-of-type(2) > summary"
+        }
+      }
+    ],
+    "expect": [
+      "Problem 1",
+      "Solution"
+    ],
+    "captureSelector": ".checkpoint-set:first-of-type"
+  },
+  {
+    "feature": "reference",
+    "id": "conditions",
+    "url": "/reference",
+    "actions": [
+      {
+        "click": {
+          "selector": ".reference-list details > summary"
+        }
+      }
+    ],
+    "expect": [
+      "Conditions"
+    ],
+    "captureSelector": ".reference-list > div:first-child"
+  },
+  {
+    "feature": "reference",
+    "id": "distributions",
+    "url": "/reference",
+    "actions": [
+      {
+        "click": {
+          "role": "button",
+          "name": "Distribution guide"
+        }
+      }
+    ],
+    "expect": [
+      "Support",
+      "Mass or density",
+      "Mean",
+      "Variance"
+    ],
+    "captureSelector": ".distribution-card:first-child"
+  },
+  {
+    "feature": "accounts",
+    "id": "guest",
+    "url": "/",
+    "actions": [
+      {
+        "click": {
+          "selector": ".account-menu > summary"
+        }
+      }
+    ],
+    "expect": [
+      "Guest progress",
+      "Sign in with ChatGPT"
+    ],
+    "captureSelector": ".account-panel"
+  },
+  {
+    "feature": "home",
+    "id": "course-scope",
+    "url": "/",
+    "actions": [
+      {
+        "click": {
+          "selector": ".course-scope > summary"
+        }
+      }
+    ],
+    "expect": [
+      "Course scope and preparation",
+      "Jacobians"
+    ],
+    "captureSelector": ".course-scope"
+  },
+  {
+    "feature": "lessons",
+    "id": "quoted-result",
+    "url": "/lessons/l04#proof",
+    "actions": [
+      {
+        "click": {
+          "selector": ".proof-status > summary"
+        }
+      }
+    ],
+    "expect": [
+      "quoted without a full proof"
+    ],
+    "captureSelector": ".proof-status"
+  }
 ]

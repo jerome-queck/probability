@@ -1,29 +1,57 @@
 # Probability
 
-An interactive learning site for a first course in probability: counting, conditional
-probability, random variables, the common discrete and continuous distributions, joint
-distributions, expectation and covariance, and the limit theorems. Every lesson has an idea,
-definitions, a theorem with its conditions, a proof, a worked example, practice with hints, and
-a textbook reference; some have live experiments.
+A public first course in probability: 48 lessons, eight chapters, 24 chapter problems,
+14 distribution reference entries and six experiments. Each lesson includes definitions,
+conditions, reasoning, a worked example and hinted practice. Quoted background is labeled.
 
-## Run it locally
+Read without an account. ChatGPT sign-in saves study marks and practice self-ratings across
+visits. Guest progress stays in the browser; importing it requires a preview. Ratings record
+your judgment, not mastery. Optional scratch work clears when you leave the page.
 
-Requires Node.js 24 or newer.
+## Develop
 
-```bash
+Requires Node 24 or newer and Chrome for browser verification.
+
+```sh
 npm ci
-npm run dev                         # http://127.0.0.1:5173 with hot reload
-npm run build && npm run preview    # production build at http://127.0.0.1:4173
+npm run dev
 ```
 
-## Check
+Open the printed loopback URL. Development sign-in uses the supplied local fixture and does
+not prove hosted ChatGPT authentication. Apply local migrations with Wrangler before using
+account progress. Production preview serves the emitted Worker:
 
-```bash
+```sh
+npm run build
+npm run agent -- launch --data-dir .verify-run/reading
+npm run agent -- stop --data-dir .verify-run/reading
+```
+
+## Verify
+
+```sh
+npm run agent -- doctor
+npm run agent -- map --check
+npm run agent -- show --id R05
 npm run check
 ```
 
-This is the same command CI runs. See `AGENTS.md` for the full workflow.
+CI runs the same complete check. Selected journeys speed development; release requires all
+mapped states, the full rendering sweep, real local D1/account journeys and independent
+mathematical, visual and code review. See [AGENTS.md](AGENTS.md), [MAP.md](MAP.md) and the
+[verification skill](.agents/skills/verify/SKILL.md).
+
+## Hosting
+
+The supported Sites Vinext integration packages the application, assets and generated D1
+migrations. `.openai/hosting.json` identifies this Site. Sites owns top-level ChatGPT sign-in;
+server handlers derive record ownership from its trusted identity. No application OAuth stack
+or account credential is stored here. Follow [the hosting decision](docs/adr/0003-sites-and-account-progress.md)
+when changing that boundary.
+
+Production-only dependency audit is clean. One unpatched build-tool advisory remains tracked
+in [issue 26](https://github.com/jerome-queck/probability/issues/26); the full audit is not clean.
 
 ## Licence
 
-MIT. The lessons are original; the textbook is cited for further reading.
+MIT. Lessons and exercises are original. Textbook references support further reading.
