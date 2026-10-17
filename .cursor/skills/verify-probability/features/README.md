@@ -18,12 +18,9 @@ or the lesson chapters disagree.
 
 ## Review tooling (not a site feature)
 
-Verifier, review and math sessions run through `scripts/agent-run.sh` (see AGENTS.md). For anyone
-driving this map from such a session: screenshots over 2000px per side that appear in the worktree
-during a run are downscaled in place by `scripts/shrink-images.py` once they have been unchanged for
-10s and no smoke run is active in that tree (baselines are never touched), so wait before reading a
-fresh screenshot. Covered by `npm run test:agent-run` (`bigshot`, `freshshot`, `taskwait`,
-`taskreplay`, `nonretriable`, `asstverdict`).
+Codex and optional Cursor sessions use this same driver and map. Record actual runner, model,
+effort, full session identity and checked commit as described in `AGENTS.md`. Keep original
+screenshots unchanged. Create separate resized copies when inspection needs them.
 
 ## Named results (content gate, not a site feature)
 

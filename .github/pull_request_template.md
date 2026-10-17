@@ -12,13 +12,13 @@
 
 ## Verification
 
-- Verifier verdict: <!-- VERIFIED / NOT VERIFIED / INCONCLUSIVE — by whom, using verify-probability -->
-- Verified head: <!-- short SHA of the head that was verified -->
-- Review: <!-- clean / open items — multi-model review summary (Act on / Consider / Noted / Dismissed) -->
-- Reviewer verdicts: <!-- one entry per review session, “;”-separated, exactly: R1 grok-4.7-high CLEAN (session <id>); R2 grok-4.7-high CHANGES NEEDED (session <id>). <id> is the session= id scripts/agent-run.sh printed. Each reviewer is its own top-level session (scripts/agent-run.sh review, no Task subagents), run one at a time; rerun any that dropped the same way. Notes go in Review. -->
-- Math review: <!-- content PRs, exactly: clean — grok-4.7-high (session <id>) on <sha>; then notes (what was checked against which sources). <id> is the session= id scripts/agent-run.sh math printed; <sha> the commit it checked. Run it while authoring, before verifier and reviewers, and again after any later lesson edit: the evidence job fails if a lesson file this PR changes differs at the head. -->
+- Verifier verdict: <!-- VERIFIED <runner> <model> effort <effort> (session <full identity>) on <full head SHA>. Independent verifier using verify-probability. Example syntax uses runner codex, model gpt-6.1-sol, effort max. Record the actual configured values. -->
+- Verified head: <!-- full 40-character SHA of the current head -->
+- Review: <!-- clean / open items; independent review summary and resolved findings. A clean summary cannot override CHANGES NEEDED. -->
+- Reviewer verdicts: <!-- one entry per completed independent session, separated by “;”: R1 codex gpt-6.1-sol effort max CLEAN (session /root/reviewer_one) on <full head SHA>; R2 codex gpt-6.1-sol effort max CLEAN (session /root/reviewer_two) on <full head SHA>. These are syntax examples, not receipts. Use actual runner/model/effort and full Codex UUID or canonical task path. Cursor runner cursor-agent requires its full UUID. Each reviewer and the verifier must be separate sessions that did not author the change. Rerun dropped reviewers. Every verdict must be CLEAN. Notes go in Review. -->
+- Math review: <!-- content PRs: clean - <runner> <model> effort <effort> (session <full identity>) on <full checked commit SHA>; source check and corrections. Run independently while authoring, before verification/review, and again after any lesson edit. The checked commit must be an ancestor with unchanged PR lesson text at the head. -->
 - Verify evidence: <!-- CI run URL (verify-evidence artifact) + the screenshots you opened and inspected, e.g. lessons/open.desktop.png -->
-- Skills used: <!-- e.g. poteto-mode, verify-probability, interrogate — runner cursor-agent, model and effort as grok-4.7 tiers per role (e.g. verifier grok-4.7-high) -->
+- Skills used: <!-- e.g. poteto-mode, verify-probability, interrogate; runner codex, model gpt-6.1-sol, effort max. Record actual runner, model and effort for each role that differs. -->
 - Evidence: <!-- CI run URL, smoke drives, artifacts, transcripts -->
 
 ## Feature map entries touched

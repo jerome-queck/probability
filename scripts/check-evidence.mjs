@@ -6,9 +6,13 @@
 import { execFileSync } from 'node:child_process';
 import {
   compareFailedErrors,
+  FULL_SHA,
   mathReviewErrors,
   reviewerErrors,
+  skillsUsedErrors,
   staleMathErrors,
+  verifiedHeadErrors,
+  verifierErrors,
 } from './evidence-rules.mjs';
 
 const pr = process.env.PR;
@@ -22,28 +26,37 @@ const body = (live.body ?? '').replace(/<!--[\s\S]*?-->/g, '');
 const head = process.env.HEAD_SHA || live.headRefOid;
 const files = live.files.map((f) => f.path);
 const errors = [];
-const field = (name) =>
-  new RegExp(`^\\s*[-*]?\\s*\\**${name}\\**\\s*:\\s*(.+)$`, 'im')
-    .exec(body)?.[1]
-    ?.trim() ?? '';
+const field = (name) => {
+  const matches = [
+    ...body.matchAll(
+      new RegExp(
+        `^[\\t ]*[-*]?[\\t ]*\\**${name}\\**[\\t ]*:[\\t ]*(.*)$`,
+        'gim',
+      ),
+    ),
+  ];
+  if (matches.length > 1)
+    errors.push(
+      `“${name}:” appears more than once; keep one unambiguous field`,
+    );
+  return matches[0]?.[1].trim() ?? '';
+};
 
-if (!/^VERIFIED\b/.test(field('Verifier verdict')))
+if (!FULL_SHA.test(head) || head !== live.headRefOid)
   errors.push(
-    '“Verifier verdict:” must start with VERIFIED (INCONCLUSIVE is not a pass)',
+    'the PR head changed or is invalid; rerun evidence for the current full head SHA',
   );
-const verifiedHead = field('Verified head');
-if (
-  !verifiedHead ||
-  !head.startsWith(verifiedHead.replace(/`/g, '')) ||
-  verifiedHead.replace(/`/g, '').length < 7
-)
-  errors.push(
-    `“Verified head:” must name the current head ${head.slice(0, 7)} (a new push resets verification)`,
-  );
+const verifier = verifierErrors(field('Verifier verdict'), head);
+errors.push(...verifier.errors);
+errors.push(
+  ...verifiedHeadErrors(field('Verified head').replace(/`/g, ''), head),
+);
 if (!/^clean\b/i.test(field('Review')))
   errors.push('“Review:” must start with “clean” (no open Act-on items)');
 // Every review session must have reported (a dropped reviewer is rerun, not skipped).
-errors.push(...reviewerErrors(field('Reviewer verdicts')));
+errors.push(
+  ...reviewerErrors(field('Reviewer verdicts'), head, verifier.session),
+);
 if (field('Evidence').length < 10)
   errors.push(
     '“Evidence:” must point at the proof (CI run, smoke drives, artifacts)',
@@ -130,7 +143,7 @@ if (touchesFeatures) {
         );
       if (run.head_sha !== head)
         errors.push(
-          `feature change: run ${runId} is for ${String(run.head_sha).slice(0, 7)}, not the PR head ${head.slice(0, 7)}`,
+          `feature change: run ${runId} is for ${run.head_sha}, not the PR head ${head}`,
         );
       if (run.conclusion !== 'success')
         errors.push(
@@ -155,26 +168,11 @@ if (touchesFeatures) {
     errors.push(
       'feature change: “Verify evidence:” must link the CI run (…/actions/runs/<id>, artifact verify-evidence with the driver run) and name the screenshots inspected (*.png)',
     );
-  if (!/grok-4\.7/i.test(field('Review')))
-    errors.push(
-      'feature change: “Review:” must name the independent reviewer and its model (grok-4.7)',
-    );
 }
-if (
-  !/verify-probability/.test(field('Skills used')) ||
-  !/grok-4\.7/.test(field('Skills used')) ||
-  !/grok-4\.7-(low|medium|high)(?![-\w])/.test(field('Skills used')) ||
-  // Every tier named must be an allowed one (no xhigh, no -fast variants).
-  (field('Skills used').match(/grok-4\.7[-\w.]*/g) ?? []).some(
-    (t) => !/^grok-4\.7-(low|medium|high)$/.test(t),
-  )
-)
-  errors.push(
-    '“Skills used:” must list the skills used (at least verify-probability) with model and effort',
-  );
+errors.push(...skillsUsedErrors(field('Skills used')));
 
 if (errors.length) {
   console.error(errors.map((e) => `evidence: ${e}`).join('\n'));
   process.exit(1);
 }
-console.log(`evidence ok for ${head.slice(0, 7)}`);
+console.log(`evidence ok for ${head}`);

@@ -5,8 +5,9 @@ description: Drive the probability learning site (React/Vite web UI) in headless
 
 # verify-probability
 
-The site is a static React/Vite app with no backend, accounts or stored data. A "data dir"
-holds only the driver's own state (pid, port, server log), so instances are disposable.
+The site is a static React/Vite app. Browser local storage holds study progress, practice
+self-ratings and sidebar preferences. A "data dir" holds only the driver's own state
+(pid, port, server log). Each smoke state uses a fresh browser context.
 
 ## Launch
 
@@ -55,7 +56,8 @@ full-page screenshot and ARIA snapshot to `artifacts/smoke/<feature>/<state>.<wi
 compares the screenshot with `baselines/<feature>/<state>.<width>.png` (pixelmatch, threshold
 0.03, at most 0.2% of pixels may differ; a diff image is written next to the screenshot).
 After the states it sweeps every lesson page plus Practice and Reference at four widths (390, 600, 860 and 1280px) with the same rendering checks (no screenshots), so a clipped or orphaned formula on a page without a smoke state still fails.
-`--only <feature>/<state>` limits the run.
+`--only <feature>/<state>` runs one exact mapped state and skips the lesson sweep. Unknown,
+partial and empty selectors fail before launch. Use the unfiltered run for full verification.
 
 **Look at the screenshots.** A verifier opens the PNGs for every state the change touches (and a
 sample of the rest) and inspects them: layout, overlap, clipping, wrapping, fonts, mathematics,
@@ -73,8 +75,8 @@ artifact on every run; the PR’s “Verify evidence” line links to that run a
 screenshots a human or verifier looked at. A proof shows the
 action and the resulting state: the route and heading after a click, the lab result text after a
 slider move, the ARIA snapshot of `<main>`. Drive the real UI only; never call internal functions
-to fake a state. There are no side effects to check beyond the page (no network writes, no storage
-except the sidebar's expanded-chapter preference in `localStorage`).
+to fake a state. Check progress and self-rating changes in local storage when the journey touches
+them. Preserve the original PNGs as evidence. Use separate copies for resized inspection.
 
 ## Cleanup
 
