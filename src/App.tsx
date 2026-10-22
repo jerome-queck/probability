@@ -69,6 +69,10 @@ export function App() {
     return () => document.removeEventListener('keydown', close);
   }, [drawer]);
   function select(id: string) {
+    if (drawer) {
+      focusAfter.current = 'heading';
+      setDrawer(false);
+    }
     studyStore.openLesson(id);
   }
   return (
