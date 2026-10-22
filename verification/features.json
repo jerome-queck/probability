@@ -52,8 +52,7 @@
         "src/StudyPlanView.tsx",
         "src/LessonPage.tsx",
         "src/studyPlan.ts",
-        "src/studyPlan.test.ts",
-        "src/StudyPlanView.tsx"
+        "src/studyPlan.test.ts"
       ]
     },
     {
