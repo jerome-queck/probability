@@ -2,26 +2,38 @@ import { useSyncExternalStore } from 'react';
 import { lessons } from './content/lessons';
 import { nextUnstudied, progressStore } from './progress';
 import type { View } from './routes';
-import { CourseReference, PracticeSession } from './StudyViews';
+import { StudyPlanEntry, StudyPlanView } from './StudyPlanView';
+import { CourseReference } from './StudyViews';
 import { studyStore } from './state';
+import type { StudyEvent, StudyVisit } from './studyPlan';
 
 const clusters = [...new Set(lessons.map((lesson) => lesson.cluster))];
 
 export function AtlasViews({
   view,
   open,
+  visit,
+  send,
 }: {
   view: View;
   open: (id: string) => void;
+  visit: StudyVisit;
+  send: (event: StudyEvent) => void;
 }) {
   const progress = useSyncExternalStore(
     progressStore.subscribe,
     progressStore.getSnapshot,
   );
   const order = lessons.map((l) => l.id);
-  const started = order.some((id) => progress.studied.includes(id));
+  const account = useSyncExternalStore(
+    progressStore.subscribe,
+    progressStore.getAccountSnapshot,
+  );
+  const resolved = account.kind === 'guest' || account.kind === 'account';
+  const started = resolved && order.some((id) => progress.studied.includes(id));
   const continueId = started ? nextUnstudied(order, progress) : undefined;
-  if (view === 'practice') return <PracticeSession />;
+  if (view === 'practice')
+    return <StudyPlanView visit={visit} send={send} openLesson={open} />;
   if (view === 'reference') return <CourseReference open={open} />;
   return (
     <div className="overview-shell">
@@ -62,25 +74,32 @@ export function AtlasViews({
         </div>
         <HeroFigure />
       </section>
-      <section className="study-dashboard" aria-label="Study overview">
-        <div>
-          <strong>
-            {order.filter((id) => progress.studied.includes(id)).length} of{' '}
-            {lessons.length}
-          </strong>
-          <span>lessons marked as studied</span>
-        </div>
-        <div>
-          <strong>
-            {order.filter((id) => progress.practice[id] === 'review').length}
-          </strong>
-          <span>practice problems to revisit</span>
-        </div>
-        <p>
-          Study marks and practice ratings are your own record, not an
-          assessment of mastery.
+      {resolved ? (
+        <section className="study-dashboard" aria-label="Study overview">
+          <div>
+            <strong>
+              {order.filter((id) => progress.studied.includes(id)).length} of{' '}
+              {lessons.length}
+            </strong>
+            <span>lessons marked as studied</span>
+          </div>
+          <div>
+            <strong>
+              {order.filter((id) => progress.practice[id] === 'review').length}
+            </strong>
+            <span>practice problems to revisit</span>
+          </div>
+          <p>
+            Study marks and practice ratings are your own record, not an
+            assessment of mastery.
+          </p>
+        </section>
+      ) : (
+        <p className="plan-record-notice" role="status">
+          {account.message} Personal study counts are hidden until your account
+          is resolved. Open Progress for recovery options.
         </p>
-      </section>
+      )}
       <details className="course-scope">
         <summary>Course scope and preparation</summary>
         <p>
@@ -97,6 +116,7 @@ export function AtlasViews({
           identified in their lessons.
         </p>
       </details>
+      <StudyPlanEntry visit={visit} send={send} />
       <section className="overview-section" aria-labelledby="chapters-heading">
         <p className="eyebrow">{lessons.length} LESSONS</p>
         <h2 id="chapters-heading">Chapters</h2>
@@ -113,12 +133,15 @@ export function AtlasViews({
                   </span>
                   {cluster}
                 </h3>
-                <ChapterProgress
-                  done={
-                    items.filter((l) => progress.studied.includes(l.id)).length
-                  }
-                  total={items.length}
-                />
+                {resolved && (
+                  <ChapterProgress
+                    done={
+                      items.filter((l) => progress.studied.includes(l.id))
+                        .length
+                    }
+                    total={items.length}
+                  />
+                )}
                 <ul>
                   {items.map((lesson) => (
                     <li key={lesson.id}>

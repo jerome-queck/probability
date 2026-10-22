@@ -1,4 +1,4 @@
-import { useState, useSyncExternalStore } from 'react';
+import { useState } from 'react';
 import checkpoints from './content/checkpoints.json';
 import distributions from './content/distributions.json';
 import { lessons } from './content/lessons';
@@ -6,39 +6,29 @@ import { matchLesson } from './content/search';
 import type { ChapterCheckpoint, DistributionReference } from './content/types';
 import { Practice } from './LessonPage';
 import { MathText } from './MathText';
-import { progressStore } from './progress';
 
 const chapters = [...new Set(lessons.map((lesson) => lesson.cluster))];
 
 export function PracticeSession() {
-  const progress = useSyncExternalStore(
-    progressStore.subscribe,
-    progressStore.getSnapshot,
-  );
   const [chapter, setChapter] = useState('all');
-  const [reviewOnly, setReviewOnly] = useState(false);
   const [showAll, setShowAll] = useState(false);
-  const rank = (id: string) =>
-    progress.practice[id] === 'review'
-      ? 0
-      : progress.practice[id] === 'got-it'
-        ? 2
-        : 1;
-  const selected = lessons
-    .filter((lesson) => chapter === 'all' || lesson.cluster === chapter)
-    .filter(
-      (lesson) => !reviewOnly || progress.practice[lesson.id] === 'review',
-    )
-    .sort((a, b) => rank(a.id) - rank(b.id));
+  const selected = lessons.filter(
+    (lesson) => chapter === 'all' || lesson.cluster === chapter,
+  );
   const visible = showAll ? selected : selected.slice(0, 5);
   return (
-    <div className="overview-shell">
-      <header className="overview-heading">
-        <p className="eyebrow">RECALL, THEN CHECK</p>
-        <h1 tabIndex={-1}>One problem per lesson</h1>
+    <section
+      className="problem-library"
+      aria-labelledby="library-heading"
+      id="problem-library"
+    >
+      <header className="overview-heading library-heading">
+        <p className="eyebrow">EXPLORE AT YOUR OWN PACE</p>
+        <h2 id="library-heading">Problem library</h2>
         <p>
-          Attempt a small set before opening hints. Your self-ratings put
-          problems to review first. They record your judgment, not a grade.
+          One problem per lesson, in chapter order, plus chapter checkpoints.
+          Ratings leave this list in place. Use guided review above to build a
+          set from your review marks.
         </p>
       </header>
       <div className="study-controls">
@@ -57,22 +47,13 @@ export function PracticeSession() {
             ))}
           </select>
         </label>
-        <label className="check-control">
-          <input
-            type="checkbox"
-            checked={reviewOnly}
-            onChange={(event) => setReviewOnly(event.target.checked)}
-          />
-          Only problems I marked for review
-        </label>
         <p role="status">
           {visible.length} of {selected.length} problems shown
         </p>
       </div>
       {!selected.length && (
         <p className="study-empty">
-          No problems match this selection. Choose another chapter or include
-          all problems.
+          No problems match this selection. Choose another chapter.
         </p>
       )}
       <div className="practice-list">
@@ -126,7 +107,7 @@ export function PracticeSession() {
             </details>
           ))}
       </section>
-    </div>
+    </section>
   );
 }
 

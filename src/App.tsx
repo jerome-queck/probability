@@ -1,13 +1,34 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import {
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import { AccountPanel } from './AccountPanel';
 import { AtlasViews } from './AtlasViews';
 import { lessons } from './content/lessons';
 import { LessonPage } from './LessonPage';
+import { progressStore } from './progress';
 import { views } from './routes';
 import { Sidebar } from './Sidebar';
 import { studyStore } from './state';
+import { createStudyPlanReducer } from './studyPlan';
+
+const studyPlanReducer = createStudyPlanReducer(lessons);
 
 export function App() {
+  const account = useSyncExternalStore(
+    progressStore.subscribe,
+    progressStore.getAccountSnapshot,
+  );
+  const owner =
+    account.kind === 'account' ? `account:${account.owner}` : account.kind;
+  return <Reader key={owner} />;
+}
+
+function Reader() {
+  const [visit, send] = useReducer(studyPlanReducer, { kind: 'choose' });
   const route = useSyncExternalStore(
     studyStore.subscribe,
     studyStore.getSnapshot,
@@ -143,7 +164,12 @@ export function App() {
         ) : lesson ? (
           <LessonPage key={lesson.id} lesson={lesson} onSelect={select} />
         ) : route.view !== 'lesson' ? (
-          <AtlasViews view={route.view} open={select} />
+          <AtlasViews
+            view={route.view}
+            open={select}
+            visit={visit}
+            send={send}
+          />
         ) : null}
       </main>
     </div>
