@@ -152,9 +152,7 @@ async function assertRecall(page, roster, current) {
 
 async function recallScratch(page, text) {
   const active = activeProblem(page);
-  await active
-    .getByRole('textbox', { name: 'Your reasoning', exact: true })
-    .fill(text);
+  await active.getByRole('textbox', { name: /^Your reasoning\b/ }).fill(text);
   await button(active, 'Show a hint').click();
   await button(active, 'Show answer').click();
 }
@@ -163,7 +161,7 @@ async function assertScratch(page, text, revealed = true) {
   const active = activeProblem(page);
   assert.equal(
     await active
-      .getByRole('textbox', { name: 'Your reasoning', exact: true })
+      .getByRole('textbox', { name: /^Your reasoning\b/ })
       .inputValue(),
     text,
   );
@@ -408,7 +406,7 @@ async function guided(page, url, record, capture) {
   }
   await capture(page, 'stable-rating-F01', '.recall-session');
   await activeProblem(page)
-    .getByRole('textbox', { name: 'Your reasoning', exact: true })
+    .getByRole('textbox', { name: /^Your reasoning\b/ })
     .focus();
   const controls = await page
     .locator('.recall-session')
@@ -736,6 +734,7 @@ async function navigation(page, url, record, capture) {
   ]);
   const newTabErrors = watchErrors(newTab);
   await newTab.waitForLoadState('networkidle');
+  await newTab.locator('[data-lesson-id="F02"]').waitFor({ state: 'visible' });
   assert.match(new URL(newTab.url()).pathname, /^\/lessons\/f02/);
   assert.equal(
     await newTab.locator('h1').innerText(),
