@@ -49,6 +49,8 @@ Automated runs create fresh directories under `artifacts/smoke/` and `artifacts/
 
 Mapped states capture the relevant region (`captureSelector`), such as the revealed answer, account panel or experiment. Full release smoke retains pixel comparison against committed baselines. Inspect every changed desktop and mobile screenshot. A passing DOM assertion or generated baseline is not a visual verdict.
 
+Committed baselines use the Linux runner and pinned Chrome in `.github/workflows/check.yml`. Other platforms can differ with unchanged source and the same browser version. Preserve failed comparisons, run the complete journeys, and inspect the successful exact-head CI artifact before a release verdict. Keep replacement baselines in that Linux environment.
+
 Content-region captures keep the declared width and temporarily grow viewport height to show the complete card. Sticky navigation is hidden outside its own captures; the original viewport is restored afterward. Rendering checks require readable axis labels, nonoverlapping ticks and legend colors matching their plotted series.
 Requested hover and keyboard focus are asserted after capture positioning; hover captures restore the intended pointer target and require its computed background to change.
 

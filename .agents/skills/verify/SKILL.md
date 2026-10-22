@@ -37,6 +37,8 @@ Automated runs preserve immutable PNG/ARIA files, logs and structured results in
 
 Smoke captures the changed region, including answers and lab controls. Full release runs compare pixels with committed baselines. Inspect changed desktop/mobile images before a visual verdict or baseline acceptance. `--capture` and `--update-baselines` never count as release comparison. Preserve original baselines until consciously accepting inspected replacements.
 
+Committed baselines use the Linux runner and pinned Chrome in `.github/workflows/check.yml`. Other platforms can produce pixel differences with unchanged source and the same Chrome version. Preserve those failures, run the complete journeys, and use the successful exact-head CI artifact for release comparison. Never replace Linux baselines with another platform's captures to clear that failure.
+
 Content-region captures keep the declared width and temporarily grow viewport height to show the complete card. Sticky navigation is hidden outside its own captures; the original viewport is restored afterward. Rendering checks require readable axis labels, nonoverlapping ticks and legend colors matching their plotted series.
 Requested hover and keyboard focus are asserted after capture positioning; hover captures restore the intended pointer target and require its computed background to change.
 
