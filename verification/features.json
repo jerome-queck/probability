@@ -48,7 +48,9 @@
       "owners": [
         "src/AtlasViews.tsx",
         "src/StudyViews.tsx",
-        "src/LessonPage.tsx"
+        "src/LessonPage.tsx",
+        "src/studyPlan.ts",
+        "src/studyPlan.test.ts"
       ]
     },
     {
