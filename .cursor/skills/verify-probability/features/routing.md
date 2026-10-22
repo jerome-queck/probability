@@ -7,7 +7,7 @@ Client-side routes: `/`, `/practice`, `/reference`, `/lessons/<id>-<slug>`. Unkn
 - `routing.deep-link` — a lesson URL loads that lesson directly.
 - `routing.not-found` — an unknown lesson or path shows the not-found page.
 - `routing.topbar` — Learn / Practice / Reference buttons switch views.
-- `routing.drawer`. Selecting the current lesson closes the mobile drawer, moves focus to the lesson heading and leaves history unchanged. Close, scrim and Escape restore focus to the menu button.
+- `routing.drawer`. Selecting the current lesson closes the mobile drawer and moves focus to the lesson heading. History stays unchanged on a canonical lesson URL; a short alias can add its canonical URL. Close, scrim and Escape restore focus to the menu button.
 
 ## How to get to it (user POV)
 
