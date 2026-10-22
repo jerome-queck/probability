@@ -250,8 +250,9 @@ export function Practice({
           placeholder="State the model, conditions, and your first step."
         />
         <small>
-          Optional scratch work. It stays on this page and clears when you
-          leave.
+          Optional scratch work. It stays here through ratings and Previous /
+          Next in a recall set. It clears when you leave this page, close or
+          replace the set, or reload.
         </small>
       </label>
       {lesson.practice.hints.slice(0, hints).map((hint, i) => (
@@ -292,8 +293,6 @@ function useProgress() {
   );
 }
 
-// After reading the answer the reader records how it went; "review again" problems are
-// listed first on the Practice page.
 function SelfCheck({ id }: { id: string }) {
   const { practice, unsaved } = useProgress();
   const verdict = practice[id];
@@ -340,7 +339,7 @@ function SelfCheck({ id }: { id: string }) {
               : verdict === 'got-it'
                 ? 'Saved. Nice work.'
                 : verdict === 'review'
-                  ? 'Saved. Problems to review are listed first on the Practice page.'
+                  ? 'Saved. Included when you build Review marked problems.'
                   : 'Cleared.'}
       </span>
     </fieldset>

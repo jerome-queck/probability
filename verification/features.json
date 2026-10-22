@@ -31,7 +31,8 @@
       "id": "home",
       "purpose": "Start, resume and understand the course boundary.",
       "owners": [
-        "src/AtlasViews.tsx"
+        "src/AtlasViews.tsx",
+        "src/StudyPlanView.tsx"
       ]
     },
     {
@@ -48,6 +49,7 @@
       "owners": [
         "src/AtlasViews.tsx",
         "src/StudyViews.tsx",
+        "src/StudyPlanView.tsx",
         "src/LessonPage.tsx",
         "src/studyPlan.ts",
         "src/studyPlan.test.ts"
