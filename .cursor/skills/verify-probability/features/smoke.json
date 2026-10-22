@@ -411,7 +411,7 @@
       },
       {
         "click": {
-          "selector": ".lesson-preparation button"
+          "selector": "[data-lesson-id=\"F02\"] .lesson-preparation button"
         }
       },
       {
