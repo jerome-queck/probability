@@ -328,6 +328,16 @@ main {
   color: #fff;
   box-shadow: inset 3px 0 0 #8aa0ff;
 }
+.nav-link-copy {
+  min-width: 0;
+  flex: 1;
+}
+.nav-match {
+  display: block;
+  margin-top: 3px;
+  color: var(--rail-muted);
+  font-size: 0.78rem;
+}
 .nav-link mark,
 .search-status mark {
   background: #f2b48f;

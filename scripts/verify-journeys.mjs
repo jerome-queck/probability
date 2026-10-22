@@ -169,7 +169,22 @@ async function study(page, url, record, capture) {
   assert.ok((await checkpoint.locator('details[open]').count()) === 2);
   await capture(page, 'checkpoint-solution', '.checkpoint-set:first-of-type');
   await button(page, 'Reference').click();
-  await page.getByRole('searchbox', { name: 'Find in reference' }).fill('F02');
+  const referenceSearch = page.getByRole('searchbox', {
+    name: 'Find in reference',
+  });
+  await referenceSearch.fill('Boole');
+  assert.equal(await page.locator('.reference-list > div').count(), 2);
+  assert.equal(
+    await button(page, 'F02 · The axioms of probability').count(),
+    1,
+  );
+  await referenceSearch.fill('axioms Boole');
+  assert.equal(await page.locator('.reference-list > div').count(), 1);
+  assert.equal(
+    await button(page, 'F02 · The axioms of probability').count(),
+    1,
+  );
+  await referenceSearch.fill('F02');
   assert.equal(await page.locator('.reference-list > div').count(), 1);
   await page.locator('.reference-list summary').click();
   assert.ok(
@@ -180,9 +195,9 @@ async function study(page, url, record, capture) {
   assert.match(new URL(page.url()).pathname, /^\/lessons\/f02/);
   await button(page, 'Reference').click();
   await button(page, 'Distribution guide').click();
-  await page
-    .getByRole('searchbox', { name: 'Find in reference' })
-    .fill('Poisson');
+  await referenceSearch.fill('D05 Poisson');
+  assert.equal(await page.locator('.distribution-card').count(), 0);
+  await referenceSearch.fill('Poisson');
   const card = page.locator('.distribution-card').filter({
     has: page.getByRole('heading', { name: 'Poisson', exact: true }),
   });
@@ -228,9 +243,58 @@ async function navigation(page, url, record, capture) {
     );
     await button(page, 'Open lessons').click();
   }
-  await page.getByRole('searchbox', { name: 'Find a concept' }).fill('F02');
+  const search = page.getByRole('searchbox', { name: 'Find a concept' });
+  const foundations = page
+    .locator('.chapter-heading button')
+    .filter({ hasText: 'Foundations' });
+  if ((await foundations.getAttribute('aria-expanded')) === 'true')
+    await foundations.click();
+  await search.fill('Boole');
+  assert.equal(await page.locator('.nav-link').count(), 2);
+  assert.equal(
+    await page
+      .locator('.nav-link[href^="/lessons/f02"] .nav-match')
+      .innerText(),
+    'Words in Practice',
+  );
+  assert.equal(
+    await page
+      .locator('.nav-link[href^="/lessons/j02"] .nav-match')
+      .innerText(),
+    'Words in Definition',
+  );
+  await capture(page, 'search-content-witnesses', '#lesson-sidebar');
+  await foundations.click();
+  assert.equal(await foundations.getAttribute('aria-expanded'), 'false');
+  await search.fill('axioms Boole');
   assert.equal(await page.locator('.nav-link').count(), 1);
+  await page
+    .locator('.nav-link[href^="/lessons/f02"]')
+    .waitFor({ state: 'visible' });
+  assert.equal(await foundations.getAttribute('aria-expanded'), 'true');
+  assert.equal(
+    await page.locator('.nav-match').innerText(),
+    'Words in Practice',
+  );
+  await search.fill('The axioms of probability');
+  assert.equal(
+    await page.locator('.nav-link[href^="/lessons/f02"]').count(),
+    1,
+  );
+  assert.equal(
+    await page.locator('.nav-link[href^="/lessons/f02"] .nav-match').count(),
+    0,
+  );
+  await search.fill('no-such-concept');
+  assert.equal(await page.locator('.nav-link').count(), 0);
+  await button(page, 'Clear search').click();
+  assert.equal(await page.locator('.nav-match').count(), 0);
+  assert.equal(await foundations.getAttribute('aria-expanded'), 'false');
+  await search.fill('F02');
+  assert.equal(await page.locator('.nav-link').count(), 1);
+  assert.equal(await page.locator('.nav-match').count(), 0);
   const link = page.getByRole('link', { name: /F02/ });
+  assert.match(await link.getAttribute('href'), /^\/lessons\/f02/);
   await link.focus();
   await page.keyboard.press('Enter');
   assert.match(new URL(page.url()).pathname, /^\/lessons\/f02/);
@@ -240,6 +304,34 @@ async function navigation(page, url, record, capture) {
       .evaluate((node) => node === document.activeElement),
     true,
   );
+  await button(page, 'Mark this lesson as studied').click();
+  if (mobile) await button(page, 'Open lessons').click();
+  await search.fill('Boole 60%');
+  assert.equal(await page.locator('.nav-link').count(), 1);
+  assert.equal(
+    await page.locator('.nav-match').innerText(),
+    'Words in Worked example · Practice',
+  );
+  assert.equal(await link.getAttribute('aria-current'), 'page');
+  assert.ok((await link.getAttribute('class')).includes('active'));
+  assert.equal(await link.locator('.studied-mark').count(), 1);
+  await capture(page, 'search-studied-multiple-witnesses', '#lesson-sidebar');
+  const originalUrl = page.url();
+  const [newTab] = await Promise.all([
+    page.context().waitForEvent('page'),
+    link.click({ modifiers: ['ControlOrMeta'] }),
+  ]);
+  const newTabErrors = watchErrors(newTab);
+  await newTab.waitForLoadState('networkidle');
+  assert.match(new URL(newTab.url()).pathname, /^\/lessons\/f02/);
+  assert.equal(
+    await newTab.locator('h1').innerText(),
+    'The axioms of probability',
+  );
+  assert.deepEqual(newTabErrors, []);
+  await newTab.close();
+  assert.equal(page.url(), originalUrl);
+  if (mobile) await button(page, 'Close lessons').click();
   if (mobile) {
     const pathname = new URL(page.url()).pathname;
     const historyLength = await page.evaluate(() => window.history.length);
@@ -319,7 +411,10 @@ async function navigation(page, url, record, capture) {
     'direct #lab link must put the experiment in view',
   );
   record.proved = [
-    'concept search',
+    'content-only and mixed search with ordered section witnesses',
+    'ID, title, empty and no-result search without section captions',
+    'search chapter collapse and restored browse preference',
+    'native and modified lesson links, current styling and studied mark',
     'keyboard activation and heading focus',
     'browser back and forward',
     'direct experiment anchor',
@@ -764,6 +859,35 @@ try {
           assert.deepEqual(await renderingProblems(page), []);
           await page.locator('h1').scrollIntoViewIfNeeded();
           await capturePage(page, join(out, 'reflow-320.png'));
+          await goto(page, url, lesson('F02'));
+          await guest(page);
+          await button(page, 'Mark this lesson as studied').click();
+          await button(page, 'Open lessons').click();
+          const search = page.getByRole('searchbox', {
+            name: 'Find a concept',
+          });
+          await search.fill('Boole');
+          assert.equal(await page.locator('.nav-link').count(), 2);
+          await capturePage(
+            page,
+            join(out, 'reflow-320-search-content-witnesses.png'),
+            '#lesson-sidebar',
+          );
+          await search.fill('Boole 60%');
+          const link = page.getByRole('link', { name: /F02/ });
+          assert.equal(await page.locator('.nav-link').count(), 1);
+          assert.equal(
+            await link.locator('.nav-match').innerText(),
+            'Words in Worked example · Practice',
+          );
+          assert.equal(await link.getAttribute('aria-current'), 'page');
+          assert.equal(await link.locator('.studied-mark').count(), 1);
+          await capturePage(
+            page,
+            join(out, 'reflow-320-search-studied-multiple-witnesses.png'),
+            '#lesson-sidebar',
+          );
+          assert.deepEqual(await renderingProblems(page), []);
           assert.deepEqual(errors, []);
           reflow320 = true;
         } catch (error) {

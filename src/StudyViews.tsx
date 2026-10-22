@@ -2,7 +2,7 @@ import { useState, useSyncExternalStore } from 'react';
 import checkpoints from './content/checkpoints.json';
 import distributions from './content/distributions.json';
 import { lessons } from './content/lessons';
-import { lessonMatches } from './content/search';
+import { matchLesson } from './content/search';
 import type { ChapterCheckpoint, DistributionReference } from './content/types';
 import { Practice } from './LessonPage';
 import { MathText } from './MathText';
@@ -133,8 +133,8 @@ export function PracticeSession() {
 export function CourseReference({ open }: { open: (id: string) => void }) {
   const [tab, setTab] = useState<'results' | 'distributions'>('results');
   const [query, setQuery] = useState('');
-  const resultLessons = lessons.filter((lesson) =>
-    lessonMatches(query, lesson),
+  const resultLessons = lessons.filter(
+    (lesson) => matchLesson(query, lesson) !== null,
   );
   const families = (distributions satisfies DistributionReference[]).filter(
     (item) =>

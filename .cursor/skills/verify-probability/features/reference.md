@@ -6,7 +6,7 @@
 
 - Lesson results with expandable conditions and links to their derivation.
 - Distribution parameters, support, mass/density, mean, variance, caution and lesson link.
-- Shared query filters the selected collection; empty results are explained.
+- Shared query filters the selected collection; empty results are explained. Lesson results require every query word across lesson sections. Distributions retain whole-query substring matching.
 
 ## How to get to it (user POV)
 
@@ -14,7 +14,7 @@ Top bar → Reference. Select Lesson results or Distribution guide, then search 
 
 ## Driving it with control-probability
 
-`open --url /reference` → “Results and distributions”. `smoke --feature reference --capture` captures the heading, a linked lesson, expanded conditions and a distribution entry. Study journeys search F02 and Poisson then follow their lessons. The full render sweep opens every result's conditions and checks every distribution entry at four widths.
+`open --url /reference` → “Results and distributions”. `smoke --feature reference --capture` captures the heading, a linked lesson, expanded conditions and a distribution entry. Study journeys search Boole, axioms Boole and F02 across lesson results. They confirm that D05 Poisson has no distribution match, then find Poisson and follow its lesson. The full render sweep opens every result's conditions and checks every distribution entry at four widths.
 
 ## Visual states
 
