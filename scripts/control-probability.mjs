@@ -384,9 +384,10 @@ const baselineDir = join(root, '.cursor/skills/verify-probability/baselines');
 const maxDiffRatio = Number(process.env.VISUAL_MAX_DIFF ?? 0.002);
 
 function actionTarget(page, action) {
-  return action.role
-    ? page.getByRole(action.role, { name: action.name, exact: true }).first()
-    : page.locator(action.selector).first();
+  const target = action.role
+    ? page.getByRole(action.role, { name: action.name, exact: true })
+    : page.locator(action.selector);
+  return action.unique ? target : target.first();
 }
 
 async function act(page, action) {
@@ -400,6 +401,10 @@ async function act(page, action) {
   }
   if (action.press) await page.keyboard.press(action.press);
   if (action.type) await target(action.type).fill(action.type.text);
+  if (action.select)
+    await target({ ...action.select, unique: true }).selectOption(
+      action.select.value,
+    );
   if (action.range) {
     const input = page.locator(`input[name="${action.range.name}"]`);
     await input.fill(String(action.range.value));
@@ -514,7 +519,10 @@ async function sweep(browserApp, url, failures, results) {
           )
             throw new Error('page not found');
           if (route === '/practice') {
+            if ((await page.locator('.problem-library').count()) !== 1)
+              throw new Error('complete problem library is unavailable');
             await page
+              .locator('.problem-library')
               .getByRole('button', { name: 'Show all problems', exact: true })
               .click();
             const expected = checkpoints.reduce(
