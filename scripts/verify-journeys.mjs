@@ -268,6 +268,9 @@ async function navigation(page, url, record, capture) {
   assert.equal(await foundations.getAttribute('aria-expanded'), 'false');
   await search.fill('axioms Boole');
   assert.equal(await page.locator('.nav-link').count(), 1);
+  await page
+    .locator('.nav-link[href^="/lessons/f02"]')
+    .waitFor({ state: 'visible' });
   assert.equal(await foundations.getAttribute('aria-expanded'), 'true');
   assert.equal(
     await page.locator('.nav-match').innerText(),
