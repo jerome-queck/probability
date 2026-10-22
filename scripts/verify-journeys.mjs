@@ -120,6 +120,15 @@ async function buildTopic(page, id, size = 3) {
   await button(planner(page), 'Build topic path →').click();
   await planState(page, 'path');
   assert.deepEqual(await renderingProblems(page), []);
+  await button(page.locator('.plan-title'), 'Choose another plan').focus();
+  await page.keyboard.press('Tab');
+  assert.equal(
+    await button(planner(page), 'Start this set →').evaluate(
+      (node) => document.activeElement === node,
+    ),
+    true,
+    'Start this set receives the next Tab after Choose another plan',
+  );
 }
 
 async function chooseAnother(page) {
@@ -370,6 +379,9 @@ async function guided(page, url, record, capture) {
   await guest(page);
   await planState(page, 'choose');
   await capture(page, 'choose', '.plan-workspace');
+  await buildTopic(page, 'L04');
+  await capture(page, 'long-path-keyboard-start', '.plan-workspace');
+  await chooseAnother(page);
   await button(planner(page), 'Review marked problems →').click();
   await planState(page, 'empty-review');
   assert.match(await planner(page).innerText(), /No review marks yet/);
@@ -624,6 +636,7 @@ async function guided(page, url, record, capture) {
   await assertScratch(page, '', false);
   await capture(page, 'all-studied-target-recall', '.recall-session');
   record.proved = [
+    'preview Start receives the next Tab after Choose another plan, including the long L04 path',
     'ratings preserve captured roster, cursor, scratch, reveals and clicked focus',
     'native hidden panels stay outside layout, accessibility and keyboard focus',
     'explicit movement focuses headings and preserves mounted scratch',

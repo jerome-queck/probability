@@ -185,6 +185,12 @@ export function StudyPlanView({
               onChoose={() => act({ kind: 'choose-another' })}
             />
             <div className="plan-preview-grid">
+              <Today
+                plan={visit.plan}
+                progress={progress}
+                onStart={() => act({ kind: 'start' })}
+                openLesson={openLesson}
+              />
               <section className="plan-path" aria-labelledby="path-heading">
                 <p className="plan-kicker">THE IDEAS, IN ORDER</p>
                 <h3 id="path-heading">
@@ -247,12 +253,6 @@ export function StudyPlanView({
                   ))}
                 </ol>
               </section>
-              <Today
-                plan={visit.plan}
-                progress={progress}
-                onStart={() => act({ kind: 'start' })}
-                openLesson={openLesson}
-              />
             </div>
           </>
         ) : visit.kind === 'recall' ? (

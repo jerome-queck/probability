@@ -1780,8 +1780,12 @@ button:disabled {
 .plan-preview-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(240px, 0.63fr);
+  grid-template-areas: "path today";
   gap: 20px;
   align-items: start;
+}
+.plan-path {
+  grid-area: path;
 }
 .plan-path,
 .plan-today,
@@ -1868,6 +1872,7 @@ button:disabled {
   font-size: inherit;
 }
 .plan-today {
+  grid-area: today;
   border-top: 4px solid var(--accent);
 }
 .plan-today > .plan-primary {
@@ -2044,9 +2049,7 @@ button:disabled {
 @media (max-width: 860px) {
   .plan-preview-grid {
     grid-template-columns: minmax(0, 1fr);
-  }
-  .plan-today {
-    grid-row: 1;
+    grid-template-areas: "today" "path";
   }
 }
 @media (max-width: 520px) {
