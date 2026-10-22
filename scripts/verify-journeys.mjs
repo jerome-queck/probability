@@ -240,6 +240,71 @@ async function navigation(page, url, record, capture) {
       .evaluate((node) => node === document.activeElement),
     true,
   );
+  if (mobile) {
+    const pathname = new URL(page.url()).pathname;
+    const historyLength = await page.evaluate(() => window.history.length);
+    for (const activation of ['pointer', 'Enter']) {
+      await button(page, 'Open lessons').click();
+      assert.equal(await link.getAttribute('href'), pathname);
+      assert.equal(await link.getAttribute('aria-current'), 'page');
+      if (activation === 'pointer') await link.click();
+      else {
+        await link.focus();
+        await page.keyboard.press(activation);
+      }
+      await capture(page, `current-lesson-${activation}`, '.lesson-head');
+      assert.deepEqual(
+        await page.evaluate(() => ({
+          drawerOpen: document
+            .querySelector('#lesson-sidebar')
+            ?.classList.contains('open'),
+          scrimPresent: !!document.querySelector('.scrim'),
+          mainInert: document.querySelector('main')?.hasAttribute('inert'),
+          menuExpanded: document
+            .querySelector('.menu-button')
+            ?.getAttribute('aria-expanded'),
+          sidebarInert: document
+            .querySelector('#lesson-sidebar')
+            ?.hasAttribute('inert'),
+          headingFocused:
+            document.querySelector('main h1') === document.activeElement,
+          pathname: window.location.pathname,
+          historyLength: window.history.length,
+        })),
+        {
+          drawerOpen: false,
+          scrimPresent: false,
+          mainInert: false,
+          menuExpanded: 'false',
+          sidebarInert: true,
+          headingFocused: true,
+          pathname,
+          historyLength,
+        },
+        `${activation} current-lesson selection closes the drawer and focuses the heading`,
+      );
+    }
+    for (const dismiss of ['Close lessons', 'Close lesson navigation']) {
+      await button(page, 'Open lessons').click();
+      if (dismiss === 'Close lesson navigation')
+        await button(page, dismiss).click({
+          position: { x: page.viewportSize().width - 4, y: 20 },
+        });
+      else await button(page, dismiss).click();
+      assert.equal(await page.locator('.scrim').count(), 0);
+      assert.equal(await page.locator('main').getAttribute('inert'), null);
+      assert.notEqual(
+        await page.locator('#lesson-sidebar').getAttribute('inert'),
+        null,
+      );
+      assert.equal(
+        await button(page, 'Open lessons').evaluate(
+          (node) => node === document.activeElement,
+        ),
+        true,
+      );
+    }
+  }
   await button(page, 'Practice').click();
   await page.goBack({ waitUntil: 'networkidle' });
   assert.match(new URL(page.url()).pathname, /^\/lessons\/f02/);
@@ -259,7 +324,11 @@ async function navigation(page, url, record, capture) {
     'browser back and forward',
     'direct experiment anchor',
     ...(mobile
-      ? ['drawer autofocus, main inert and Escape focus restoration']
+      ? [
+          'drawer autofocus, main inert and Escape focus restoration',
+          'current-lesson pointer and Enter close the drawer without changing history',
+          'drawer close button and scrim restore menu focus',
+        ]
       : []),
   ];
 }
