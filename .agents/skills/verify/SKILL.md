@@ -27,7 +27,7 @@ Built preview and hosted Sites do not simulate a signed-in visitor. Development 
 
 Study journeys prove guest studied/rating reloads, scratch-work lifetime, chapter/review filtering, checkpoint solutions, reference conditions/distributions, concept search, browser history and mobile keyboard focus. Six labs verify changed controls, numerical results and readable chart/table labels. A 320px reflow probe complements the full 390/600/860/1280px sweep.
 
-Account journeys use real local D1: top-level fixture sign-in, explicit guest import, account marks/ratings through reload, isolated anonymous context, failed-save feedback/retry, actual stale two-tab conflict and sign-out restoring the unchanged guest copy. Only the failed network response is injected; no internal store or fake UI is used. Handler tests cover account/write boundaries and concurrency. Hosted sign-in and a real second account require separate live verification.
+Account journeys use real local D1: discovery loading/failure, top-level fixture sign-in, explicit guest import, account marks/ratings through reload, isolated anonymous context, failed-save feedback/retry, actual stale two-tab conflict and sign-out restoring the unchanged guest copy. Network interception delays account discovery and injects unavailable-account and failed-save responses; no internal store or fake UI is used. Handler tests cover account/write boundaries and concurrency. Hosted sign-in and a real second account require separate live verification.
 
 The full semantic sweep opens all lesson hints/answers, all practice problems/checkpoints, every reference condition and the distribution guide. Inventory assertions fail incomplete coverage. Every page listens for console and runtime errors.
 
