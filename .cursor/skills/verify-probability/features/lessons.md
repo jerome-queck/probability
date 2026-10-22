@@ -8,7 +8,7 @@ Each lesson at `/lessons/<id>-<slug>` has: idea, definitions, the claim with its
 - `lesson.proof-status` — quoted supporting results are labeled and expandable; an experiment is not a proof.
 - `lesson.practice` — “Show a hint” reveals hints one at a time; “Show answer” toggles the answer.
 - `lesson.pagination` — previous/next buttons open neighbouring lessons.
-- `lesson.sidebar` — the sidebar lists chapters; search filters lessons by ID or words.
+- `lesson.sidebar` — the sidebar lists chapters. Search requires every query word somewhere in a lesson. Words absent from its ID, title and chapter get a `Words in` caption with their first matching section labels.
 
 Chapters currently published (kept in sync by `check:drift`):
 
@@ -30,6 +30,8 @@ From the home chapter grid, the sidebar, the reference page, or a direct link.
 - Open → `open --url /lessons/f02-the-axioms-of-probability` → heading “The axioms of probability”.
 - Next → `click --url /lessons/f01-sample-spaces-and-events --role button --name "F02 · The axioms of probability →"` → path `/lessons/f02-the-axioms-of-probability`.
 - Answer → `click --url /lessons/f03-equally-likely-outcomes --role button --name "Show answer"` → page shows “Hide answer”.
+
+Navigation journeys search `Boole`, `axioms Boole` and `Boole 60%`. They check section captions, cross-section matches, ID/title caption suppression, no results, clearing, chapter preferences, native/modified links, current styling and studied marks. They preserve sidebar captures at desktop and mobile widths. Inspect caption wrapping and the studied mark at 320px as an additional reflow probe.
 
 ## Visual states
 

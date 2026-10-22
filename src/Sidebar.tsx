@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { lessons } from './content/lessons';
-import { lessonMatches } from './content/search';
+import { matchLesson } from './content/search';
 import { progressStore } from './progress';
 import { lessonPath } from './routes';
 import { studyStore } from './state';
@@ -75,7 +75,11 @@ export function Sidebar({
   }, [expanded]);
   const normalized = query.trim().toLocaleLowerCase();
   const found = useMemo(
-    () => lessons.filter((lesson) => lessonMatches(normalized, lesson)),
+    () =>
+      lessons.flatMap((lesson) => {
+        const match = matchLesson(normalized, lesson);
+        return match === null ? [] : [{ lesson, match }];
+      }),
     [normalized],
   );
   const [searchClosed, setSearchClosed] = useState<string[]>([]);
@@ -161,9 +165,9 @@ export function Sidebar({
           </div>
         )}
         {clusters.map((cluster, index) => {
-          const visible = normalized
-            ? found.filter((lesson) => lesson.cluster === cluster)
-            : lessons.filter((lesson) => lesson.cluster === cluster);
+          const visible = found.filter(
+            ({ lesson }) => lesson.cluster === cluster,
+          );
           if (visible.length === 0) return null;
           // While searching every matching chapter starts open, and each can still be collapsed.
           const open = normalized
@@ -183,7 +187,7 @@ export function Sidebar({
                   <span className="chapter-count">
                     {normalized
                       ? visible.length
-                      : `${visible.filter((l) => progress.studied.includes(l.id)).length}/${visible.length}`}
+                      : `${visible.filter(({ lesson }) => progress.studied.includes(lesson.id)).length}/${visible.length}`}
                   </span>
                   <span className="chapter-chevron" aria-hidden="true">
                     ⌄
@@ -191,7 +195,7 @@ export function Sidebar({
                 </button>
               </h2>
               <div id={panelId} hidden={!open}>
-                {visible.map((lesson) => (
+                {visible.map(({ lesson, match }) => (
                   <a
                     key={lesson.id}
                     href={lessonPath(lesson.id)}
@@ -215,7 +219,14 @@ export function Sidebar({
                     }}
                   >
                     <span>{lesson.id}</span>
-                    <Highlight text={lesson.title} query={normalized} />
+                    <span className="nav-link-copy">
+                      <Highlight text={lesson.title} query={normalized} />
+                      {match.sectionLabels.length > 0 && (
+                        <small className="nav-match">
+                          Words in {match.sectionLabels.join(' · ')}
+                        </small>
+                      )}
+                    </span>
                     {progress.studied.includes(lesson.id) && (
                       <span className="studied-mark">
                         <span aria-hidden="true">✓</span>
