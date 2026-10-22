@@ -22,7 +22,7 @@ Type or share a URL; use the top bar.
 Each state is screenshotted at the listed widths, checked for overflow, KaTeX, fonts and contrast, and compared with `baselines/routing/<state>.<width>.png`.
 
 - `not-found` (desktop, mobile)
-- `topbar` (desktop, mobile)
+- `topbar` (desktop, mobile), capturing the navigation itself with Reference active
 - `mobile-drawer-open` (mobile)
 - `mobile-drawer-closed` (mobile)
 

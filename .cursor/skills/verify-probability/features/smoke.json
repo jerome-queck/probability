@@ -70,8 +70,13 @@
   {
     "feature": "lessons",
     "id": "next",
-    "url": "/lessons/f01-sample-spaces-and-events",
+    "url": "/lessons/f02-the-axioms-of-probability",
     "actions": [
+      {
+        "click": {
+          "selector": ".lesson-preparation button"
+        }
+      },
       {
         "click": {
           "role": "button",
@@ -274,7 +279,7 @@
       }
     ],
     "expectPath": "/reference",
-    "captureSelector": "main .overview-heading"
+    "captureSelector": ".topbar"
   },
   {
     "feature": "routing",
@@ -390,6 +395,23 @@
         "click": {
           "role": "button",
           "name": "Mark this lesson as studied"
+        }
+      },
+      {
+        "click": {
+          "role": "button",
+          "name": "Learn"
+        }
+      },
+      {
+        "click": {
+          "role": "button",
+          "name": "Continue with F02"
+        }
+      },
+      {
+        "click": {
+          "selector": ".lesson-preparation button"
         }
       },
       {
