@@ -578,7 +578,11 @@ async function guided(page, url, record, capture) {
   assert.deepEqual(await pathRoster(page), ['F03']);
   assert.match(
     await page.locator('.plan-path').innerText(),
-    /Prerequisite context.*F01.*F02/s,
+    /Prerequisite context F02/,
+  );
+  assert.deepEqual(
+    await page.locator('.path-reasons button').allTextContents(),
+    ['F02'],
   );
   await button(planner(page), 'Start this set →').click();
   await assertRecall(page, ['F03'], 'F03');
