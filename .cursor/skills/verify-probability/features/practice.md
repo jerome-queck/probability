@@ -22,8 +22,10 @@ Top bar → Practice, or home → Practise problems. Choose a chapter or a bound
 - `answer-shown` (desktop, mobile)
 - `checkpoint-solution` (desktop, mobile)
 
-Captures show the relevant problem/solution region. Full release smoke compares inspected baselines.
+`load` captures the heading. Answer and checkpoint states capture the relevant problem/solution region. Inspect the default problem list separately at desktop/mobile widths. Full release smoke compares inspected baselines.
 
 ## Gotchas
 
 Embedded problems use `practice-<lesson ID>`. Scratch reasoning clears on navigation/reload; it is not a saved account field. A filtered empty state is legitimate and should explain how to broaden the selection.
+
+Clicking an existing self-rating clears it. Exercise ratings inside both the default five and the review-only list; inspect the current card, reasoning and keyboard focus after the selection changes.

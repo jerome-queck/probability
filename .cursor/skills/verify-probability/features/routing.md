@@ -7,6 +7,7 @@ Client-side routes: `/`, `/practice`, `/reference`, `/lessons/<id>-<slug>`. Unkn
 - `routing.deep-link` — a lesson URL loads that lesson directly.
 - `routing.not-found` — an unknown lesson or path shows the not-found page.
 - `routing.topbar` — Learn / Practice / Reference buttons switch views.
+- `routing.drawer`. Selecting the current lesson closes the mobile drawer, moves focus to the lesson heading and leaves history unchanged. Close, scrim and Escape restore focus to the menu button.
 
 ## How to get to it (user POV)
 
@@ -29,3 +30,5 @@ Each state is screenshotted at the listed widths, checked for overflow, KaTeX, f
 ## Gotchas
 
 Study journeys also drive browser back/forward, keyboard search, heading focus, drawer autofocus/Escape return and direct `#lab` positioning. The slug after the ID is optional; `/lessons/f01` also opens F01.
+
+Navigation journeys exercise current-lesson drawer selection by pointer and Enter, plus Close and scrim dismissal. Separately activate Skip to content and the Probability home button. Open a generic unknown path and use Return to the start; the mapped not-found state covers an unknown lesson ID.
