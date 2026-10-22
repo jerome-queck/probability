@@ -1,6 +1,6 @@
 # Interactive labs
 
-Lessons with a `lab` field render an Experiment section (`#lab`, `data-lab=<id>`) with sliders (`input[name=...]`) and a live result line (`data-testid="lab-result"`). Simulations use a fixed seed, so results are reproducible.
+Lessons with a `lab` field render an Experiment section (`#lab`, `data-lab=<id>`) with sliders (`input[name=...]`) and a live result line (`data-testid="lab-result"`). Simulations start with a reproducible seed. The law-of-large-numbers “New run” button advances its seed and changes the sample path.
 
 ## Sub-features
 
@@ -21,6 +21,8 @@ Open a lesson that has an Experiment link in its section bar.
 
 - Move a slider → `set-range --url <lesson path> --name <slider> --value <v>` → prints the updated result line.
 - `smoke.json` drives every lab that is attached to a published lesson.
+
+For the law-of-large-numbers lab, click “New run” and inspect the changed result and values table. Also change Bayes sensitivity and false-positive rate, binomial-Poisson λ, and normal-approximation p. The mapped moved states exercise one slider per lab; these extra controls need separate live checks.
 
 ## Visual states
 
