@@ -210,10 +210,12 @@
     "id": "load",
     "url": "/practice",
     "expect": [
-      "One problem per lesson",
+      "Guided study",
+      "Build a topic path",
+      "Problem library",
       "F01 · Sample spaces and events"
     ],
-    "captureSelector": ".overview-heading"
+    "captureSelector": ".plan-page-heading"
   },
   {
     "feature": "practice",
@@ -222,15 +224,15 @@
     "actions": [
       {
         "click": {
-          "role": "button",
-          "name": "Show answer"
+          "selector": "#practice-F01 button:text-is(\"Show answer\")",
+          "unique": true
         }
       }
     ],
     "expect": [
       "Hide answer"
     ],
-    "captureSelector": ".practice-list > section:first-child"
+    "captureSelector": "#practice-F01"
   },
   {
     "feature": "reference",
@@ -665,5 +667,232 @@
       "quoted without a full proof"
     ],
     "captureSelector": ".proof-status"
+  },
+  {
+    "feature": "home",
+    "id": "study-entry",
+    "url": "/",
+    "expect": [
+      "What would you like to understand?",
+      "Topic to understand",
+      "Problems per set",
+      "Review your marks"
+    ],
+    "captureSelector": ".study-plan-entry"
+  },
+  {
+    "feature": "practice",
+    "id": "topic-path",
+    "url": "/practice",
+    "actions": [
+      {
+        "select": {
+          "role": "combobox",
+          "name": "Topic to understand",
+          "value": "K03"
+        }
+      },
+      {
+        "select": {
+          "role": "combobox",
+          "name": "Problems per set",
+          "value": "3"
+        }
+      },
+      {
+        "click": {
+          "role": "button",
+          "name": "Build topic path →",
+          "unique": true
+        }
+      }
+    ],
+    "expect": [
+      "Your complete path",
+      "Needed by",
+      "Today",
+      "K03",
+      "comes in a later captured set"
+    ],
+    "captureSelector": ".plan-workspace"
+  },
+  {
+    "feature": "practice",
+    "id": "review-path",
+    "url": "/lessons/f03-equally-likely-outcomes",
+    "actions": [
+      {
+        "click": {
+          "role": "button",
+          "name": "Show answer",
+          "unique": true
+        }
+      },
+      {
+        "click": {
+          "role": "button",
+          "name": "↺ Review again",
+          "unique": true
+        }
+      },
+      {
+        "click": {
+          "role": "button",
+          "name": "Practice",
+          "unique": true
+        }
+      },
+      {
+        "click": {
+          "role": "button",
+          "name": "Review marked problems →",
+          "unique": true
+        }
+      }
+    ],
+    "expect": [
+      "Your marked problems",
+      "Prerequisite context",
+      "F03 · Equally likely outcomes"
+    ],
+    "captureSelector": ".plan-workspace"
+  },
+  {
+    "feature": "practice",
+    "id": "review-empty",
+    "url": "/practice",
+    "actions": [
+      {
+        "click": {
+          "role": "button",
+          "name": "Review marked problems →",
+          "unique": true
+        }
+      }
+    ],
+    "expect": [
+      "No review marks yet",
+      "Build a topic path",
+      "Problem library"
+    ],
+    "captureSelector": ".plan-workspace"
+  },
+  {
+    "feature": "practice",
+    "id": "recall-active",
+    "url": "/practice",
+    "actions": [
+      {
+        "select": {
+          "role": "combobox",
+          "name": "Topic to understand",
+          "value": "F03"
+        }
+      },
+      {
+        "select": {
+          "role": "combobox",
+          "name": "Problems per set",
+          "value": "3"
+        }
+      },
+      {
+        "click": {
+          "role": "button",
+          "name": "Build topic path →",
+          "unique": true
+        }
+      },
+      {
+        "click": {
+          "role": "button",
+          "name": "Start this set →",
+          "unique": true
+        }
+      },
+      {
+        "type": {
+          "selector": ".recall-panel:not([hidden]) textarea",
+          "text": "Name the sample space and check each outcome.",
+          "unique": true
+        }
+      },
+      {
+        "click": {
+          "selector": ".recall-panel:not([hidden]) button:text-is(\"Show a hint\")",
+          "unique": true
+        }
+      },
+      {
+        "click": {
+          "selector": ".recall-panel:not([hidden]) button:text-is(\"Show answer\")",
+          "unique": true
+        }
+      },
+      {
+        "click": {
+          "selector": ".recall-panel:not([hidden]) button:text-is(\"↺ Review again\")",
+          "unique": true
+        }
+      }
+    ],
+    "expect": [
+      "Problem 1 of 3",
+      "Hint 1.",
+      "Hide answer",
+      "Next problem →",
+      "Closing a set changes no study marks"
+    ],
+    "captureSelector": ".recall-session"
+  },
+  {
+    "feature": "practice",
+    "id": "set-summary",
+    "url": "/practice",
+    "actions": [
+      {
+        "select": {
+          "role": "combobox",
+          "name": "Topic to understand",
+          "value": "K03"
+        }
+      },
+      {
+        "select": {
+          "role": "combobox",
+          "name": "Problems per set",
+          "value": "3"
+        }
+      },
+      {
+        "click": {
+          "role": "button",
+          "name": "Build topic path →",
+          "unique": true
+        }
+      },
+      {
+        "click": {
+          "role": "button",
+          "name": "Start this set →",
+          "unique": true
+        }
+      },
+      {
+        "click": {
+          "role": "button",
+          "name": "Close this set now",
+          "unique": true
+        }
+      }
+    ],
+    "expect": [
+      "Set closed",
+      "Next captured set",
+      "4 problems remain",
+      "Start next set →",
+      "Refresh from current records"
+    ],
+    "captureSelector": ".plan-workspace"
   }
 ]
