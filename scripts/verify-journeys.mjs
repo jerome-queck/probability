@@ -316,15 +316,21 @@ async function navigation(page, url, record, capture) {
   assert.ok((await link.getAttribute('class')).includes('active'));
   assert.equal(await link.locator('.studied-mark').count(), 1);
   await capture(page, 'search-studied-multiple-witnesses', '#lesson-sidebar');
-  const opened = page.waitForEvent('popup');
-  await link.click({ modifiers: ['ControlOrMeta'] });
-  const popup = await opened;
-  const popupErrors = watchErrors(popup);
-  await popup.waitForLoadState('networkidle');
-  assert.match(new URL(popup.url()).pathname, /^\/lessons\/f02/);
-  assert.deepEqual(popupErrors, []);
-  await popup.close();
-  assert.match(new URL(page.url()).pathname, /^\/lessons\/f02/);
+  const originalUrl = page.url();
+  const [newTab] = await Promise.all([
+    page.context().waitForEvent('page'),
+    link.click({ modifiers: ['ControlOrMeta'] }),
+  ]);
+  const newTabErrors = watchErrors(newTab);
+  await newTab.waitForLoadState('networkidle');
+  assert.match(new URL(newTab.url()).pathname, /^\/lessons\/f02/);
+  assert.equal(
+    await newTab.locator('h1').innerText(),
+    'The axioms of probability',
+  );
+  assert.deepEqual(newTabErrors, []);
+  await newTab.close();
+  assert.equal(page.url(), originalUrl);
   if (mobile) await button(page, 'Close lessons').click();
   await button(page, 'Practice').click();
   await page.goBack({ waitUntil: 'networkidle' });
@@ -784,6 +790,35 @@ try {
           assert.deepEqual(await renderingProblems(page), []);
           await page.locator('h1').scrollIntoViewIfNeeded();
           await capturePage(page, join(out, 'reflow-320.png'));
+          await goto(page, url, lesson('F02'));
+          await guest(page);
+          await button(page, 'Mark this lesson as studied').click();
+          await button(page, 'Open lessons').click();
+          const search = page.getByRole('searchbox', {
+            name: 'Find a concept',
+          });
+          await search.fill('Boole');
+          assert.equal(await page.locator('.nav-link').count(), 2);
+          await capturePage(
+            page,
+            join(out, 'reflow-320-search-content-witnesses.png'),
+            '#lesson-sidebar',
+          );
+          await search.fill('Boole 60%');
+          const link = page.getByRole('link', { name: /F02/ });
+          assert.equal(await page.locator('.nav-link').count(), 1);
+          assert.equal(
+            await link.locator('.nav-match').innerText(),
+            'Words in Worked example · Practice',
+          );
+          assert.equal(await link.getAttribute('aria-current'), 'page');
+          assert.equal(await link.locator('.studied-mark').count(), 1);
+          await capturePage(
+            page,
+            join(out, 'reflow-320-search-studied-multiple-witnesses.png'),
+            '#lesson-sidebar',
+          );
+          assert.deepEqual(await renderingProblems(page), []);
           assert.deepEqual(errors, []);
           reflow320 = true;
         } catch (error) {
