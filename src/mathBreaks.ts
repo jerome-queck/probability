@@ -90,6 +90,6 @@ export function keepShortTail(input: string): string {
   if (last === undefined || visible(latex.slice(last)) > 10) return latex;
   const from = cuts.length > 1 ? cuts[cuts.length - 2] : 0;
   // A long joined piece could not fit a phone line, so leave that break alone.
-  if (visible(latex.slice(from)) > 24) return latex;
+  if (visible(latex.slice(from)) > (from === 0 ? 25 : 24)) return latex;
   return `${latex.slice(0, from)}{${latex.slice(from)}}`;
 }
