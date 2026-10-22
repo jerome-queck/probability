@@ -29,9 +29,10 @@
   "features": [
     {
       "id": "home",
-      "purpose": "Start, resume and understand the course boundary.",
+      "purpose": "Start or resume reading and choose a captured topic or review plan.",
       "owners": [
-        "src/AtlasViews.tsx"
+        "src/AtlasViews.tsx",
+        "src/StudyPlanView.tsx"
       ]
     },
     {
@@ -44,11 +45,14 @@
     },
     {
       "id": "practice",
-      "purpose": "Attempt bounded practice, reveal hints and study chapter checkpoints.",
+      "purpose": "Follow captured topic/review paths, recall fixed small sets and browse the complete static problem library.",
       "owners": [
         "src/AtlasViews.tsx",
         "src/StudyViews.tsx",
-        "src/LessonPage.tsx"
+        "src/StudyPlanView.tsx",
+        "src/LessonPage.tsx",
+        "src/studyPlan.ts",
+        "src/studyPlan.test.ts"
       ]
     },
     {

@@ -11,6 +11,15 @@ export async function renderingProblems(page) {
   const { problems, inline } = await page.evaluate(async () => {
     await document.fonts.ready;
     const problems = [];
+    const ids = new Map();
+    for (const node of document.querySelectorAll('[id]')) {
+      const nodes = ids.get(node.id) ?? [];
+      nodes.push(`${node.tagName.toLowerCase()}.${node.className}`);
+      ids.set(node.id, nodes);
+    }
+    for (const [id, nodes] of ids)
+      if (nodes.length > 1)
+        problems.push(`duplicate id "${id}": ${nodes.join(', ')}`);
     if (document.documentElement.scrollWidth > window.innerWidth + 1)
       problems.push(
         `horizontal overflow: page is ${document.documentElement.scrollWidth}px wide in a ${window.innerWidth}px viewport`,
@@ -74,6 +83,7 @@ export async function renderingProblems(page) {
     }
     // Each inline formula's width on every line it spans; scripts/orphans.mjs judges them.
     const inline = [...document.querySelectorAll('.math-inline .katex-html')]
+      .filter((el) => el.checkVisibility())
       .map((el) => ({
         text: el.textContent,
         widths: [...el.getClientRects()]

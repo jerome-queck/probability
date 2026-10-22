@@ -26,7 +26,7 @@ import { workspaceIdentity } from './probability.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const argv = process.argv.slice(2);
 const options = {};
-const journeys = { study, navigation, labs, accounts };
+const journeys = { study, guided, navigation, labs, accounts };
 for (let i = 0; i < argv.length; i += 2) {
   const name = argv[i]?.slice(2);
   const value = argv[i + 1];
@@ -38,7 +38,7 @@ for (let i = 0; i < argv.length; i += 2) {
     value.startsWith('--')
   )
     throw new Error(
-      'Use verify-journeys.mjs [--only study|navigation|labs|accounts] [--viewport desktop|mobile] [--artifacts NEW_DIR].',
+      'Use verify-journeys.mjs [--only study|guided|navigation|labs|accounts] [--viewport desktop|mobile] [--artifacts NEW_DIR].',
     );
   options[name] = value;
 }
@@ -96,6 +96,104 @@ const goto = (page, url, path) =>
   page.goto(url + path, { waitUntil: 'networkidle' });
 const reveal = (page) => button(page, 'Show answer').click();
 const rate = (page, name) => button(page, name).click();
+const planner = (page) =>
+  page.getByRole('region', { name: 'Guided study plan', exact: true });
+const activeProblem = (page) => page.locator('.recall-panel:not([hidden])');
+const ids = async (locator) =>
+  (await locator.allTextContents()).map(
+    (text) => text.trim().match(/^[A-Z]\d{2}/)?.[0],
+  );
+const capturedRoster = (page) => ids(page.locator('.recall-panel > h2'));
+const pathRoster = (page) => ids(page.locator('.path-lesson'));
+const libraryRoster = (page) =>
+  ids(page.locator('.problem-library .practice > h2'));
+const planState = (page, state) =>
+  page.locator(`.plan-workspace[data-study-state="${state}"]`).waitFor();
+
+async function buildTopic(page, id, size = 3) {
+  await planner(page)
+    .getByRole('combobox', { name: 'Topic to understand', exact: true })
+    .selectOption(id);
+  await planner(page)
+    .getByRole('combobox', { name: 'Problems per set', exact: true })
+    .selectOption(String(size));
+  await button(planner(page), 'Build topic path →').click();
+  await planState(page, 'path');
+  assert.deepEqual(await renderingProblems(page), []);
+  await button(page.locator('.plan-title'), 'Choose another plan').focus();
+  await page.keyboard.press('Tab');
+  assert.equal(
+    await button(planner(page), 'Start this set →').evaluate(
+      (node) => document.activeElement === node,
+    ),
+    true,
+    'Start this set receives the next Tab after Choose another plan',
+  );
+}
+
+async function chooseAnother(page) {
+  await button(page.locator('.plan-title'), 'Choose another plan').click();
+  await planState(page, 'choose');
+  assert.equal(await page.locator('.recall-panel').count(), 0);
+  assert.deepEqual(await renderingProblems(page), []);
+}
+
+async function assertRecall(page, roster, current) {
+  await planState(page, 'recall');
+  assert.deepEqual(await capturedRoster(page), roster);
+  assert.equal(await page.locator('.practice').count(), roster.length);
+  assert.equal(await activeProblem(page).count(), 1);
+  assert.deepEqual(await ids(activeProblem(page).locator(':scope > h2')), [
+    current,
+  ]);
+  assert.equal(await page.locator('.problem-library').count(), 0);
+  const snapshot = await page.locator('body').ariaSnapshot();
+  for (const panel of await page.locator('.recall-panel[hidden]').all()) {
+    assert.equal(await panel.getAttribute('hidden'), '');
+    assert.equal(await panel.boundingBox(), null);
+    for (const role of ['heading', 'button', 'textbox'])
+      assert.equal(await panel.getByRole(role).count(), 0);
+    const heading = await panel.locator(':scope > h2').innerText();
+    assert.equal(snapshot.includes(`heading "${heading}"`), false);
+  }
+  assert.deepEqual(await renderingProblems(page), []);
+}
+
+async function recallScratch(page, text) {
+  const active = activeProblem(page);
+  await active.getByRole('textbox', { name: /^Your reasoning\b/ }).fill(text);
+  await button(active, 'Show a hint').click();
+  await button(active, 'Show answer').click();
+}
+
+async function assertScratch(page, text, revealed = true) {
+  const active = activeProblem(page);
+  assert.equal(
+    await active
+      .getByRole('textbox', { name: /^Your reasoning\b/ })
+      .inputValue(),
+    text,
+  );
+  assert.equal(await active.locator('.hint').count(), revealed ? 1 : 0);
+  assert.equal(await active.locator('.answer').count(), revealed ? 1 : 0);
+}
+
+async function assertPlannerUnavailable(page, state) {
+  await planState(page, state);
+  assert.equal(await planner(page).getByRole('combobox').count(), 0);
+  for (const name of [
+    'Build topic path →',
+    'Review marked problems →',
+    'Start this set →',
+  ])
+    assert.equal(await button(planner(page), name).count(), 0);
+  assert.equal(
+    await page.locator('.recall-panel, .path-lesson, .plan-records').count(),
+    0,
+  );
+  assert.equal(await page.locator('.problem-library .practice').count(), 5);
+  assert.deepEqual(await renderingProblems(page), []);
+}
 
 async function driver(command, dataDir, extra = []) {
   const output = await new Promise((resolveOutput, reject) => {
@@ -149,18 +247,54 @@ async function study(page, url, record, capture) {
   assert.match(await page.locator('.study-dashboard').innerText(), /1 of 48/);
   assert.equal(await button(page, 'Continue with F02').count(), 1);
   await button(page, 'Practice').click();
-  await page
-    .getByRole('checkbox', { name: 'Only problems I marked for review' })
-    .check();
-  assert.equal(await page.locator('.practice').count(), 1);
-  assert.match(await page.locator('.practice h2').innerText(), /^F01/);
-  await page
+  await button(planner(page), 'Review marked problems →').click();
+  await planState(page, 'path');
+  assert.deepEqual(await pathRoster(page), ['F01']);
+  await capture(page, 'practice-review-path', '.plan-workspace');
+  await chooseAnother(page);
+  const library = page.locator('.problem-library');
+  const firstFive = ['F01', 'F02', 'F03', 'C01', 'C02'];
+  assert.deepEqual(await libraryRoster(page), firstFive);
+  const first = page.locator('#practice-F01');
+  await button(first, 'Show a hint').click();
+  await button(first, 'Show answer').click();
+  await pressed(button(first, '↺ Review again'), true);
+  await button(first, '↺ Review again').click();
+  await pressed(button(first, '↺ Review again'), false);
+  assert.deepEqual(await libraryRoster(page), firstFive);
+  await button(first, '↺ Review again').click();
+  assert.deepEqual(await libraryRoster(page), firstFive);
+  await library
     .getByRole('combobox', { name: 'Chapter', exact: true })
-    .selectOption('Foundations');
-  await button(page, 'Show a hint').click();
-  await reveal(page);
-  await pressed(button(page, '↺ Review again'), true);
-  await capture(page, 'practice-filter-answer', '.practice-list');
+    .selectOption('Discrete random variables');
+  const discrete = [
+    'D01',
+    'D02',
+    'D03',
+    'D04',
+    'D05',
+    'D06',
+    'D07',
+    'D08',
+    'D09',
+  ];
+  assert.deepEqual(await libraryRoster(page), discrete.slice(0, 5));
+  assert.match(
+    await library.locator('.study-controls').innerText(),
+    /5 of 9 problems shown/,
+  );
+  await button(library, 'Show all problems').click();
+  assert.deepEqual(await libraryRoster(page), discrete);
+  await library
+    .getByRole('combobox', { name: 'Chapter', exact: true })
+    .selectOption('all');
+  assert.deepEqual(await libraryRoster(page), firstFive);
+  await button(library, 'Show all problems').click();
+  assert.deepEqual(
+    await libraryRoster(page),
+    JSON.parse(readFileSync(join(root, 'src/content/order.json'), 'utf8')),
+  );
+  await capture(page, 'practice-library', '.library-heading');
   await page.locator('.checkpoint-set > summary').first().click();
   const checkpoint = page.locator('.checkpoint-problem').first();
   await checkpoint.getByText('Hints', { exact: true }).click();
@@ -168,6 +302,23 @@ async function study(page, url, record, capture) {
   assert.ok((await checkpoint.innerText()).includes('Revisit'));
   assert.ok((await checkpoint.locator('details[open]').count()) === 2);
   await capture(page, 'checkpoint-solution', '.checkpoint-set:first-of-type');
+  await openDetails(page);
+  const checkpointSets = JSON.parse(
+    readFileSync(join(root, 'src/content/checkpoints.json'), 'utf8'),
+  );
+  assert.equal(
+    await page.locator('.checkpoint-set[open]').count(),
+    checkpointSets.length,
+  );
+  assert.equal(
+    await page.locator('.checkpoint-problem').count(),
+    checkpointSets.reduce((sum, set) => sum + set.problems.length, 0),
+  );
+  assert.equal(
+    await page.locator('.checkpoint-problem details[open]').count(),
+    48,
+  );
+  assert.deepEqual(await renderingProblems(page), []);
   await button(page, 'Reference').click();
   const referenceSearch = page.getByRole('searchbox', {
     name: 'Find in reference',
@@ -215,9 +366,286 @@ async function study(page, url, record, capture) {
     'guest studied and rating survive reload',
     'scratch work clears on reload',
     'home resume',
-    'chapter and review filters',
+    'captured review path and static library chapter/order selection',
     'checkpoint hints and solution',
     'result conditions and distribution lookup',
+  ];
+}
+
+async function guided(page, url, record, capture) {
+  const foundations = ['F01', 'F02', 'F03'];
+  const longPath = ['F01', 'F02', 'F03', 'C01', 'K01', 'K02', 'K03'];
+  await goto(page, url, '/practice');
+  await guest(page);
+  await planState(page, 'choose');
+  await capture(page, 'choose', '.plan-workspace');
+  await buildTopic(page, 'L04');
+  await capture(page, 'long-path-keyboard-start', '.plan-workspace');
+  await chooseAnother(page);
+  await button(planner(page), 'Review marked problems →').click();
+  await planState(page, 'empty-review');
+  assert.match(await planner(page).innerText(), /No review marks yet/);
+  await capture(page, 'review-empty', '.plan-workspace');
+  await buildTopic(page, 'F03');
+  assert.deepEqual(await pathRoster(page), foundations);
+  const path = await planner(page).innerText();
+  await page.locator('.today-reading button').click();
+  assert.match(new URL(page.url()).pathname, /^\/lessons\/f01/);
+  await page.goBack();
+  await planState(page, 'path');
+  assert.deepEqual(await pathRoster(page), foundations);
+  assert.equal(await planner(page).innerText(), path);
+  await capture(page, 'path-back', '.plan-workspace');
+  await button(planner(page), 'Start this set →').click();
+  await assertRecall(page, foundations, 'F01');
+  const scratch =
+    'Keep this reasoning while I rate and move within the captured set.';
+  await recallScratch(page, scratch);
+  for (const [name, value] of [
+    ['↺ Review again', true],
+    ['↺ Review again', false],
+    ['✓ I got it', true],
+  ]) {
+    const rating = button(activeProblem(page), name);
+    await rating.click();
+    await pressed(rating, value);
+    assert.equal(
+      await rating.evaluate((node) => document.activeElement === node),
+      true,
+    );
+    await assertRecall(page, foundations, 'F01');
+    await assertScratch(page, scratch);
+  }
+  await capture(page, 'stable-rating-F01', '.recall-session');
+  await activeProblem(page)
+    .getByRole('textbox', { name: /^Your reasoning\b/ })
+    .focus();
+  const controls = await page
+    .locator('.recall-session')
+    .evaluate(
+      (node) =>
+        [...node.querySelectorAll('button, textarea, a, select, input')].filter(
+          (control) => !control.closest('[hidden]') && !control.disabled,
+        ).length,
+    );
+  for (let index = 0; index <= controls + 1; index++) {
+    await page.keyboard.press('Tab');
+    assert.equal(
+      await page.evaluate(
+        () => !!document.activeElement?.closest('.recall-panel[hidden]'),
+      ),
+      false,
+    );
+  }
+  assert.equal(await button(page, '← Previous problem').isDisabled(), true);
+  await button(page, 'Next problem →').click();
+  await assertRecall(page, foundations, 'F02');
+  assert.equal(
+    await page
+      .locator('#recall-heading-F02')
+      .evaluate((node) => document.activeElement === node),
+    true,
+  );
+  await capture(page, 'movement-F02', '.recall-session');
+  await button(page, '← Previous problem').click();
+  await assertRecall(page, foundations, 'F01');
+  assert.equal(
+    await page
+      .locator('#recall-heading-F01')
+      .evaluate((node) => document.activeElement === node),
+    true,
+  );
+  await assertScratch(page, scratch);
+  await button(page, 'Next problem →').click();
+  await button(page, 'Next problem →').click();
+  await assertRecall(page, foundations, 'F03');
+  assert.equal(await button(page, 'Next problem →').count(), 0);
+  await capture(page, 'movement-F03', '.recall-session');
+  await button(page, 'Finish set →').click();
+  await planState(page, 'summary');
+  assert.deepEqual(
+    await ids(page.locator('.closed-set-list button')),
+    foundations,
+  );
+  assert.equal(await page.locator('.recall-panel').count(), 0);
+  await capture(page, 'closed-foundations', '.plan-workspace');
+  await chooseAnother(page);
+  await buildTopic(page, 'F03');
+  await button(planner(page), 'Start this set →').click();
+  await assertRecall(page, foundations, 'F01');
+  await assertScratch(page, '', false);
+  await recallScratch(page, 'This scratch clears on leaving Practice.');
+  await button(activeProblem(page), 'Read the full lesson →').click();
+  await page.goBack();
+  await assertRecall(page, foundations, 'F01');
+  await assertScratch(page, '', false);
+  await page.goForward();
+  assert.match(new URL(page.url()).pathname, /^\/lessons\/f01/);
+  await page.goBack();
+  await assertRecall(page, foundations, 'F01');
+  await button(page, 'Learn').click();
+  assert.equal(
+    await button(page.locator('.study-plan-entry'), 'Continue set').count(),
+    1,
+  );
+  assert.equal(
+    await button(
+      page.locator('.study-plan-entry'),
+      'Choose another plan',
+    ).count(),
+    1,
+  );
+  await button(page.locator('.study-plan-entry'), 'Continue set').click();
+  await assertRecall(page, foundations, 'F01');
+  await assertScratch(page, '', false);
+  await capture(page, 'recall-history-return', '.recall-session');
+  await recallScratch(page, 'Replacing this set clears its mounted scratch.');
+  await chooseAnother(page);
+  await buildTopic(page, 'F03');
+  await button(planner(page), 'Start this set →').click();
+  await assertRecall(page, foundations, 'F01');
+  await assertScratch(page, '', false);
+  await page.reload({ waitUntil: 'networkidle' });
+  await guest(page);
+  await planState(page, 'choose');
+  assert.equal(await page.locator('.recall-panel').count(), 0);
+  await button(page.locator('#practice-F01'), 'Show answer').click();
+  await pressed(button(page.locator('#practice-F01'), '✓ I got it'), true);
+  record.continuation = [];
+  for (const [size, sets] of [
+    [3, [['F01', 'F02', 'F03'], ['C01', 'K01', 'K02'], ['K03']]],
+    [
+      5,
+      [
+        ['F01', 'F02', 'F03', 'C01', 'K01'],
+        ['K02', 'K03'],
+      ],
+    ],
+  ]) {
+    await buildTopic(page, 'K03', size);
+    assert.deepEqual(await pathRoster(page), longPath);
+    assert.match(
+      await page.locator('.plan-today').innerText(),
+      /K03.*comes in a later captured set/s,
+    );
+    await capture(page, `long-path-${size}`, '.plan-workspace');
+    const seen = [];
+    for (const [setIndex, roster] of sets.entries()) {
+      await button(
+        planner(page),
+        setIndex ? 'Start next set →' : 'Start this set →',
+      ).click();
+      for (const [index, id] of roster.entries()) {
+        await assertRecall(page, roster, id);
+        seen.push(id);
+        if (index === 0)
+          assert.equal(
+            await button(page, '← Previous problem').isDisabled(),
+            true,
+          );
+        await capture(page, `continuation-${size}-${id}`, '.recall-session');
+        await button(
+          page,
+          index === roster.length - 1 ? 'Finish set →' : 'Next problem →',
+        ).click();
+      }
+      await planState(page, 'summary');
+      assert.deepEqual(
+        await ids(page.locator('.closed-set-list button')),
+        roster,
+      );
+      assert.equal(await page.locator('.recall-panel').count(), 0);
+      assert.equal(
+        await button(planner(page), 'Start next set →').count(),
+        setIndex === sets.length - 1 ? 0 : 1,
+      );
+      assert.doesNotMatch(
+        await page.locator('.plan-summary').innerText(),
+        /attempted|mastered/i,
+      );
+      await capture(
+        page,
+        `continuation-${size}-summary-${setIndex + 1}`,
+        '.plan-workspace',
+      );
+    }
+    assert.deepEqual(seen, longPath);
+    assert.equal(new Set(seen).size, longPath.length);
+    record.continuation.push({ size, sets, seen });
+    await button(page, 'Learn').click();
+    assert.match(await page.locator('.study-dashboard').innerText(), /0 of 48/);
+    await button(
+      page.locator('.study-plan-entry'),
+      'Choose another plan',
+    ).click();
+    await button(page, 'Practice').click();
+    await planState(page, 'choose');
+  }
+  await goto(page, url, lesson('F03'));
+  await guest(page);
+  await reveal(page);
+  await rate(page, '↺ Review again');
+  await button(page, 'Practice').click();
+  await button(planner(page), 'Review marked problems →').click();
+  assert.deepEqual(await pathRoster(page), ['F03']);
+  assert.match(
+    await page.locator('.plan-path').innerText(),
+    /Prerequisite context F02/,
+  );
+  assert.deepEqual(
+    await page.locator('.path-reasons button').allTextContents(),
+    ['F02'],
+  );
+  await button(planner(page), 'Start this set →').click();
+  await assertRecall(page, ['F03'], 'F03');
+  await recallScratch(
+    page,
+    'Clearing a rating cannot remove this captured problem.',
+  );
+  await button(activeProblem(page), '↺ Review again').click();
+  await pressed(button(activeProblem(page), '↺ Review again'), false);
+  await assertRecall(page, ['F03'], 'F03');
+  await assertScratch(
+    page,
+    'Clearing a rating cannot remove this captured problem.',
+  );
+  await button(page, 'Finish set →').click();
+  await planState(page, 'summary');
+  assert.deepEqual(await ids(page.locator('.closed-set-list button')), ['F03']);
+  await button(planner(page), 'Refresh from current records').click();
+  await planState(page, 'empty-review');
+  await capture(page, 'review-refreshed-empty', '.plan-workspace');
+  for (const id of foundations) {
+    await goto(page, url, lesson(id));
+    await guest(page);
+    await button(page, 'Mark this lesson as studied').click();
+  }
+  await button(page, 'Practice').click();
+  await buildTopic(page, 'F03');
+  assert.deepEqual(await pathRoster(page), foundations);
+  assert.deepEqual(await ids(page.locator('.plan-today .set-lesson-list li')), [
+    'F03',
+  ]);
+  assert.match(
+    await page.locator('.today-reading').innerText(),
+    /Every lesson on this path is marked studied/,
+  );
+  await capture(page, 'all-studied-path', '.plan-workspace');
+  await button(planner(page), 'Start this set →').click();
+  await assertRecall(page, ['F03'], 'F03');
+  await assertScratch(page, '', false);
+  await capture(page, 'all-studied-target-recall', '.recall-session');
+  record.proved = [
+    'preview Start receives the next Tab after Choose another plan, including the long L04 path',
+    'ratings preserve captured roster, cursor, scratch, reveals and clicked focus',
+    'native hidden panels stay outside layout, accessibility and keyboard focus',
+    'explicit movement focuses headings and preserves mounted scratch',
+    'finish, replacement and route departure clear scratch without studying',
+    'K03 reached exactly once through captured sets of three and five',
+    'Back, Forward and Learn retain plan identity and cursor',
+    'reload resets the visit and preserves durable self-ratings',
+    'review membership changes only on explicit refresh',
+    'all-studied topic keeps its full path and target recall',
   ];
 }
 
@@ -323,6 +751,7 @@ async function navigation(page, url, record, capture) {
   ]);
   const newTabErrors = watchErrors(newTab);
   await newTab.waitForLoadState('networkidle');
+  await newTab.locator('[data-lesson-id="F02"]').waitFor({ state: 'visible' });
   assert.match(new URL(newTab.url()).pathname, /^\/lessons\/f02/);
   assert.equal(
     await newTab.locator('h1').innerText(),
@@ -402,7 +831,7 @@ async function navigation(page, url, record, capture) {
   assert.match(new URL(page.url()).pathname, /^\/lessons\/f02/);
   await page.goForward({ waitUntil: 'networkidle' });
   assert.equal(new URL(page.url()).pathname, '/practice');
-  await capture(page, 'keyboard-history', '.overview-heading');
+  await capture(page, 'keyboard-history', '.plan-page-heading');
   await goto(page, url, '/lessons/c04#lab');
   await page.locator('#lab').waitFor({ state: 'visible' });
   const position = await page.locator('#lab').boundingBox();
@@ -545,6 +974,17 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
   assert.equal(await button(page, '✓ I got it').isDisabled(), true);
   assert.equal(await button(page, '↺ Review again').isDisabled(), true);
   await capture(page, 'account-unavailable', '.practice');
+  await button(page, 'Practice').click();
+  await assertPlannerUnavailable(page, 'unavailable');
+  await capture(page, 'planner-account-unavailable', '.study-workspace');
+  await button(page, 'Learn').click();
+  assert.equal(await page.locator('.study-dashboard').count(), 0);
+  assert.equal(
+    await page.locator('.study-plan-entry .goal-chooser').count(),
+    0,
+  );
+  await button(page, 'Begin at the beginning').click();
+  assert.match(new URL(page.url()).pathname, /^\/lessons\/f01/);
   await page.unroute('**/api/account');
   await panel(page);
   await button(page, 'Retry account').click();
@@ -586,11 +1026,23 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
       await pressed(rating, false);
     }
     await capture(page, 'account-discovery-pending', '.practice');
+    await button(page, 'Practice').click();
+    await assertPlannerUnavailable(page, 'loading');
+    await capture(page, 'planner-discovery-pending', '.study-workspace');
+    await button(page, 'Learn').click();
+    assert.equal(await page.locator('.study-dashboard').count(), 0);
+    assert.equal(
+      await page.locator('.study-plan-entry .goal-chooser').count(),
+      0,
+    );
+    await button(page, 'Begin at the beginning').click();
+    assert.match(new URL(page.url()).pathname, /^\/lessons\/f01/);
   } finally {
     releaseAccount();
   }
   await saved(page);
   await page.unroute('**/api/account');
+  await reveal(page);
   await pressed(button(page, 'Mark this lesson as studied'), false);
   await pressed(button(page, '↺ Review again'), false);
   await panel(page);
@@ -652,60 +1104,181 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
   } finally {
     await anonymous.close();
   }
-  await goto(page, url, lesson('F03'));
+  await goto(page, url, lesson('F01'));
   await saved(page);
+  await reveal(page);
+  await rate(page, '✓ I got it');
+  await saved(page);
+  await pressed(button(page, '✓ I got it'), true);
+  await button(page, 'Practice').click();
+  await buildTopic(page, 'F03');
+  await button(planner(page), 'Start this set →').click();
+  await assertRecall(page, ['F03'], 'F03');
+  const accountScratch =
+    'This captured account set survives saving and recovery.';
+  await recallScratch(page, accountScratch);
+  let releaseFailure;
+  const failedSave = new Promise((resolve) => {
+    releaseFailure = resolve;
+  });
   expectedHttp.push(503);
-  await page.route('**/api/progress', (route) =>
-    route.request().method() === 'PATCH'
-      ? route.fulfill({
-          status: 503,
-          contentType: 'application/json',
-          body: JSON.stringify({ error: 'storage-unavailable' }),
-        })
-      : route.continue(),
+  await page.route('**/api/progress', async (route) => {
+    if (route.request().method() !== 'PATCH') return route.continue();
+    await failedSave;
+    await route.fulfill({
+      status: 503,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: 'storage-unavailable' }),
+    });
+  });
+  try {
+    await button(activeProblem(page), '↺ Review again').click();
+    await page
+      .locator('.account-panel[data-account-state="saving"]')
+      .waitFor({ state: 'attached' });
+    await assertRecall(page, ['F03'], 'F03');
+    await assertScratch(page, accountScratch);
+    await capture(page, 'planner-save-pending', '.recall-session');
+  } finally {
+    releaseFailure();
+  }
+  await page
+    .locator('.account-panel[data-account-state="error"]')
+    .waitFor({ state: 'attached' });
+  assert.match(
+    await activeProblem(page).locator('.self-check').innerText(),
+    /Not saved/,
   );
-  await button(page, 'Mark this lesson as studied').click();
-  await page.waitForFunction(
-    () =>
-      document
-        .querySelector('.account-panel')
-        ?.getAttribute('data-account-state') === 'error',
-  );
-  assert.match(await page.locator('.studied-toggle').innerText(), /Not saved/);
+  await assertRecall(page, ['F03'], 'F03');
+  await assertScratch(page, accountScratch);
+  await capture(page, 'planner-save-failed', '.recall-session');
   await panel(page);
   await capture(page, 'account-save-failed', '.account-panel');
   await page.unroute('**/api/progress');
   await button(page, 'Retry unsaved changes').click();
   await saved(page);
-  await page.reload({ waitUntil: 'networkidle' });
-  await saved(page);
-  await pressed(button(page, '✓ Studied'), true);
+  await assertRecall(page, ['F03'], 'F03');
+  await assertScratch(page, accountScratch);
+  await pressed(button(activeProblem(page), '↺ Review again'), true);
   const stale = await context.newPage();
   const staleErrors = watchErrors(stale, (message) =>
     expectedHttpConsole(message, url, expectedHttp),
   );
   try {
-    await goto(stale, url, lesson('F03'));
+    await goto(stale, url, '/practice');
     await saved(stale);
-    await button(page, '✓ Studied').click();
+    await buildTopic(stale, 'F03');
+    await button(planner(stale), 'Start this set →').click();
+    await assertRecall(stale, ['F03'], 'F03');
+    const staleScratch =
+      'A real second tab retains this reasoning through conflict.';
+    await recallScratch(stale, staleScratch);
+    await pressed(button(activeProblem(stale), '↺ Review again'), true);
+    await button(activeProblem(page), '✓ I got it').click();
     await saved(page);
     expectedHttp.push(409);
-    await button(stale, '✓ Studied').click();
-    await stale.waitForFunction(
-      () =>
-        document
-          .querySelector('.account-panel')
-          ?.getAttribute('data-account-state') === 'conflict',
-    );
+    await button(activeProblem(stale), '↺ Review again').click();
+    await stale
+      .locator('.account-panel[data-account-state="conflict"]')
+      .waitFor({ state: 'attached' });
+    await assertRecall(stale, ['F03'], 'F03');
+    await assertScratch(stale, staleScratch);
+    await capture(stale, 'planner-stale-conflict', '.recall-session');
     await panel(stale);
     await capture(stale, 'account-stale-conflict', '.account-panel');
     await button(stale, 'Use account version').click();
     await saved(stale);
-    await pressed(button(stale, 'Mark this lesson as studied'), false);
+    await assertRecall(stale, ['F03'], 'F03');
+    await assertScratch(stale, staleScratch);
+    await pressed(button(activeProblem(stale), '✓ I got it'), true);
     assert.deepEqual(staleErrors, []);
   } finally {
     await stale.close();
   }
+  let releaseRediscovery;
+  const rediscovery = new Promise((resolve) => {
+    releaseRediscovery = resolve;
+  });
+  let injectedUnauthorized = false;
+  await page.route('**/api/account', async (route) => {
+    await rediscovery;
+    await route.continue();
+  });
+  await page.route('**/api/progress', (route) => {
+    if (route.request().method() !== 'PATCH' || injectedUnauthorized)
+      return route.continue();
+    injectedUnauthorized = true;
+    return route.fulfill({
+      status: 401,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: 'injected-unauthorized' }),
+    });
+  });
+  expectedHttp.push(401);
+  try {
+    await button(activeProblem(page), '↺ Review again').click();
+    await assertPlannerUnavailable(page, 'loading');
+    await capture(page, 'planner-injected-401-rediscovery', '.study-workspace');
+  } finally {
+    releaseRediscovery();
+  }
+  await page
+    .locator('.account-panel[data-account-state="error"]')
+    .waitFor({ state: 'attached' });
+  await page.unroute('**/api/account');
+  await page.unroute('**/api/progress');
+  assert.equal(injectedUnauthorized, true);
+  await planState(page, 'choose');
+  assert.equal(await page.locator('.recall-panel').count(), 0);
+  assert.equal(
+    await page.locator('.problem-library textarea').first().inputValue(),
+    '',
+  );
+  await capture(page, 'planner-same-owner-reset', '.plan-workspace');
+  await panel(page);
+  await button(page, 'Use account version').click();
+  await saved(page);
+  await buildTopic(page, 'F03');
+  await button(planner(page), 'Start this set →').click();
+  await assertRecall(page, ['F03'], 'F03');
+  await recallScratch(page, 'This old tab must reset after real account loss.');
+  const signedOut = await context.newPage();
+  const signOutErrors = watchErrors(signedOut);
+  try {
+    await goto(signedOut, url, '/practice');
+    await saved(signedOut);
+    await panel(signedOut);
+    await Promise.all([
+      signedOut.waitForNavigation({ waitUntil: 'networkidle' }),
+      signedOut.getByRole('link', { name: 'Sign out', exact: true }).click(),
+    ]);
+    await guest(signedOut);
+    await planState(signedOut, 'choose');
+    expectedHttp.push(401);
+    await button(activeProblem(page), '↺ Review again').click();
+    await guest(page);
+    await planState(page, 'choose');
+    assert.equal(await page.locator('.recall-panel').count(), 0);
+    assert.equal(
+      await page.locator('.problem-library textarea').first().inputValue(),
+      '',
+    );
+    await capture(page, 'planner-owner-loss-reset', '.plan-workspace');
+    assert.deepEqual(signOutErrors, []);
+  } finally {
+    await signedOut.close();
+  }
+  await panel(page);
+  await Promise.all([
+    page.waitForNavigation({ waitUntil: 'networkidle' }),
+    page
+      .getByRole('link', { name: 'Sign in with ChatGPT', exact: true })
+      .click(),
+  ]);
+  await saved(page);
+  await planState(page, 'choose');
+  assert.equal(await page.locator('.recall-panel').count(), 0);
+  await capture(page, 'planner-sign-in-reset', '.plan-workspace');
   const response = await page.request.get(`${url}/api/progress`);
   assert.equal(response.status(), 200);
   const stored = await response.json();
@@ -713,6 +1286,12 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
     stored.records.some(
       (row) =>
         row.lessonId === 'F02' && row.studied && row.verdict === 'got-it',
+    ),
+  );
+  assert.ok(
+    stored.records.some(
+      (row) =>
+        row.lessonId === 'F03' && !row.studied && row.verdict === 'got-it',
     ),
   );
   record.persisted = stored.records;
@@ -732,6 +1311,12 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
   await pressed(button(page, 'Mark this lesson as studied'), false);
   await reveal(page);
   await pressed(button(page, '✓ I got it'), false);
+  await goto(page, url, lesson('F03'));
+  await guest(page);
+  await pressed(button(page, 'Mark this lesson as studied'), false);
+  await reveal(page);
+  await pressed(button(page, '✓ I got it'), false);
+  await pressed(button(page, '↺ Review again'), false);
   await panel(page);
   await capture(page, 'signed-out-guest-preserved', '.account-panel');
   record.proved = [
@@ -742,8 +1327,10 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
     'cancel and explicit import',
     'account studied and rating survive reload',
     'separate anonymous context isolation',
-    'honest failed save and retry',
-    'real two-tab stale-revision conflict and account-version resolution',
+    'active recall preserves roster, scratch and reveals through saving, failed save and retry',
+    'active recall preserves roster, scratch and reveals through real two-tab conflict and account-version resolution',
+    'injected PATCH 401 followed by real same-owner discovery resets the visit',
+    'real owner loss in another tab resets the old recall and subsequent sign-in',
     'account API readback',
     'sign-out restores unchanged guest copy',
   ];
@@ -842,6 +1429,68 @@ try {
         });
         const errors = watchErrors(page);
         try {
+          await goto(page, url, '/practice');
+          await guest(page);
+          await planState(page, 'choose');
+          await capturePage(
+            page,
+            join(out, 'reflow-320-choose.png'),
+            '.plan-workspace',
+          );
+          assert.deepEqual(await renderingProblems(page), []);
+          const countCheckpoint = page.locator('.checkpoint-set').filter({
+            has: page.getByText(
+              'Select a count model and check its assumptions',
+              { exact: true },
+            ),
+          });
+          await countCheckpoint.locator(':scope > summary').click();
+          await countCheckpoint
+            .locator('.checkpoint-problem')
+            .first()
+            .getByText('Solution', { exact: true })
+            .click();
+          await capturePage(
+            page,
+            join(out, 'reflow-320-count-checkpoint.png'),
+            '.checkpoint-set:has(summary:text-is("Select a count model and check its assumptions"))',
+          );
+          assert.deepEqual(await renderingProblems(page), []);
+          await buildTopic(page, 'K03');
+          assert.deepEqual(await pathRoster(page), [
+            'F01',
+            'F02',
+            'F03',
+            'C01',
+            'K01',
+            'K02',
+            'K03',
+          ]);
+          await capturePage(
+            page,
+            join(out, 'reflow-320-long-path.png'),
+            '.plan-workspace',
+          );
+          await button(planner(page), 'Start this set →').click();
+          await assertRecall(page, ['F01', 'F02', 'F03'], 'F01');
+          await recallScratch(
+            page,
+            'A narrow screen still leaves room to reason.',
+          );
+          await capturePage(
+            page,
+            join(out, 'reflow-320-recall.png'),
+            '.recall-session',
+          );
+          assert.deepEqual(await renderingProblems(page), []);
+          await button(page, 'Close this set now').click();
+          await planState(page, 'summary');
+          await capturePage(
+            page,
+            join(out, 'reflow-320-summary.png'),
+            '.plan-workspace',
+          );
+          assert.deepEqual(await renderingProblems(page), []);
           await goto(page, url, '/reference');
           await openDetails(page);
           assert.equal(

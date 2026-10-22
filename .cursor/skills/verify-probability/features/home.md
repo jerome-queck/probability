@@ -7,6 +7,7 @@ The landing page at `/`: a hero with the site promise, a start button, and a cha
 - `home.hero` — heading “Learn to reason under uncertainty.”, two actions, and the binomial-with-normal-curve figure.
 - `home.start`. With no studied marks, “Begin at the beginning” opens the first lesson. Existing marks offer the first unstudied lesson. When every lesson is studied, the action offers a restart.
 - `home.progress`. The study overview reports studied lessons and review ratings. Chapter cards show studied counts. See [progress](progress.md).
+- `home.plan`. Topic/review entry appears before Chapters. Active visits offer Continue set, Open topic path, Open review plan or Open set summary plus explicit Choose another plan. Unresolved accounts hide personal planning and counts.
 - `home.scope` — expandable scope and required preparation.
 - `home.chapters` — one card per chapter, each lesson a button.
 
@@ -32,7 +33,8 @@ Each state is screenshotted at the listed widths, checked for overflow, KaTeX, f
 - `start-focus` (desktop, mobile)
 - `start` (desktop, mobile)
 - `course-scope` (desktop, mobile)
+- `study-entry` (desktop, mobile)
 
 ## Gotchas
 
-The hero heading has a line break, so match a fragment of it.
+The hero heading has a line break, so match a fragment of it. The study-entry state captures the complete planner entry; the hero capture excludes it. Building from home opens Practice. Continue set resumes captured membership without rebuilding it.
