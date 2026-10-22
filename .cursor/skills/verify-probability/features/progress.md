@@ -5,7 +5,7 @@ Guest progress stays in the browser (`probability.progress.v1`). Signed-in progr
 ## Sub-features
 
 - Studied toggle, sidebar ticks and chapter counts.
-- Home count and first unstudied lesson; marking every lesson studied offers a restart. Reading a lesson alone does not mark it studied.
+- Home count and first unstudied lesson; marking every lesson studied offers opening the first lesson again, preserving marks. Reading a lesson alone does not mark it studied.
 - Revealed answers offer “I got it” or “Review again”. Repeating the choice clears it. Review problems rank first in Practice.
 - A storage failure says Not saved. Account writes expose saving, failure and conflict states.
 

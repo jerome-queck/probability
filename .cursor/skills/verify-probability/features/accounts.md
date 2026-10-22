@@ -4,6 +4,7 @@ The Progress menu offers guest storage or a signed-in account. Public reading re
 
 ## Sub-features
 
+- `accounts.discovery`: hide guest marks and disable studied/rating controls while identity loads or is unavailable. Failed discovery offers "Retry account"; public reading remains available.
 - `accounts.sign-in`: top-level “Sign in with ChatGPT” and “Sign out” return to the current route.
 - `accounts.import`: preview and explicitly import guest studied marks/self-ratings; cancel leaves both copies unchanged. Existing account ratings take precedence.
 - `accounts.save`: account marks and ratings persist in D1; show saving, saved, failed or conflicting state truthfully.
@@ -22,7 +23,7 @@ Top bar → Progress. Sign in, read the import preview, then choose whether to i
 
 - `guest` (desktop, mobile): public preview Progress panel.
 
-Journey evidence also captures imported/saved account controls, failed save, stale conflict and the guest copy after sign-out. These local fixture captures do not establish hosted authentication.
+Journey evidence also captures unavailable and pending account discovery, imported/saved account controls, failed save, stale conflict and the guest copy after sign-out. Inspect `account-unavailable` and `account-discovery-pending` at desktop/mobile widths for disabled controls and hidden guest marks. These local fixture captures do not establish hosted authentication.
 
 ## Gotchas
 
