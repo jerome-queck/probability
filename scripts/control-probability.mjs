@@ -480,6 +480,11 @@ async function sweep(browserApp, url, failures, results) {
     .flatMap((file) =>
       JSON.parse(readFileSync(join(contentDir, file), 'utf8')),
     );
+  const order = JSON.parse(
+    readFileSync(join(contentDir, 'order.json'), 'utf8'),
+  );
+  const ordered = order.map((id) => all.find((lesson) => lesson.id === id));
+  const chapters = [...new Set(ordered.map((lesson) => lesson.cluster))];
   const checkpoints = JSON.parse(
     readFileSync(join(contentDir, 'checkpoints.json'), 'utf8'),
   );
@@ -494,6 +499,7 @@ async function sweep(browserApp, url, failures, results) {
     { route: '/practice', lessons: all },
     { route: '/reference', lessons: [] },
     { route: '/studio', lessons: [] },
+    { route: '/', lessons: [] },
   ];
   const widths = {
     mobile: viewports.mobile,
@@ -519,6 +525,48 @@ async function sweep(browserApp, url, failures, results) {
             (await page.locator('h1').first().innerText()) === 'Page not found'
           )
             throw new Error('page not found');
+          if (route === '/') {
+            await page.waitForFunction(
+              () =>
+                document
+                  .querySelector('.account-panel')
+                  ?.getAttribute('data-account-state') === 'guest',
+            );
+            const cards = page.locator('.chapter-grid > .atlas-card');
+            if ((await cards.count()) !== chapters.length)
+              throw new Error(`expected all ${chapters.length} chapter cards`);
+            const catalogue = [];
+            for (const [index, chapter] of chapters.entries()) {
+              const card = cards.nth(index);
+              const heading = await card.locator('h3').evaluate((node) => {
+                const text = node.cloneNode(true);
+                text.querySelector('.chapter-number').remove();
+                return text.textContent.trim();
+              });
+              const expected = ordered
+                .filter((lesson) => lesson.cluster === chapter)
+                .map((lesson) => `${lesson.id} · ${lesson.title}`);
+              const actual = await card.getByRole('button').allTextContents();
+              if (
+                heading !== chapter ||
+                (await card.locator('.chapter-number').innerText()) !==
+                  String(index + 1).padStart(2, '0') ||
+                JSON.stringify(actual) !== JSON.stringify(expected)
+              )
+                throw new Error(`chapter inventory differs for ${chapter}`);
+              catalogue.push(...actual.map((text) => text.split(' · ')[0]));
+            }
+            if (JSON.stringify(catalogue) !== JSON.stringify(order))
+              throw new Error('home catalogue differs from the lesson order');
+            await page.locator('.course-scope > summary').click();
+            if (
+              !(await page
+                .locator('.course-scope')
+                .evaluate((node) => node.open))
+            )
+              throw new Error('home scope disclosure did not open');
+            record.home = { chapters, catalogue, scopeOpen: true };
+          }
           if (route === '/practice') {
             if ((await page.locator('.problem-library').count()) !== 1)
               throw new Error('complete problem library is unavailable');
@@ -851,7 +899,7 @@ async function smoke() {
   const expectedPages = complete
     ? (JSON.parse(readFileSync(join(root, 'src/content/order.json'), 'utf8'))
         .length +
-        3) *
+        4) *
       4
     : 0;
   const coverageComplete =

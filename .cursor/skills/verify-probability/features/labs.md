@@ -22,7 +22,7 @@ Open a lesson that includes an Experiment section. At desktop widths above 1100p
 - Move a slider → `set-range --url <lesson path> --name <slider> --value <v>` → prints the updated result line.
 - `smoke.json` drives every lab that is attached to a published lesson.
 
-For the law-of-large-numbers lab, click “New run” and inspect the changed result and values table. Also change Bayes sensitivity and false-positive rate, binomial-Poisson λ, and normal-approximation p. The mapped moved states exercise one slider per lab; these extra controls need separate live checks.
+Lab journeys change every slider at desktop and mobile widths. After the mapped primary changes, they set Bayes sensitivity to 0.8 and false-positive rate to 0.1, λ to 5, and normal-approximation p to 0.3. Fixed numerical assertions check posteriors, expected positive counts, the approximation result and updated chart table cells. The law-of-large-numbers New run check compares the new result with its final table value. Each secondary control and New run gets a separate journey capture. The mapped moved states and Linux baselines remain unchanged.
 
 ## Visual states
 

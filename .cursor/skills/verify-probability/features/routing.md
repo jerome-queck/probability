@@ -31,7 +31,7 @@ Each state is screenshotted at the listed widths, checked for overflow, KaTeX, f
 
 Study journeys also drive browser back/forward, keyboard search, heading focus, drawer autofocus/Escape return and direct `#lab` positioning. The slug after the ID is optional; `/lessons/f01` also opens F01.
 
-Navigation journeys exercise current-lesson drawer selection by pointer and Enter, plus Close and scrim dismissal. Separately activate Skip to content and the Probability home button. Open a generic unknown path and use Return to the start; the mapped not-found state covers an unknown lesson ID.
+Navigation journeys exercise current-lesson drawer selection by pointer and Enter, plus Close and scrim dismissal. They activate Skip to content and assert main focus, activate the Probability home button when visible at desktop width, and open a generic unknown path before using Return to the start. They select F01 from its short alias through the native lesson link and assert the canonical URL adds one history entry. The mapped not-found state also covers an unknown lesson ID.
 
 Guided paths survive opening Next reading and Back. Recall keeps its roster/cursor through full-lesson Back/Forward and Learn → Continue set. Leaving Practice clears mounted scratch/reveals. Reload starts choose while durable ratings remain. Guided journeys capture these states independently from the URL-only navigation proof.
 
