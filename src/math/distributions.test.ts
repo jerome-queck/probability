@@ -97,7 +97,6 @@ test('gamma function and gamma density', () => {
   close(gammaPdf(1, 2, 0.7), 2 * Math.exp(-1.4), 1e-12);
 });
 
-// References use exact combinations/factorials and 90-digit decimal arithmetic.
 test('balanced binomial mass stays finite after coefficient overflow', () => {
   relativeClose(binomialPmf(1100, 0.5, 550), 0.02405165776823181);
 });
