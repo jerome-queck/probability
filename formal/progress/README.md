@@ -31,7 +31,7 @@ Primary references are the [TLC documentation](https://docs.tlapl.us/using%3Atlc
 
 Each invariant has its own deliberately broken run. The runner requires TLC exit 12, the exact invariant name, and a counterexample trace. Parser errors and other nonzero exits do not count. Baselines require completed model checking with zero queued states.
 
-Eight real-code mutants independently remove the expected-owner branch, SQL owner predicate, SQL revision predicate, retry mutation-ID comparison, generation guard, merge comparison, response-owner check, and stable command reuse. Each must fail its named bridge assertion. Mutants live under the evidence directory and never overwrite the working source.
+Eight real-code mutants independently remove the expected-owner branch, SQL owner predicate, SQL revision predicate, retry mutation-ID comparison, generation guard, merge comparison, response-owner check, and stable command reuse. Each must fail its named bridge assertion. The `retry-command` mutant detects `LostResponseRecovery`: a committed write with a lost response must retry the original command and reach saved state. This mutant instead reaches conflict while the server still prevents a duplicate write. It does not demonstrate a violation of `RetryAtMostOnce`. Duplicate-application sensitivity comes from the server model's revision fault and the bridge's SQL revision mutant. Mutants live under the evidence directory and never overwrite the working source.
 
 ## Server action map
 

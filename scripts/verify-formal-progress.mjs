@@ -215,6 +215,7 @@ try {
   assert.deepEqual(summary.assertions.toSorted(), [
     'ConfirmedRevisionMonotone',
     'GenerationIsolated',
+    'LostResponseRecovery',
     'OwnerAuthorized',
     'ReplayHonest',
     'ResponseOwnerChecked',
@@ -290,7 +291,7 @@ try {
         file: 'src/progress.ts',
         before: 'item.command ??= {',
         after: 'item.command = {',
-        property: 'RetryAtMostOnce',
+        property: 'LostResponseRecovery',
       },
     ];
     for (const mutation of mutations) {

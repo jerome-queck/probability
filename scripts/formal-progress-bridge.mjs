@@ -583,7 +583,7 @@ try {
       assert.equal(
         store.getLessonSaveState(lessonId),
         'saved',
-        'RetryAtMostOnce: a lost response retries the original command',
+        'LostResponseRecovery: a lost response retries the original command',
       );
       assert.deepEqual(
         await read('A'),
@@ -593,6 +593,7 @@ try {
       report.clientSchedules++;
     }
   }
+  report.assertions.push('LostResponseRecovery');
   console.log(JSON.stringify(report));
 } finally {
   await mf.dispose();
