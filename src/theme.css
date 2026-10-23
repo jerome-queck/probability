@@ -1558,7 +1558,7 @@ button:disabled {
 }
 .studio-outcome {
   display: grid;
-  grid-template-columns: minmax(100px, 1fr) 84px 65px 65px 80px;
+  grid-template-columns: minmax(100px, 1fr) 84px 65px 65px 90px;
   gap: 8px 12px;
   align-items: end;
   min-width: 0;
@@ -1595,6 +1595,9 @@ button:disabled {
   color: var(--accent-ink);
   font-size: 0.75rem;
   margin: 0;
+}
+.studio-remove {
+  white-space: nowrap;
 }
 .studio-field-issues {
   grid-column: 1 / -1;
@@ -1668,7 +1671,7 @@ button:disabled {
   color: white;
   border-color: var(--accent);
 }
-.studio-shell .studio-download:hover {
+.studio-shell button.studio-download:not(:disabled):hover {
   background: var(--accent-ink);
 }
 .studio-calculation {
@@ -1724,6 +1727,17 @@ button:disabled {
   min-height: 1.6em;
 }
 @media (max-width: 600px) {
+  .primary-nav {
+    gap: 0;
+  }
+  .primary-nav button {
+    font-size: 0.75rem;
+    padding: 0.6em 0.45em;
+  }
+  .menu-button {
+    width: 36px;
+    flex-shrink: 0;
+  }
   .studio-shell {
     padding-top: 20px;
   }
@@ -1756,6 +1770,15 @@ button:disabled {
   }
   .studio-comparison table {
     font-size: 0.75rem;
+  }
+}
+@media (max-width: 380px) {
+  .primary-nav button {
+    font-size: 0.7rem;
+    padding: 0.65em 0.28em;
+  }
+  .menu-button {
+    width: 28px;
   }
 }
 .reference-switch {

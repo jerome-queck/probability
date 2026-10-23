@@ -28,7 +28,7 @@ export function ModelStudio({
             '.studio-outcome:last-child input',
           )
         : document.getElementById(focus.current);
-    target?.focus({ preventScroll: true });
+    target?.focus();
     focus.current = null;
   });
   function download() {
@@ -350,9 +350,10 @@ export function ModelStudio({
             )}
           </div>
           <p className="studio-help">
-            Why divide? The retained outcomes must together have probability 1.
-            Divide each retained weight by B's total weight. The original model
-            stays unchanged.
+            When B has positive total weight, its retained outcomes must
+            together have probability 1. Divide each retained weight by B's
+            total weight. If B has weight 0, conditioning is undefined. The
+            original model stays unchanged.
           </p>
         </section>
         <section
@@ -370,6 +371,7 @@ export function ModelStudio({
           <div className="studio-actions">
             <button
               type="button"
+              id="studio-pin"
               disabled={view.current.kind === 'invalid'}
               onClick={() => {
                 send({ type: 'pin-current' });
@@ -384,6 +386,7 @@ export function ModelStudio({
               <button
                 type="button"
                 onClick={() => {
+                  focus.current = 'studio-pin';
                   send({ type: 'clear-comparison' });
                   setStatus(
                     'Comparison cleared. Current work and reflection are kept.',
