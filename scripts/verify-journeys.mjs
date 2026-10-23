@@ -1269,6 +1269,9 @@ async function studio(page, url, record, capture, _context, expectedHttp) {
     );
     await capture(page, 'zero-total', '.studio-step:nth-of-type(1)');
     await button(page, 'Zero-weight evidence').click();
+    await weight(2).fill('00');
+    assert.equal(await weight(2).inputValue(), '00');
+    assert.equal(await weight(2).getAttribute('aria-invalid'), 'false');
     assert.match(await calculation.innerText(), /P\(A \| B\) is undefined/);
     assert.match(
       await page.locator('.studio-independence').innerText(),

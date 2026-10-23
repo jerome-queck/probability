@@ -183,7 +183,7 @@ export function ModelStudio({
                 </button>
                 <p className="studio-contribution">
                   {row.contribution}
-                  {row.weight === '0' ? ' · zero weight' : ''}
+                  {/^0+$/.test(row.weight) ? ' · zero weight' : ''}
                 </p>
                 {row.issues.length > 0 && (
                   <ul
