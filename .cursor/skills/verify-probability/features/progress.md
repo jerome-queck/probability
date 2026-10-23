@@ -15,7 +15,7 @@ Read a lesson, then mark it studied. Attempt a problem, reveal its answer and re
 
 ## Driving it with control-probability
 
-`smoke --feature progress --capture` drives a studied mark, self-rating and home resume action. The resume state clicks Continue, follows the destination's prerequisite, and returns home. Study journeys prove both guest fields survive reload and drive captured review paths and static library chapter/order selection. Guided journeys prove stable ratings inside mounted recall, explicit refresh and visit/scratch lifetime. Account journeys prove cloud reloads and guest-copy preservation separately.
+`smoke --feature progress --capture` drives a studied mark, self-rating and home resume action. The resume state clicks Continue, follows the destination's prerequisite, and returns home. Study journeys prove both guest fields survive reload, capture the home study overview and chapter grid, activate a chapter lesson and Continue, and drive captured review paths and static library chapter/order selection. Guided journeys prove stable ratings inside mounted recall, explicit refresh and visit/scratch lifetime. Account journeys prove cloud reloads and guest-copy preservation separately.
 
 ## Visual states
 

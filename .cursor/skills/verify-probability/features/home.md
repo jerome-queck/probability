@@ -22,7 +22,7 @@ Preconditions: launched instance, doctor OK.
 - Load → `open --url /` → heading contains “Learn to reason”.
 - Start → `click --url / --role button --name "Begin at the beginning"` → path `/lessons/f01-sample-spaces-and-events`.
 
-Use a fresh guest context for the start action. Inspect the study overview and chapter grid separately at desktop and mobile widths; the mapped hero captures do not include them. Activate a chapter lesson and check its heading. `progress/home-continue` exercises resume and returns to the home hero.
+Use a fresh guest context for the start action. Study journeys capture the study overview and full chapter grid at desktop and mobile widths, activate C04 from its chapter card, and activate Continue with F02 after reloading a studied F01. The unfiltered sweep checks every chapter number, name and lesson button against the ordered source catalogue at 390, 600, 860 and 1280px, with the scope disclosure open. These four home records extend the existing 204 records to 208. `progress/home-continue` also exercises resume and returns to the home hero.
 
 ## Visual states
 
