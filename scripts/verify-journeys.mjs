@@ -244,8 +244,58 @@ async function study(page, url, record, capture) {
   );
   await capture(page, 'guest-reloaded', '.practice');
   await button(page, 'Learn').click();
+  await page.locator('.study-dashboard').waitFor({ state: 'visible' });
   assert.match(await page.locator('.study-dashboard').innerText(), /1 of 48/);
+  assert.match(
+    await page.locator('.study-dashboard').innerText(),
+    /1\s+practice problems to revisit/,
+  );
   assert.equal(await button(page, 'Continue with F02').count(), 1);
+  assert.equal(
+    await page
+      .locator('.chapter-grid > .atlas-card')
+      .first()
+      .getByRole('progressbar', { name: 'Lessons studied', exact: true })
+      .getAttribute('aria-valuetext'),
+    '1 of 3 studied',
+  );
+  await capture(page, 'home-study-overview', '.study-dashboard');
+  await capture(page, 'home-chapters', '.overview-section');
+  await page
+    .locator('.chapter-grid')
+    .getByRole('button', {
+      name: 'C04 · Counting in action: birthdays and matchings',
+      exact: true,
+    })
+    .click();
+  await page.locator('[data-lesson-id="C04"]').waitFor({ state: 'visible' });
+  await page.waitForFunction(
+    () => document.querySelector('main h1') === document.activeElement,
+  );
+  assert.equal(
+    await page.locator('main h1').innerText(),
+    'Counting in action: birthdays and matchings',
+  );
+  assert.equal(
+    new URL(page.url()).pathname,
+    '/lessons/c04-counting-in-action-birthdays-and-matchings',
+  );
+  await capture(page, 'home-chapter-selection', '.lesson-head');
+  await button(page, 'Learn').click();
+  await button(page, 'Continue with F02').click();
+  await page.locator('[data-lesson-id="F02"]').waitFor({ state: 'visible' });
+  await page.waitForFunction(
+    () => document.querySelector('main h1') === document.activeElement,
+  );
+  assert.equal(
+    new URL(page.url()).pathname,
+    '/lessons/f02-the-axioms-of-probability',
+  );
+  assert.equal(
+    await page.locator('main h1').innerText(),
+    'The axioms of probability',
+  );
+  await capture(page, 'home-continue-activation', '.lesson-head');
   await button(page, 'Practice').click();
   await button(planner(page), 'Review marked problems →').click();
   await planState(page, 'path');
@@ -365,7 +415,7 @@ async function study(page, url, record, capture) {
   record.proved = [
     'guest studied and rating survive reload',
     'scratch work clears on reload',
-    'home resume',
+    'home study overview, chapter selection and Continue activation',
     'captured review path and static library chapter/order selection',
     'checkpoint hints and solution',
     'result conditions and distribution lookup',
@@ -651,7 +701,60 @@ async function guided(page, url, record, capture) {
 
 async function navigation(page, url, record, capture) {
   await goto(page, url, '/');
+  await guest(page);
   const mobile = page.viewportSize().width <= 860;
+  const desktopBrand = page.viewportSize().width > 1100;
+  const headingFocused = () =>
+    page.waitForFunction(
+      () => document.querySelector('main h1') === document.activeElement,
+    );
+  await page
+    .getByRole('link', { name: 'Skip to content', exact: true })
+    .focus();
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(
+    () => document.querySelector('#main-content') === document.activeElement,
+  );
+  assert.equal(new URL(page.url()).hash, '#main-content');
+  await button(page, 'Reference').click();
+  await headingFocused();
+  if (desktopBrand) {
+    const homeBrand = button(page, 'Probability');
+    await homeBrand.waitFor({ state: 'visible' });
+    await homeBrand.click();
+    await headingFocused();
+    assert.equal(new URL(page.url()).pathname, '/');
+    assert.match(await page.locator('main h1').innerText(), /Learn to reason/);
+    await capture(page, 'probability-home', '.atlas-hero');
+  }
+  await goto(page, url, '/unavailable-route');
+  await guest(page);
+  assert.equal(await page.locator('main h1').innerText(), 'Page not found');
+  await capture(page, 'unknown-route', '.reading-shell');
+  await button(page, 'Return to the start').click();
+  await headingFocused();
+  assert.equal(new URL(page.url()).pathname, '/');
+  assert.match(await page.locator('main h1').innerText(), /Learn to reason/);
+  await capture(page, 'unknown-route-return', '.atlas-hero');
+  await goto(page, url, lesson('F01'));
+  await guest(page);
+  await page.locator('[data-lesson-id="F01"]').waitFor({ state: 'visible' });
+  assert.equal(new URL(page.url()).pathname, '/lessons/f01');
+  const aliasHistory = await page.evaluate(() => window.history.length);
+  if (mobile) await button(page, 'Open lessons').click();
+  const canonicalPath = '/lessons/f01-sample-spaces-and-events';
+  const canonicalLink = page.locator(`.nav-link[href="${canonicalPath}"]`);
+  await canonicalLink.focus();
+  await page.keyboard.press('Enter');
+  await page.waitForURL(url + canonicalPath);
+  if (mobile) await headingFocused();
+  assert.equal(
+    await page.evaluate(() => window.history.length),
+    aliasHistory + 1,
+  );
+  await capture(page, 'lesson-alias-canonical', '.lesson-head');
+  await goto(page, url, '/');
+  await guest(page);
   if (mobile) {
     await button(page, 'Open lessons').focus();
     await page.keyboard.press('Enter');
@@ -897,6 +1000,10 @@ async function navigation(page, url, record, capture) {
       innerWidth <= 860,
   );
   record.proved = [
+    'Skip to content moves keyboard focus to main',
+    ...(desktopBrand ? ['visible Probability brand opens home'] : []),
+    'generic unknown route returns home through the normal control',
+    'short lesson alias selects its canonical route and adds one history entry',
     'content-only and mixed search with ordered section witnesses',
     'ID, title, empty and no-result search without section captions',
     'search chapter collapse and restored browse preference',
@@ -930,6 +1037,44 @@ async function labs(page, url, record, capture) {
     ['law-of-large-numbers', 'L02', 'tosses', 5000, 'after 5000 tosses'],
     ['central-limit', 'L04', 'n', 12, null],
   ];
+  const secondary = {
+    bayes: [
+      {
+        control: 'sensitivity',
+        value: 0.8,
+        expected: 'P(D | +) = 0.8000',
+        counts: /1600\.0 true positive results and 400\.0 false positive/,
+      },
+      {
+        control: 'false-positive',
+        value: 0.1,
+        expected: 'P(D | +) = 0.6667',
+        counts: /1600\.0 true positive results and 800\.0 false positive/,
+      },
+    ],
+    'binomial-poisson': [
+      {
+        control: 'lambda',
+        value: 5,
+        expected: 'p = λ/n = 0.0250; largest gap over k ≤ 17 = 0.0022',
+        tableRows: 18,
+        cells: [
+          [0, ['0.0063', '0.0067']],
+          [5, ['0.1777', '0.1755']],
+        ],
+      },
+    ],
+    'normal-approximation': [
+      {
+        control: 'p',
+        value: 0.3,
+        expected:
+          'P(X = 30): exact 0.0868, normal with continuity correction 0.0869',
+        tableRows: 101,
+        cells: [[30, ['0.0868', '0.0871']]],
+      },
+    ],
+  };
   record.values = [];
   for (const [id, lessonId, control, value, expected] of cases) {
     await goto(page, url, `${lesson(lessonId)}#lab`);
@@ -1000,9 +1145,56 @@ async function labs(page, url, record, capture) {
     }
     await capture(page, `lab-${id}`, '#lab');
     record.values.push({ lab: id, control, value, before, after });
+    for (const change of secondary[id] ?? []) {
+      const before = await result.innerText();
+      const input = page.locator(`input[name="${change.control}"]`);
+      await input.fill(String(change.value));
+      await input.dispatchEvent('input');
+      const after = await result.innerText();
+      assert.notEqual(after, before);
+      assert.equal(after, change.expected);
+      assert.equal(
+        await page.getByTestId(`${change.control}-value`).innerText(),
+        String(change.value),
+      );
+      if (change.counts)
+        assert.match(await page.locator('#lab').innerText(), change.counts);
+      if (change.cells) {
+        const rows = page.locator('#lab table tbody tr');
+        assert.equal(await rows.count(), change.tableRows);
+        for (const [index, cells] of change.cells) {
+          assert.equal(
+            await rows.nth(index).getByRole('rowheader').innerText(),
+            String(index),
+          );
+          assert.deepEqual(
+            await rows.nth(index).locator('td').allTextContents(),
+            cells,
+          );
+        }
+      }
+      await capture(page, `lab-${id}-${change.control}`, '#lab');
+      record.values.push({
+        lab: id,
+        control: change.control,
+        value: change.value,
+        before,
+        after,
+      });
+    }
     if (id === 'law-of-large-numbers') {
       await button(page, 'New run').click();
-      assert.notEqual(await result.innerText(), after);
+      const rerun = await result.innerText();
+      assert.notEqual(rerun, after);
+      assert.equal(
+        await page
+          .locator('#lab table tbody tr')
+          .last()
+          .locator('td')
+          .innerText(),
+        rerun.match(/[\d.]+$/)[0],
+      );
+      await capture(page, 'lab-law-of-large-numbers-new-run', '#lab');
     }
   }
 }
