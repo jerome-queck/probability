@@ -499,6 +499,21 @@ async function guided(page, url, record, capture) {
   await assertRecall(page, foundations, 'F01');
   await assertScratch(page, '', false);
   await capture(page, 'recall-history-return', '.recall-session');
+  await button(page, 'Next problem →').click();
+  await recallScratch(
+    page,
+    'This scratch clears while the captured plan visits Studio.',
+  );
+  await button(page, 'Studio').click();
+  await page.locator('.studio-heading h1').waitFor();
+  await button(page, 'Practice').click();
+  await assertRecall(page, foundations, 'F02');
+  await assertScratch(page, '', false);
+  await page.goBack();
+  await page.locator('.studio-heading h1').waitFor();
+  await page.goForward();
+  await assertRecall(page, foundations, 'F02');
+  await capture(page, 'recall-studio-return', '.recall-session');
   await recallScratch(page, 'Replacing this set clears its mounted scratch.');
   await chooseAnother(page);
   await buildTopic(page, 'F03');
@@ -642,7 +657,7 @@ async function guided(page, url, record, capture) {
     'explicit movement focuses headings and preserves mounted scratch',
     'finish, replacement and route departure clear scratch without studying',
     'K03 reached exactly once through captured sets of three and five',
-    'Back, Forward and Learn retain plan identity and cursor',
+    'Back, Forward, Learn and Studio retain plan identity and cursor',
     'reload resets the visit and preserves durable self-ratings',
     'review membership changes only on explicit refresh',
     'all-studied topic keeps its full path and target recall',
@@ -650,8 +665,70 @@ async function guided(page, url, record, capture) {
 }
 
 async function navigation(page, url, record, capture) {
-  await goto(page, url, '/');
   const mobile = page.viewportSize().width <= 860;
+  let releaseNavigation;
+  const navigationDiscovery = new Promise((resolve) => {
+    releaseNavigation = resolve;
+  });
+  await page.route('**/api/account', async (route) => {
+    await navigationDiscovery;
+    await route.continue();
+  });
+  try {
+    await page.goto(`${url}/`, { waitUntil: 'domcontentloaded' });
+    await page
+      .locator('.account-panel[data-account-state="loading"]')
+      .waitFor({ state: 'attached' });
+    if (mobile) await button(page, 'Open lessons').click();
+    const search = page.getByRole('searchbox', { name: 'Find a concept' });
+    await search.fill('Boole');
+    const foundations = page
+      .locator('.chapter-heading button')
+      .filter({ hasText: 'Foundations' });
+    await foundations.click();
+    assert.equal(await foundations.getAttribute('aria-expanded'), 'false');
+    await search.focus();
+    await search.press('Home');
+    await search.press('ArrowRight');
+    await search.press('Shift+ArrowRight');
+    const node = await search.elementHandle();
+    releaseNavigation();
+    await guest(page);
+    assert.deepEqual(
+      await node.evaluate((element) => ({
+        connected: element.isConnected,
+        focused: document.activeElement === element,
+        value: element.value,
+        start: element.selectionStart,
+        end: element.selectionEnd,
+      })),
+      { connected: true, focused: true, value: 'Boole', start: 1, end: 2 },
+      'discovery retains navigation search and selection',
+    );
+    assert.equal(await foundations.getAttribute('aria-expanded'), 'false');
+    assert.equal(
+      await page.locator('main').evaluate((node) => node.inert),
+      mobile,
+    );
+    if (mobile) {
+      assert.equal(
+        await button(page, 'Open lessons').getAttribute('aria-expanded'),
+        'true',
+      );
+      await capture(page, 'discovery-keeps-drawer-search', '#lesson-sidebar');
+      await page.keyboard.press('Escape');
+      assert.equal(
+        await button(page, 'Open lessons').evaluate(
+          (node) => document.activeElement === node,
+        ),
+        true,
+      );
+    } else await capture(page, 'discovery-keeps-search', '#lesson-sidebar');
+  } finally {
+    releaseNavigation();
+    await page.unroute('**/api/account');
+  }
+  await goto(page, url, '/');
   if (mobile) {
     await button(page, 'Open lessons').focus();
     await page.keyboard.press('Enter');
@@ -897,6 +974,7 @@ async function navigation(page, url, record, capture) {
       innerWidth <= 860,
   );
   record.proved = [
+    'discovery retains focused search, selection, collapsed search chapters and mobile drawer coherence',
     'content-only and mixed search with ordered section witnesses',
     'ID, title, empty and no-result search without section captions',
     'search chapter collapse and restored browse preference',
@@ -1039,6 +1117,91 @@ async function studio(page, url, record, capture, _context, expectedHttp) {
     )
       writes.push(`${request.method()} ${request.url()}`);
   });
+  const editAcrossDiscovery = async (input, value) => {
+    await input.fill(value);
+    await input.press('ControlOrMeta+A');
+    await input.press('ArrowLeft');
+    await input.press('ArrowRight');
+    await input.press('ArrowRight');
+    for (let i = 0; i < 3; i++) await input.press('Shift+ArrowRight');
+    const node = await input.elementHandle();
+    assert.deepEqual(
+      await node.evaluate((element) => [
+        element.selectionStart,
+        element.selectionEnd,
+      ]),
+      [2, 5],
+      'native key presses establish an interior selection before discovery resolves',
+    );
+    return async (transition) => {
+      const actual = await node.evaluate((element) => ({
+        connected: element.isConnected,
+        focused: document.activeElement === element,
+        start: element.selectionStart,
+        end: element.selectionEnd,
+      }));
+      record.nativeEdits ??= [];
+      record.nativeEdits.push({ transition, actual });
+      assert.deepEqual(
+        actual,
+        { connected: true, focused: true, start: 2, end: 5 },
+        `${transition} preserves the active native Studio input and interior selection`,
+      );
+      assert.equal(
+        await page
+          .locator('.studio-descriptions')
+          .evaluate((node) => node.open),
+        true,
+        `${transition} keeps descriptions open`,
+      );
+      await page.keyboard.type('X');
+      assert.equal(
+        await input.inputValue(),
+        `${value.slice(0, 2)}X${value.slice(5)}`,
+        `${transition} continues native editing at the retained selection`,
+      );
+    };
+  };
+  let releaseGuest;
+  const guestDiscovery = new Promise((resolve) => {
+    releaseGuest = resolve;
+  });
+  await page.route('**/api/account', async (route) => {
+    await guestDiscovery;
+    await route.continue();
+  });
+  try {
+    await page.goto(`${url}/studio`, { waitUntil: 'domcontentloaded' });
+    await page.locator('.studio-outcome').first().waitFor();
+    await page.locator('.account-panel[data-account-state="loading"]').waitFor({
+      state: 'attached',
+    });
+    assert.equal(
+      await page
+        .locator('h1')
+        .evaluate((node) => document.activeElement === node),
+      false,
+      'initial mount skips heading autofocus',
+    );
+    await page.locator('.studio-descriptions > summary').click();
+    const assertGuestEdit = await editAcrossDiscovery(
+      name(1),
+      'Native outcome',
+    );
+    const scrollBefore = await page.evaluate(() => scrollY);
+    releaseGuest();
+    await guest(page);
+    await assertGuestEdit('real guest discovery');
+    assert.equal(await page.evaluate(() => scrollY), scrollBefore);
+    await capture(
+      page,
+      'guest-discovery-native-edit',
+      '.studio-step:nth-of-type(1)',
+    );
+  } finally {
+    releaseGuest();
+    await page.unroute('**/api/account');
+  }
   let releaseInitial;
   const initial = new Promise((resolve) => {
     releaseInitial = resolve;
@@ -1100,10 +1263,21 @@ async function studio(page, url, record, capture, _context, expectedHttp) {
       await pressed(button(page, 'Condition on B'), true);
     };
     await assertKept();
+    await page.locator('.studio-descriptions > summary').click();
+    const description = page.getByRole('textbox', {
+      name: 'Event A means',
+      exact: true,
+    });
+    const assertFailedEdit = await editAcrossDiscovery(
+      description,
+      'First symbol is H',
+    );
     releaseInitial();
     await page
       .locator('.account-panel[data-account-state="error"]')
       .waitFor({ state: 'attached' });
+    await assertFailedEdit('failed discovery');
+    await description.fill('First symbol is H');
     await assertKept();
     await capture(
       page,
@@ -1131,6 +1305,17 @@ async function studio(page, url, record, capture, _context, expectedHttp) {
         'delayed-retry-retains-model',
         '.studio-step:nth-of-type(3)',
       );
+      await weight(4).fill('1000');
+      const assertRetryEdit = await editAcrossDiscovery(
+        name(1),
+        'Retry outcome',
+      );
+      releaseRetry();
+      await guest(page);
+      await assertRetryEdit('real guest retry');
+      assert.equal(await weight(4).inputValue(), '1000');
+      assert.equal(await weight(4).getAttribute('aria-invalid'), 'true');
+      await weight(4).fill('1');
     } finally {
       releaseRetry();
     }
@@ -1176,7 +1361,12 @@ async function studio(page, url, record, capture, _context, expectedHttp) {
     await page.keyboard.type('5');
     assert.match(await calculation.innerText(), /5\/6/);
     await weight(1).fill('3');
-    await page.locator('.studio-descriptions > summary').click();
+    if (
+      !(await page
+        .locator('.studio-descriptions')
+        .evaluate((node) => node.open))
+    )
+      await page.locator('.studio-descriptions > summary').click();
     await page
       .getByRole('textbox', { name: 'Model name', exact: true })
       .fill('My revised pair');
@@ -1399,6 +1589,7 @@ async function studio(page, url, record, capture, _context, expectedHttp) {
       'one and twelve outcome bounds and keyboard focus',
       'route/history/lesson return retains the visit',
       'delayed and failed discovery plus real guest retry retain the visit',
+      'native input identity, selection, continued editing and open descriptions survive discovery',
       'reload resets the visit',
       'no API or browser-storage writes',
     ];
@@ -1576,6 +1767,16 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
   const accountScratch =
     'This captured account set survives saving and recovery.';
   await recallScratch(page, accountScratch);
+  await panel(page);
+  await button(page, 'Preview guest import').click();
+  const recoveryMenu = await page.locator('.account-menu').elementHandle();
+  const assertRecoveryMenu = async () => {
+    assert.equal(
+      await recoveryMenu.evaluate((node) => node.isConnected && node.open),
+      true,
+    );
+    assert.equal(await page.locator('.guest-import-preview').count(), 1);
+  };
   let releaseFailure;
   const failedSave = new Promise((resolve) => {
     releaseFailure = resolve;
@@ -1597,6 +1798,7 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
       .waitFor({ state: 'attached' });
     await assertRecall(page, ['F03'], 'F03');
     await assertScratch(page, accountScratch);
+    await assertRecoveryMenu();
     await capture(page, 'planner-save-pending', '.recall-session');
   } finally {
     releaseFailure();
@@ -1610,6 +1812,7 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
   );
   await assertRecall(page, ['F03'], 'F03');
   await assertScratch(page, accountScratch);
+  await assertRecoveryMenu();
   await capture(page, 'planner-save-failed', '.recall-session');
   await panel(page);
   await capture(page, 'account-save-failed', '.account-panel');
@@ -1618,6 +1821,7 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
   await saved(page);
   await assertRecall(page, ['F03'], 'F03');
   await assertScratch(page, accountScratch);
+  await assertRecoveryMenu();
   await pressed(button(activeProblem(page), '↺ Review again'), true);
   const stale = await context.newPage();
   const staleErrors = watchErrors(stale, (message) =>
@@ -1659,14 +1863,19 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
     releaseRediscovery = resolve;
   });
   let injectedUnauthorized = false;
+  let releaseUnauthorized;
+  const unauthorized = new Promise((resolve) => {
+    releaseUnauthorized = resolve;
+  });
   await page.route('**/api/account', async (route) => {
     await rediscovery;
     await route.continue();
   });
-  await page.route('**/api/progress', (route) => {
+  await page.route('**/api/progress', async (route) => {
     if (route.request().method() !== 'PATCH' || injectedUnauthorized)
       return route.continue();
     injectedUnauthorized = true;
+    await unauthorized;
     return route.fulfill({
       status: 401,
       contentType: 'application/json',
@@ -1676,9 +1885,40 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
   expectedHttp.push(401);
   try {
     await button(activeProblem(page), '↺ Review again').click();
-    await assertPlannerUnavailable(page, 'loading');
-    await capture(page, 'planner-injected-401-rediscovery', '.study-workspace');
+    await page
+      .locator('.account-panel[data-account-state="saving"]')
+      .waitFor({ state: 'attached' });
+    await assertRecoveryMenu();
+    await button(page, 'Studio').click();
+    await page.locator('.studio-heading h1').waitFor();
+    const outcome = page.getByRole('textbox', {
+      name: 'Name for outcome 1',
+      exact: true,
+    });
+    await outcome.fill('Account transition model');
+    const studioNode = await outcome.elementHandle();
+    releaseUnauthorized();
+    await page
+      .locator('.account-panel[data-account-state="loading"]')
+      .waitFor({ state: 'attached' });
+    assert.equal(
+      await page.locator('.account-menu').evaluate((node) => node.open),
+      false,
+    );
+    assert.equal(await page.locator('.guest-import-preview').count(), 0);
+    assert.equal(
+      await studioNode.evaluate(
+        (node) => node.isConnected && document.activeElement === node,
+      ),
+      true,
+    );
+    await capture(
+      page,
+      'studio-injected-401-rediscovery',
+      '.studio-step:nth-of-type(1)',
+    );
   } finally {
+    releaseUnauthorized();
     releaseRediscovery();
   }
   await page
@@ -1687,6 +1927,20 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
   await page.unroute('**/api/account');
   await page.unroute('**/api/progress');
   assert.equal(injectedUnauthorized, true);
+  assert.equal(
+    await page
+      .getByRole('textbox', { name: 'Name for outcome 1', exact: true })
+      .inputValue(),
+    'Account transition model',
+  );
+  await panel(page);
+  assert.equal(
+    await page.locator('.guest-import-preview').count(),
+    0,
+    'same-owner rediscovery clears import preview',
+  );
+  await page.locator('.account-menu > summary').click();
+  await button(page, 'Practice').click();
   await planState(page, 'choose');
   assert.equal(await page.locator('.recall-panel').count(), 0);
   assert.equal(
@@ -1701,6 +1955,8 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
   await button(planner(page), 'Start this set →').click();
   await assertRecall(page, ['F03'], 'F03');
   await recallScratch(page, 'This old tab must reset after real account loss.');
+  await panel(page);
+  await button(page, 'Preview guest import').click();
   const signedOut = await context.newPage();
   const signOutErrors = watchErrors(signedOut);
   try {
@@ -1713,9 +1969,32 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
     ]);
     await guest(signedOut);
     await planState(signedOut, 'choose');
+    await button(activeProblem(page), 'Read the full lesson →').click();
+    await reveal(page);
+    await button(page, 'Show a hint').click();
+    await page
+      .getByRole('textbox', { name: /^Your reasoning\b/ })
+      .fill('This lesson scratch belongs to the previous account scope.');
     expectedHttp.push(401);
-    await button(activeProblem(page), '↺ Review again').click();
+    await button(page, '↺ Review again').click();
     await guest(page);
+    assert.equal(
+      await page
+        .getByRole('textbox', { name: /^Your reasoning\b/ })
+        .inputValue(),
+      '',
+    );
+    assert.equal(
+      await page.locator('.practice .hint, .practice .answer').count(),
+      0,
+    );
+    assert.equal(
+      await page.locator('.account-menu').evaluate((node) => node.open),
+      false,
+    );
+    assert.equal(await page.locator('.guest-import-preview').count(), 0);
+    await capture(page, 'lesson-owner-loss-reset', '.practice');
+    await button(page, 'Practice').click();
     await planState(page, 'choose');
     assert.equal(await page.locator('.recall-panel').count(), 0);
     assert.equal(
@@ -1788,8 +2067,9 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
     'separate anonymous context isolation',
     'active recall preserves roster, scratch and reveals through saving, failed save and retry',
     'active recall preserves roster, scratch and reveals through real two-tab conflict and account-version resolution',
-    'injected PATCH 401 followed by real same-owner discovery resets the visit',
-    'real owner loss in another tab resets the old recall and subsequent sign-in',
+    'injected PATCH 401 followed by real same-owner discovery while Studio is visible resets the plan and import preview',
+    'same-owner saving, failed-save retry retain the Progress disclosure and import preview',
+    'real owner loss in another tab resets the retained plan, lesson scratch, reveals and import preview',
     'account API readback',
     'sign-out restores unchanged guest copy',
   ];
