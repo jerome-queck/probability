@@ -1,0 +1,31 @@
+name: studio-development-capture
+on:
+  push:
+    branches: [codex/studio-linux-capture]
+permissions:
+  contents: read
+jobs:
+  studio-development-capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - id: chrome
+        uses: browser-actions/setup-chrome@48ad923757ca74d66703209fe939badbdf80f2f4
+        with:
+          chrome-version: 154.0.8037.92
+      - run: echo "CHROME_PATH=${{ steps.chrome.outputs.chrome-path }}" >> "$GITHUB_ENV"
+      - run: npm run build
+      - run: node scripts/control-probability.mjs smoke --feature studio --capture --artifacts artifacts/studio-linux-capture
+      - if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: studio-development-capture
+          path: artifacts/studio-linux-capture
+          if-no-files-found: error
