@@ -23,7 +23,7 @@ Top bar → Progress. Sign in, read the import preview, then choose whether to i
 
 - `guest` (desktop, mobile): public preview Progress panel.
 
-Journey evidence also captures unavailable and pending account discovery, imported/saved account controls, failed save, stale conflict and the guest copy after sign-out. Inspect `account-unavailable` and `account-discovery-pending` at desktop/mobile widths for disabled controls and hidden guest marks. Planner captures also preserve the active set beside failed-save and real stale-conflict feedback. One labelled injected PATCH 401 holds then continues real account discovery, proving a same-owner visit reset. Real sign-out in another tab causes an unauthorized old-tab write and guest reset. Sign-in again starts choose. These local fixture captures do not establish hosted authentication.
+Journey evidence also captures unavailable and pending account discovery, imported/saved account controls, failed save, stale conflict and the guest copy after sign-out. Inspect `account-unavailable` and `account-discovery-pending` at desktop/mobile widths for disabled controls and hidden guest marks. Planner captures also preserve the active set beside failed-save and real stale-conflict feedback. One labelled injected PATCH 401 holds then continues real account discovery, proving a same-owner plan and import-preview reset while Studio is visible. Progress closes on changed identity scope. Same-owner saving, failure and retry retain its native disclosure and preview. Real sign-out in another tab causes an unauthorized old-tab write and guest reset of the retained plan, lesson scratch, reveals and import preview. Sign-in again starts choose. These local fixture captures do not establish hosted authentication.
 
 ## Gotchas
 

@@ -9,6 +9,7 @@ import { AccountPanel } from './AccountPanel';
 import { AtlasViews } from './AtlasViews';
 import { lessons } from './content/lessons';
 import { LessonPage } from './LessonPage';
+import { ModelStudio } from './ModelStudioView';
 import {
   newStudioVisit,
   type StudioCommand,
@@ -16,7 +17,7 @@ import {
   updateStudio,
 } from './modelStudio';
 import { progressStore } from './progress';
-import { views } from './routes';
+import { type Route, views } from './routes';
 import { Sidebar } from './Sidebar';
 import { studyStore } from './state';
 import { createStudyPlanReducer } from './studyPlan';
@@ -29,13 +30,7 @@ export function App() {
     undefined,
     newStudioVisit,
   );
-  const account = useSyncExternalStore(
-    progressStore.subscribe,
-    progressStore.getAccountSnapshot,
-  );
-  const owner =
-    account.kind === 'account' ? `account:${account.owner}` : account.kind;
-  return <Reader key={owner} studio={studio} sendStudio={sendStudio} />;
+  return <Reader studio={studio} sendStudio={sendStudio} />;
 }
 
 function Reader({
@@ -45,7 +40,12 @@ function Reader({
   studio: StudioVisit;
   sendStudio: (command: StudioCommand) => void;
 }) {
-  const [visit, send] = useReducer(studyPlanReducer, { kind: 'choose' });
+  const account = useSyncExternalStore(
+    progressStore.subscribe,
+    progressStore.getAccountSnapshot,
+  );
+  const owner =
+    account.kind === 'account' ? `account:${account.owner}` : account.kind;
   const route = useSyncExternalStore(
     studyStore.subscribe,
     studyStore.getSnapshot,
@@ -165,34 +165,46 @@ function Reader({
               </button>
             ))}
           </nav>
-          <details className="account-menu">
+          <details className="account-menu" key={owner}>
             <summary>Progress</summary>
             <AccountPanel />
           </details>
         </header>
-        {route.view === 'not-found' ? (
-          <div className="reading-shell">
-            <h1 tabIndex={-1}>Page not found</h1>
-            <p>That lesson or route is unavailable.</p>
-            <button type="button" onClick={() => studyStore.openView('learn')}>
-              Return to the start
-            </button>
-          </div>
-        ) : lesson ? (
-          <LessonPage key={lesson.id} lesson={lesson} onSelect={select} />
-        ) : route.view !== 'lesson' ? (
-          <AtlasViews
-            view={route.view}
-            open={select}
-            visit={visit}
-            send={send}
-            studio={studio}
-            sendStudio={sendStudio}
-          />
+        {route.view === 'studio' ? (
+          <ModelStudio visit={studio} send={sendStudio} openLesson={select} />
         ) : null}
+        <StudyContent key={owner} route={route} open={select} />
       </main>
     </div>
   );
+}
+
+function StudyContent({
+  route,
+  open,
+}: {
+  route: Route;
+  open: (id: string) => void;
+}) {
+  const [visit, send] = useReducer(studyPlanReducer, { kind: 'choose' });
+  if (route.view === 'studio') return null;
+  if (route.view === 'not-found')
+    return (
+      <div className="reading-shell">
+        <h1 tabIndex={-1}>Page not found</h1>
+        <p>That lesson or route is unavailable.</p>
+        <button type="button" onClick={() => studyStore.openView('learn')}>
+          Return to the start
+        </button>
+      </div>
+    );
+  if (route.view === 'lesson') {
+    const lesson = lessons.find((item) => item.id === route.lessonId);
+    return lesson ? (
+      <LessonPage key={lesson.id} lesson={lesson} onSelect={open} />
+    ) : null;
+  }
+  return <AtlasViews view={route.view} open={open} visit={visit} send={send} />;
 }
 
 // Matches the CSS breakpoint where the sidebar becomes a drawer.
