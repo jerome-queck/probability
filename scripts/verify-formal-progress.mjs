@@ -179,14 +179,20 @@ try {
         `${name} must complete exhaustive model checking`,
       );
     }
+    const counts = result.output.match(
+      /(\d+) states generated, (\d+) distinct states found, 0 states left on queue\./,
+    );
+    if (!property)
+      assert.ok(
+        counts && Number(counts[1]) > 0 && Number(counts[2]) > 0,
+        `${name} must explore a nonempty state space with no queued states`,
+      );
     evidence.modelRuns.push({
       name,
       fault,
       property,
       status: result.status,
-      counts: result.output.match(
-        /\d+ states generated, \d+ distinct states found, 0 states left on queue\./,
-      )?.[0],
+      counts: counts?.[0],
     });
     console.log(`${name}: ${property ? 'expected counterexample' : 'PASS'}`);
   }

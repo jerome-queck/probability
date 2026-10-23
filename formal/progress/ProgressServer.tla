@@ -43,7 +43,8 @@ CompareAndWrite(r) ==
   LET o == trusted[r]
       c == command[r]
       matches == rows[o].revision = c.expectedRevision
-      writes == matches \/ (Fault = "revision" /\ c.expectedRevision > 0)
+      writes == matches \/ (Fault = "revision" /\ c.expectedRevision > 0 /\
+                            rows[o].revision > 0)
   IN
   /\ phase[r] = "write"
   /\ phase' = [phase EXCEPT ![r] = IF writes THEN "done" ELSE "fallback"]
