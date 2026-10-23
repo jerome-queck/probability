@@ -16,7 +16,7 @@ Top bar → Studio, or open `/studio`. Pin the balanced model. Change HH's weigh
 
 ## Driving it with control-probability
 
-`smoke --feature studio --capture` captures each mapped state at desktop and mobile widths. `node scripts/verify-journeys.mjs --only studio` edits only native controls, checks exact results and contribution labels, inspects downloads, tests invalid drafts and outcome bounds, and proves retention through history and delayed/failed discovery. Successful account and progress responses are never injected. The unfiltered sweep keeps all 200 prior records and adds Studio at 390, 600, 860 and 1280px. The mobile journey also tests 320px.
+`smoke --feature studio --capture` captures each mapped state at desktop and mobile widths. `node scripts/verify-journeys.mjs --only studio` edits only native controls, checks exact results and contribution labels, inspects downloads, tests invalid drafts and outcome bounds, and proves retention through history and delayed real guest discovery, injected failure and real retry. It holds the active native input and interior selection, checks continued typing and open descriptions, and retains invalid raw work. Successful account and progress responses are never injected. The unfiltered sweep keeps all 200 prior records and adds Studio at 390, 600, 860 and 1280px. The mobile journey also tests 320px.
 
 ## Visual states
 
@@ -32,4 +32,4 @@ Inspect the untouched original PNGs for every state at both widths. Journey capt
 
 ## Gotchas
 
-Studio state belongs to the unkeyed App. Internal navigation and in-page discovery/retry retain it. Reload and Start over clear it. Page departure normally discards it, but browser Back may restore the document from memory. Top-level sign-in or sign-out can depart the page. Do not claim retention across authentication navigation or confuse this visit with account-owned lesson progress. Descriptions do not define membership. Pinned and current event descriptions must remain labelled separately.
+Studio state belongs to the unkeyed App. Internal navigation retains reducer values. The stable Reader renders Studio outside the owner-keyed study content, so in-page discovery and retry retain native editing, selection and descriptions too. Leaving Studio unmounts its DOM. Reload and Start over clear it. Page departure normally discards it, but browser Back may restore the document from memory. Top-level sign-in or sign-out can depart the page. Do not claim retention across authentication navigation or confuse this visit with account-owned lesson progress. Descriptions do not define membership. Pinned and current event descriptions must remain labelled separately.
