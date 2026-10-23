@@ -899,7 +899,7 @@ async function smoke() {
   const expectedPages = complete
     ? (JSON.parse(readFileSync(join(root, 'src/content/order.json'), 'utf8'))
         .length +
-        3) *
+        4) *
       4
     : 0;
   const coverageComplete =
