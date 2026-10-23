@@ -102,6 +102,7 @@
         "src/AccountPanel.tsx",
         "src/progress.ts",
         "server/**",
+        "formal/progress/**",
         "app/api/**",
         "app/chatgpt-auth.ts",
         "db/**",

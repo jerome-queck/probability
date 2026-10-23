@@ -26,7 +26,8 @@
     "db:generate": "drizzle-kit generate",
     "agent": "node scripts/probability.mjs",
     "verify:source": "npm run check:forbidden && npm run check:content && npm run check:results && npm run check:drift && npm run check:rules && npm run typecheck && npm run lint && npm run format:check && npm test",
-    "verify:browser": "npm run smoke && node scripts/verify-journeys.mjs"
+    "verify:browser": "npm run smoke && node scripts/verify-journeys.mjs",
+    "verify:formal": "node scripts/verify-formal-progress.mjs"
   },
   "dependencies": {
     "@fontsource/inter": "^5.3.0",

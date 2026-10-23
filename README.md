@@ -41,6 +41,12 @@ mapped states, the full rendering sweep, real local D1/account journeys and inde
 mathematical, visual and code review. See [AGENTS.md](AGENTS.md), [MAP.md](MAP.md) and the
 [verification skill](.agents/skills/verify/SKILL.md).
 
+Progress ownership, response ordering, revisions and retries also have a bounded formal
+check. Run `npm run verify:formal -- --mutations` with Java 11+ after changing those boundaries.
+The [progress integrity skill](.agents/skills/progress-integrity/SKILL.md) records scope and
+maintenance steps. This opt-in command keeps Java/TLC setup separate from the existing CI
+release check; `npm run check` does not run it.
+
 ## Hosting
 
 The supported Sites Vinext integration packages the application, assets and generated D1

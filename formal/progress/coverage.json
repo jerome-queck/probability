@@ -1,0 +1,13 @@
+{
+  "syncCommit": "46c239421de3d2f19395e334a07f9ceeb0ad66d8",
+  "sources": {
+    "src/progress.ts": "5f875eb6513163d0aab91dc3092d948267a7bb49dfbf3726abadc87e032035eb",
+    "server/progress.ts": "8e1cb0e12feaa1dcc94584184a996b1ec47daa9b37e9d3f5b4b249116bb59543"
+  },
+  "tool": {
+    "release": "1.7.4",
+    "version": "TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)",
+    "url": "https://github.com/tlaplus/tlaplus/releases/download/v1.7.4/tla2tools.jar",
+    "sha256": "936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88"
+  }
+}
