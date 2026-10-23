@@ -7,7 +7,7 @@
 - Native outcome names, weights and membership checkboxes define one canonical model. Add and remove preserve the one-outcome and twelve-outcome bounds.
 - Whole-model and B-evidence controls label each outcome as numerator and denominator, denominator only, or excluded. Zero-weight outcomes keep their memberships.
 - Invalid drafts suppress every current result. Total weight zero is invalid. Zero evidence in a valid model makes the conditional undefined while exact product independence still applies.
-- A pin copies the valid model and descriptions. Presets keep the pin and reflection. Clear comparison keeps current work and reflection. Start over clears the entire visit.
+- A pin copies the valid model and descriptions. Presets keep the pin and reflection. Clear comparison keeps current work and reflection. Keyboard clearing restores focus to the pin when valid, or the reflection when invalid. Start over clears the entire visit.
 - Download model note preserves raw input, validation issues, available exact answers, pin and reflection. The form stays usable during delayed or unavailable account discovery.
 
 ## How to get to it (user POV)

@@ -1027,6 +1027,9 @@ main {
 }
 
 @media (max-width: 1100px) {
+  .topbar-name {
+    display: none;
+  }
   .reading-grid {
     grid-template-columns: minmax(0, 1fr);
   }

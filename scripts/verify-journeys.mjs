@@ -839,6 +839,63 @@ async function navigation(page, url, record, capture) {
     position && position.y >= -1 && position.y < page.viewportSize().height,
     'direct #lab link must put the experiment in view',
   );
+  await button(page, 'Studio').click();
+  const initialViewport = page.viewportSize();
+  record.navigationWidths = [
+    320, 380, 390, 520, 521, 600, 601, 620, 640, 860, 861, 900, 1000, 1100,
+    1280,
+  ];
+  for (const width of record.navigationWidths) {
+    await page.setViewportSize({ ...initialViewport, width });
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#lesson-sidebar').hasAttribute('inert') ===
+        innerWidth <= 860,
+    );
+    const geometry = await page.locator('.topbar').evaluate((bar) => {
+      const controls = [
+        ...bar.querySelectorAll('button, .account-menu > summary'),
+      ]
+        .map((node) => ({
+          name: node.textContent.trim(),
+          box: node.getBoundingClientRect(),
+        }))
+        .filter(({ box }) => box.width && box.height)
+        .sort((a, b) => a.box.left - b.box.left);
+      return {
+        width: innerWidth,
+        pageWidth: document.documentElement.scrollWidth,
+        controls: controls.map(({ name, box }) => ({
+          name,
+          left: box.left,
+          right: box.right,
+        })),
+      };
+    });
+    assert.ok(
+      geometry.pageWidth <= width + 1,
+      `navigation page fits ${width}px`,
+    );
+    for (const [index, control] of geometry.controls.entries()) {
+      assert.ok(
+        control.left >= -1 && control.right <= width + 1,
+        `${control.name} fits ${width}px`,
+      );
+      if (index)
+        assert.ok(
+          control.left >= geometry.controls[index - 1].right - 1,
+          `navigation controls do not overlap at ${width}px`,
+        );
+    }
+    if (width === 601 || width === 861)
+      await capture(page, `navigation-${width}`, '.topbar');
+  }
+  await page.setViewportSize(initialViewport);
+  await page.waitForFunction(
+    () =>
+      document.querySelector('#lesson-sidebar').hasAttribute('inert') ===
+      innerWidth <= 860,
+  );
   record.proved = [
     'content-only and mixed search with ordered section witnesses',
     'ID, title, empty and no-result search without section captions',
@@ -847,6 +904,7 @@ async function navigation(page, url, record, capture) {
     'keyboard activation and heading focus',
     'browser back and forward',
     'direct experiment anchor',
+    'visible navigation controls fit breakpoint-adjacent widths',
     ...(mobile
       ? [
           'drawer autofocus, main inert and Escape focus restoration',
@@ -1157,6 +1215,25 @@ async function studio(page, url, record, capture, _context, expectedHttp) {
       );
       assert.doesNotMatch(await calculation.innerText(), /3\/4/);
     }
+    await button(page, 'Clear comparison').focus();
+    await page.keyboard.press('Enter');
+    assert.equal(await comparison.count(), 0);
+    assert.equal(
+      await reflection.evaluate(
+        (node) =>
+          document.activeElement === node && node.matches(':focus-visible'),
+      ),
+      true,
+      'clearing an invalid model restores visible focus to reflection',
+    );
+    assert.equal(await weight(1).inputValue(), '1000');
+    await capture(
+      page,
+      'invalid-clear-restores-focus',
+      '.studio-step:nth-of-type(3)',
+    );
+    await weight(1).fill('1');
+    await button(page, 'Pin this model').click();
     await weight(1).fill('');
     const downloadEvent = page.waitForEvent('download');
     await button(page, 'Download model note').click();
@@ -1291,6 +1368,22 @@ async function studio(page, url, record, capture, _context, expectedHttp) {
         'reflow-320-zero-evidence',
         '.studio-step:nth-of-type(2)',
       );
+      await weight(1).fill('');
+      await button(page, 'Clear comparison').focus();
+      await page.keyboard.press('Enter');
+      assert.equal(
+        await reflection.evaluate(
+          (node) =>
+            document.activeElement === node && node.matches(':focus-visible'),
+        ),
+        true,
+        'invalid comparison clearing keeps visible focus at 320px',
+      );
+      await capture(
+        page,
+        'reflow-320-invalid-clear-focus',
+        '.studio-step:nth-of-type(3)',
+      );
       await page.setViewportSize(viewports.mobile);
       record.reflow320 = true;
     }
@@ -1299,6 +1392,7 @@ async function studio(page, url, record, capture, _context, expectedHttp) {
       'zero evidence and invalid suppression',
       'raw invalid download with pin and reflection',
       'pin isolation, presets, clear and reset',
+      'keyboard clearing an invalid comparison restores visible reflection focus',
       'one and twelve outcome bounds and keyboard focus',
       'route/history/lesson return retains the visit',
       'delayed and failed discovery plus real guest retry retain the visit',

@@ -387,7 +387,10 @@ export function ModelStudio({
               <button
                 type="button"
                 onClick={() => {
-                  focus.current = 'studio-pin';
+                  focus.current =
+                    view.current.kind === 'invalid'
+                      ? 'studio-reflection'
+                      : 'studio-pin';
                   send({ type: 'clear-comparison' });
                   setStatus(
                     'Comparison cleared. Current work and reflection are kept.',
