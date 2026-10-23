@@ -894,5 +894,197 @@
       "Refresh from current records"
     ],
     "captureSelector": ".plan-workspace"
+  },
+  {
+    "feature": "studio",
+    "id": "load",
+    "url": "/studio",
+    "expect": [
+      "Model studio",
+      "Numerator and denominator"
+    ],
+    "captureSelector": ".studio-step:nth-of-type(1)"
+  },
+  {
+    "feature": "studio",
+    "id": "descriptions",
+    "url": "/studio",
+    "actions": [
+      {
+        "click": {
+          "selector": ".studio-descriptions > summary",
+          "unique": true
+        }
+      }
+    ],
+    "expect": [
+      "Model name",
+      "Event A means"
+    ],
+    "captureSelector": ".studio-step:nth-of-type(1)"
+  },
+  {
+    "feature": "studio",
+    "id": "conditional",
+    "url": "/studio",
+    "actions": [
+      {
+        "click": {
+          "role": "button",
+          "name": "Condition on B",
+          "unique": true
+        }
+      }
+    ],
+    "expect": [
+      "P(A | B) = 1/2 = 1/2"
+    ],
+    "captureSelector": ".studio-step:nth-of-type(2)"
+  },
+  {
+    "feature": "studio",
+    "id": "comparison",
+    "url": "/studio",
+    "actions": [
+      {
+        "click": {
+          "role": "button",
+          "name": "Pin this model",
+          "unique": true
+        }
+      },
+      {
+        "type": {
+          "role": "textbox",
+          "name": "Weight for outcome 1",
+          "text": "3",
+          "unique": true
+        }
+      },
+      {
+        "click": {
+          "role": "button",
+          "name": "Condition on B",
+          "unique": true
+        }
+      },
+      {
+        "type": {
+          "role": "textbox",
+          "name": "What changed, and why?",
+          "text": "The overlap gained weight, so the conditional chance changed.",
+          "unique": true
+        }
+      }
+    ],
+    "expect": [
+      "Pinned and current models",
+      "dependent"
+    ],
+    "captureSelector": ".studio-step:nth-of-type(3)"
+  },
+  {
+    "feature": "studio",
+    "id": "invalid-input",
+    "url": "/studio",
+    "actions": [
+      {
+        "click": {
+          "role": "button",
+          "name": "Pin this model",
+          "unique": true
+        }
+      },
+      {
+        "type": {
+          "role": "textbox",
+          "name": "Weight for outcome 1",
+          "text": "",
+          "unique": true
+        }
+      }
+    ],
+    "expect": [
+      "Current results unavailable.",
+      "Unavailable"
+    ],
+    "captureSelector": ".studio-shell"
+  },
+  {
+    "feature": "studio",
+    "id": "zero-total",
+    "url": "/studio",
+    "actions": [
+      {
+        "type": {
+          "role": "textbox",
+          "name": "Weight for outcome 1",
+          "text": "0",
+          "unique": true
+        }
+      },
+      {
+        "type": {
+          "role": "textbox",
+          "name": "Weight for outcome 2",
+          "text": "0",
+          "unique": true
+        }
+      },
+      {
+        "type": {
+          "role": "textbox",
+          "name": "Weight for outcome 3",
+          "text": "0",
+          "unique": true
+        }
+      },
+      {
+        "type": {
+          "role": "textbox",
+          "name": "Weight for outcome 4",
+          "text": "0",
+          "unique": true
+        }
+      }
+    ],
+    "expect": [
+      "Total weight is 0."
+    ],
+    "captureSelector": ".studio-step:nth-of-type(1)"
+  },
+  {
+    "feature": "studio",
+    "id": "zero-evidence",
+    "url": "/studio",
+    "actions": [
+      {
+        "click": {
+          "role": "button",
+          "name": "Pin this model",
+          "unique": true
+        }
+      },
+      {
+        "click": {
+          "role": "button",
+          "name": "Zero-weight evidence",
+          "unique": true
+        }
+      },
+      {
+        "click": {
+          "role": "button",
+          "name": "Condition on B",
+          "unique": true
+        }
+      }
+    ],
+    "expect": [
+      "P(A | B) is undefined.",
+      "zero weight",
+      "independent"
+    ],
+    "captureSelector": ".studio-shell"
   }
 ]

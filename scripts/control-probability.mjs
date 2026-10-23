@@ -493,6 +493,7 @@ async function sweep(browserApp, url, failures, results) {
     })),
     { route: '/practice', lessons: all },
     { route: '/reference', lessons: [] },
+    { route: '/studio', lessons: [] },
   ];
   const widths = {
     mobile: viewports.mobile,
@@ -552,6 +553,52 @@ async function sweep(browserApp, url, failures, results) {
             )
               throw new Error('reference is missing lesson results');
             await openDetails(page);
+          }
+          if (route === '/studio') {
+            record.studio = [];
+            const inspect = async (state) => {
+              record.studio.push(state);
+              record.failures.push(
+                ...(await renderingProblems(page)).map(
+                  (problem) => `${state}: ${problem}`,
+                ),
+              );
+            };
+            const button = (name) =>
+              page.getByRole('button', { name, exact: true });
+            const weight = (index) =>
+              page.getByRole('textbox', {
+                name: `Weight for outcome ${index}`,
+                exact: true,
+              });
+            await inspect('balanced');
+            await page.locator('.studio-descriptions > summary').click();
+            await inspect('descriptions');
+            await button('Pin this model').click();
+            await weight(1).fill('3');
+            await button('Condition on B').click();
+            await inspect('conditioned-comparison');
+            await weight(1).fill('');
+            await inspect('invalid-with-pin');
+            for (let index = 1; index <= 4; index++)
+              await weight(index).fill('0');
+            await inspect('zero-total');
+            await button('Zero-weight evidence').click();
+            await inspect('zero-evidence-with-pin');
+            await button('Clear comparison').click();
+            await inspect('comparison-cleared');
+            await button('Start over').click();
+            for (let count = 4; count < 12; count++)
+              await button('Add an outcome').click();
+            if ((await page.locator('.studio-outcome').count()) !== 12)
+              throw new Error('maximum Studio outcomes are unavailable');
+            await inspect('twelve-outcomes');
+            while ((await page.locator('.studio-outcome').count()) > 1)
+              await page
+                .getByRole('button', { name: /^Remove outcome / })
+                .last()
+                .click();
+            await inspect('one-outcome');
           }
           record.failures.push(...(await renderingProblems(page)));
           if (route === '/reference') {
@@ -804,7 +851,7 @@ async function smoke() {
   const expectedPages = complete
     ? (JSON.parse(readFileSync(join(root, 'src/content/order.json'), 'utf8'))
         .length +
-        2) *
+        3) *
       4
     : 0;
   const coverageComplete =

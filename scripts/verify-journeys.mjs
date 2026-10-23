@@ -26,7 +26,7 @@ import { workspaceIdentity } from './probability.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const argv = process.argv.slice(2);
 const options = {};
-const journeys = { study, guided, navigation, labs, accounts };
+const journeys = { study, guided, navigation, labs, accounts, studio };
 for (let i = 0; i < argv.length; i += 2) {
   const name = argv[i]?.slice(2);
   const value = argv[i + 1];
@@ -38,7 +38,7 @@ for (let i = 0; i < argv.length; i += 2) {
     value.startsWith('--')
   )
     throw new Error(
-      'Use verify-journeys.mjs [--only study|guided|navigation|labs|accounts] [--viewport desktop|mobile] [--artifacts NEW_DIR].',
+      'Use verify-journeys.mjs [--only study|guided|navigation|labs|accounts|studio] [--viewport desktop|mobile] [--artifacts NEW_DIR].',
     );
   options[name] = value;
 }
@@ -946,6 +946,368 @@ async function labs(page, url, record, capture) {
       await button(page, 'New run').click();
       assert.notEqual(await result.innerText(), after);
     }
+  }
+}
+
+async function studio(page, url, record, capture, _context, expectedHttp) {
+  const weight = (index) =>
+    page.getByRole('textbox', {
+      name: `Weight for outcome ${index}`,
+      exact: true,
+    });
+  const name = (index) =>
+    page.getByRole('textbox', {
+      name: `Name for outcome ${index}`,
+      exact: true,
+    });
+  const reflection = page.getByRole('textbox', {
+    name: 'What changed, and why?',
+    exact: true,
+  });
+  const calculation = page.locator('.studio-calculation');
+  const comparison = page.locator('.studio-comparison');
+  const contributions = () =>
+    page.locator('.studio-contribution').allTextContents();
+  const storage = () =>
+    page.evaluate(() => ({
+      local: Object.entries(localStorage),
+      session: Object.entries(sessionStorage),
+    }));
+  const writes = [];
+  page.on('request', (request) => {
+    if (
+      new URL(request.url()).pathname.startsWith('/api/') &&
+      request.method() !== 'GET'
+    )
+      writes.push(`${request.method()} ${request.url()}`);
+  });
+  let releaseInitial;
+  const initial = new Promise((resolve) => {
+    releaseInitial = resolve;
+  });
+  expectedHttp.push(503);
+  await page.route('**/api/account', async (route) => {
+    await initial;
+    await route.fulfill({
+      status: 503,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: 'account-unavailable' }),
+    });
+  });
+  try {
+    await page.goto(`${url}/studio`, { waitUntil: 'domcontentloaded' });
+    await page.locator('.studio-outcome').first().waitFor();
+    await page
+      .locator('.account-panel[data-account-state="loading"]')
+      .waitFor({ state: 'attached' });
+    const first = await weight(1).boundingBox();
+    assert.ok(
+      first && first.y + first.height < page.viewportSize().height,
+      'an editable outcome is visible in the initial viewport',
+    );
+    const storageBefore = await storage();
+    await capture(
+      page,
+      'initial-discovery-pending',
+      '.studio-step:nth-of-type(1)',
+    );
+    await button(page, 'Pin this model').click();
+    await weight(1).fill('3');
+    await reflection.fill(
+      'More overlap changes both the numerator and denominator.',
+    );
+    await button(page, 'Condition on B').click();
+    assert.match(await calculation.innerText(), /P\(A \| B\) = 3\/4 = 3\/4/);
+    assert.deepEqual(await contributions(), [
+      'Numerator and denominator',
+      'Excluded',
+      'Denominator only',
+      'Excluded',
+    ]);
+    const assertKept = async () => {
+      assert.equal(await weight(1).inputValue(), '3');
+      assert.equal(
+        await reflection.inputValue(),
+        'More overlap changes both the numerator and denominator.',
+      );
+      assert.match(await comparison.innerText(), /Pinned and current models/);
+      assert.deepEqual(
+        await comparison
+          .locator('tbody tr')
+          .first()
+          .locator('td')
+          .allTextContents(),
+        ['1/2', '2/3'],
+      );
+      await pressed(button(page, 'Condition on B'), true);
+    };
+    await assertKept();
+    releaseInitial();
+    await page
+      .locator('.account-panel[data-account-state="error"]')
+      .waitFor({ state: 'attached' });
+    await assertKept();
+    await capture(
+      page,
+      'failed-discovery-retains-model',
+      '.studio-step:nth-of-type(3)',
+    );
+    await page.unroute('**/api/account');
+    let releaseRetry;
+    const retry = new Promise((resolve) => {
+      releaseRetry = resolve;
+    });
+    await page.route('**/api/account', async (route) => {
+      await retry;
+      await route.continue();
+    });
+    try {
+      await panel(page);
+      await button(page, 'Retry account').click();
+      await page
+        .locator('.account-panel[data-account-state="loading"]')
+        .waitFor({ state: 'attached' });
+      await assertKept();
+      await capture(
+        page,
+        'delayed-retry-retains-model',
+        '.studio-step:nth-of-type(3)',
+      );
+    } finally {
+      releaseRetry();
+    }
+    await guest(page);
+    await assertKept();
+    await page.unroute('**/api/account');
+    assert.deepEqual(
+      await storage(),
+      storageBefore,
+      'Studio discovery and edits write no browser storage',
+    );
+    if (await page.locator('.account-menu').evaluate((node) => node.open))
+      await page.locator('.account-menu > summary').click();
+    await button(page, 'Reference').click();
+    await page.goBack();
+    await page.locator('.studio-heading h1').waitFor();
+    assert.equal(new URL(page.url()).pathname, '/studio');
+    await assertKept();
+    assert.equal(
+      await page
+        .locator('h1')
+        .evaluate((node) => document.activeElement === node),
+      true,
+    );
+    await page.goForward();
+    await page.locator('.overview-heading').waitFor();
+    await button(page, 'Studio').click();
+    await assertKept();
+    await page
+      .getByRole('button', { name: 'conditional probability', exact: true })
+      .click();
+    assert.match(new URL(page.url()).pathname, /^\/lessons\/k01-/);
+    await button(page, 'Studio').click();
+    await assertKept();
+    const storageBeforeEdits = await storage();
+    await name(1).focus();
+    await page.keyboard.press('Tab');
+    assert.equal(
+      await weight(1).evaluate((node) => document.activeElement === node),
+      true,
+    );
+    await page.keyboard.press('ControlOrMeta+A');
+    await page.keyboard.type('5');
+    assert.match(await calculation.innerText(), /5\/6/);
+    await weight(1).fill('3');
+    await page.locator('.studio-descriptions > summary').click();
+    await page
+      .getByRole('textbox', { name: 'Model name', exact: true })
+      .fill('My revised pair');
+    await page
+      .getByRole('textbox', { name: 'Event A means', exact: true })
+      .fill('The revised A');
+    assert.match(await comparison.innerText(), /First symbol is H/);
+    assert.match(await comparison.innerText(), /The revised A/);
+    await capture(
+      page,
+      'descriptions-and-memberships',
+      '.studio-step:nth-of-type(1)',
+    );
+    await page
+      .getByRole('checkbox', { name: 'Outcome 1 belongs to A', exact: true })
+      .uncheck();
+    assert.match(await calculation.innerText(), /0\/4 = 0/);
+    await page
+      .getByRole('checkbox', { name: 'Outcome 1 belongs to A', exact: true })
+      .check();
+    for (const raw of ['', '-1', '1.5', '1000']) {
+      await weight(1).fill(raw);
+      assert.equal(await weight(1).getAttribute('aria-invalid'), 'true');
+      assert.equal(await page.locator('.studio-values').count(), 0);
+      assert.equal(
+        await button(page, 'Replace pinned model').isDisabled(),
+        true,
+      );
+      assert.deepEqual(
+        await comparison
+          .locator('tbody tr')
+          .first()
+          .locator('td')
+          .allTextContents(),
+        ['1/2', 'Unavailable'],
+      );
+      assert.doesNotMatch(await calculation.innerText(), /3\/4/);
+    }
+    await weight(1).fill('');
+    const downloadEvent = page.waitForEvent('download');
+    await button(page, 'Download model note').click();
+    const download = await downloadEvent;
+    const notePath = join(
+      out,
+      'studio',
+      `invalid-model-note.${record.viewport}.txt`,
+    );
+    await download.saveAs(notePath);
+    const note = readFileSync(notePath, 'utf8');
+    const rawSection = note.split('Pinned comparison')[0];
+    assert.match(rawSection, /raw weight ""/);
+    assert.match(rawSection, /Results unavailable/);
+    assert.doesNotMatch(rawSection, /P\(A\) =/);
+    assert.match(note, /Pinned comparison/);
+    assert.match(note, /P\(A\) = 2\/4 = 1\/2/);
+    assert.match(
+      note,
+      /More overlap changes both the numerator and denominator/,
+    );
+    record.download = notePath;
+    await capture(page, 'invalid-draft-and-valid-pin', '.studio-shell');
+    await weight(1).fill('3');
+    await name(1).fill('HT');
+    assert.equal(await name(1).getAttribute('aria-invalid'), 'true');
+    assert.equal(await name(2).getAttribute('aria-invalid'), 'true');
+    await name(1).fill('HH');
+    for (let index = 1; index <= 4; index++) await weight(index).fill('0');
+    assert.match(
+      await page.locator('.studio-invalid').innerText(),
+      /Total weight is 0/,
+    );
+    await capture(page, 'zero-total', '.studio-step:nth-of-type(1)');
+    await button(page, 'Zero-weight evidence').click();
+    assert.match(await calculation.innerText(), /P\(A \| B\) is undefined/);
+    assert.match(
+      await page.locator('.studio-independence').innerText(),
+      /A and B are independent/,
+    );
+    assert.equal(
+      await page
+        .getByRole('checkbox', { name: 'Outcome 2 belongs to B', exact: true })
+        .isChecked(),
+      true,
+    );
+    assert.deepEqual(await contributions(), [
+      'Excluded',
+      'Numerator and denominator · zero weight',
+      'Excluded',
+      'Denominator only · zero weight',
+    ]);
+    assert.equal(
+      await reflection.inputValue(),
+      'More overlap changes both the numerator and denominator.',
+    );
+    await capture(page, 'zero-evidence-with-comparison', '.studio-shell');
+    await button(page, 'Clear comparison').click();
+    assert.equal(await comparison.count(), 0);
+    assert.equal(await weight(3).inputValue(), '3');
+    assert.equal(
+      await reflection.inputValue(),
+      'More overlap changes both the numerator and denominator.',
+    );
+    assert.equal(
+      await button(page, 'Pin this model').evaluate(
+        (node) => document.activeElement === node,
+      ),
+      true,
+    );
+    await capture(page, 'comparison-cleared', '.studio-step:nth-of-type(3)');
+    await button(page, 'Start over').click();
+    assert.equal(await reflection.inputValue(), '');
+    assert.equal(await weight(1).inputValue(), '1');
+    assert.equal(
+      await name(1).evaluate((node) => document.activeElement === node),
+      true,
+    );
+    for (let count = 4; count < 12; count++)
+      await button(page, 'Add an outcome').click();
+    assert.equal(await page.locator('.studio-outcome').count(), 12);
+    assert.equal(await button(page, 'Add an outcome').isDisabled(), true);
+    assert.equal(
+      await name(12).evaluate((node) => document.activeElement === node),
+      true,
+    );
+    await capture(page, 'maximum-outcomes', '.studio-step:nth-of-type(1)');
+    while ((await page.locator('.studio-outcome').count()) > 1)
+      await page
+        .getByRole('button', { name: /^Remove outcome / })
+        .last()
+        .click();
+    assert.equal(await button(page, 'Remove outcome 1').isDisabled(), true);
+    assert.equal(
+      await name(1).evaluate((node) => document.activeElement === node),
+      true,
+    );
+    await capture(page, 'single-outcome', '.studio-step:nth-of-type(1)');
+    assert.deepEqual(writes, [], 'Studio sends no API writes');
+    assert.deepEqual(
+      await storage(),
+      storageBeforeEdits,
+      'Studio writes no browser storage',
+    );
+    await page.reload({ waitUntil: 'networkidle' });
+    await guest(page);
+    assert.equal(await page.locator('.studio-outcome').count(), 4);
+    assert.equal(await reflection.inputValue(), '');
+    assert.equal(await comparison.count(), 0);
+    assert.equal(await weight(1).inputValue(), '1');
+    await pressed(button(page, 'Whole model'), true);
+    if (record.viewport === 'mobile') {
+      await page.setViewportSize({ width: 320, height: 844 });
+      await page.locator('h1').scrollIntoViewIfNeeded();
+      const narrowFirst = await weight(1).boundingBox();
+      assert.ok(
+        narrowFirst && narrowFirst.y + narrowFirst.height < 844,
+        'an editable outcome is visible at 320px',
+      );
+      await capture(page, 'reflow-320-initial', '.studio-step:nth-of-type(1)');
+      await button(page, 'Pin this model').click();
+      await weight(1).fill('3');
+      await button(page, 'Condition on B').click();
+      await capture(
+        page,
+        'reflow-320-comparison',
+        '.studio-step:nth-of-type(3)',
+      );
+      await button(page, 'Zero-weight evidence').click();
+      await capture(
+        page,
+        'reflow-320-zero-evidence',
+        '.studio-step:nth-of-type(2)',
+      );
+      await page.setViewportSize(viewports.mobile);
+      record.reflow320 = true;
+    }
+    record.proved = [
+      'exact native edits and membership',
+      'zero evidence and invalid suppression',
+      'raw invalid download with pin and reflection',
+      'pin isolation, presets, clear and reset',
+      'one and twelve outcome bounds and keyboard focus',
+      'route/history/lesson return retains the visit',
+      'delayed and failed discovery plus real guest retry retain the visit',
+      'reload resets the visit',
+      'no API or browser-storage writes',
+    ];
+  } finally {
+    releaseInitial();
+    await page.unroute('**/api/account');
   }
 }
 

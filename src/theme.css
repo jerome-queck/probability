@@ -1666,7 +1666,7 @@ button:disabled {
   margin: 0;
 }
 .studio-shell .studio-condition button[aria-pressed="true"],
-.studio-shell .studio-download {
+.studio-shell button.studio-download {
   background: var(--accent);
   color: white;
   border-color: var(--accent);
@@ -1727,6 +1727,9 @@ button:disabled {
   min-height: 1.6em;
 }
 @media (max-width: 600px) {
+  .account-menu > summary {
+    font-size: 0.75rem;
+  }
   .primary-nav {
     gap: 0;
   }
