@@ -6,6 +6,7 @@
 | `src/App.tsx`, `src/Sidebar.tsx` | Application shell, navigation and keyboard focus |
 | `src/LessonPage.tsx`, `src/StudyViews.tsx`, `src/AtlasViews.tsx` | Lessons, bounded practice, checkpoints, reference and study overview |
 | `src/Labs.tsx`, `src/math/` | Experiments and probability calculations |
+| `src/modelStudio.ts`, `src/ModelStudioView.tsx` | Exact finite models, native editing, visit-only comparison and model notes |
 | `src/content/` | Ordered lessons, checkpoint problems, distribution reference, search and named-result registry |
 | `src/progress.ts`, `src/AccountPanel.tsx` | Guest storage, confirmed account state, pending intents and recovery UI |
 | `server/progress.ts`, `db/`, `drizzle/` | Owner-scoped D1 writes, revisions and generated migrations |

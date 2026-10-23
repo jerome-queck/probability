@@ -9,6 +9,7 @@ Start with a fresh build and owned data directory. Public preview drives anonymo
 | Interactive labs | [labs.md](labs.md) |
 | Practice view | [practice.md](practice.md) |
 | Reference view | [reference.md](reference.md) |
+| Finite model studio | [studio.md](studio.md) |
 | Routing and navigation | [routing.md](routing.md) |
 | Study progress and self-check | [progress.md](progress.md) |
 | Account progress | [accounts.md](accounts.md) |

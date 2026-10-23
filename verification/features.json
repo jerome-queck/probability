@@ -64,6 +64,15 @@
       ]
     },
     {
+      "id": "studio",
+      "purpose": "Construct finite models, condition on evidence and compare exact probabilities without saving account state.",
+      "owners": [
+        "src/ModelStudioView.tsx",
+        "src/modelStudio.ts",
+        "src/modelStudio.test.ts"
+      ]
+    },
+    {
       "id": "routing",
       "purpose": "Use deep links, history, keyboard navigation and the mobile drawer.",
       "owners": [

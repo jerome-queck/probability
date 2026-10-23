@@ -1,5 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { lessons } from './content/lessons';
+import { ModelStudio } from './ModelStudioView';
+import type { StudioCommand, StudioVisit } from './modelStudio';
 import { nextUnstudied, progressStore } from './progress';
 import type { View } from './routes';
 import { StudyPlanEntry, StudyPlanView } from './StudyPlanView';
@@ -14,11 +16,15 @@ export function AtlasViews({
   open,
   visit,
   send,
+  studio,
+  sendStudio,
 }: {
   view: View;
   open: (id: string) => void;
   visit: StudyVisit;
   send: (event: StudyEvent) => void;
+  studio: StudioVisit;
+  sendStudio: (command: StudioCommand) => void;
 }) {
   const progress = useSyncExternalStore(
     progressStore.subscribe,
@@ -35,6 +41,8 @@ export function AtlasViews({
   if (view === 'practice')
     return <StudyPlanView visit={visit} send={send} openLesson={open} />;
   if (view === 'reference') return <CourseReference open={open} />;
+  if (view === 'studio')
+    return <ModelStudio visit={studio} send={sendStudio} openLesson={open} />;
   return (
     <div className="overview-shell">
       <section className="atlas-hero">

@@ -9,6 +9,12 @@ import { AccountPanel } from './AccountPanel';
 import { AtlasViews } from './AtlasViews';
 import { lessons } from './content/lessons';
 import { LessonPage } from './LessonPage';
+import {
+  newStudioVisit,
+  type StudioCommand,
+  type StudioVisit,
+  updateStudio,
+} from './modelStudio';
 import { progressStore } from './progress';
 import { views } from './routes';
 import { Sidebar } from './Sidebar';
@@ -18,16 +24,27 @@ import { createStudyPlanReducer } from './studyPlan';
 const studyPlanReducer = createStudyPlanReducer(lessons);
 
 export function App() {
+  const [studio, sendStudio] = useReducer(
+    updateStudio,
+    undefined,
+    newStudioVisit,
+  );
   const account = useSyncExternalStore(
     progressStore.subscribe,
     progressStore.getAccountSnapshot,
   );
   const owner =
     account.kind === 'account' ? `account:${account.owner}` : account.kind;
-  return <Reader key={owner} />;
+  return <Reader key={owner} studio={studio} sendStudio={sendStudio} />;
 }
 
-function Reader() {
+function Reader({
+  studio,
+  sendStudio,
+}: {
+  studio: StudioVisit;
+  sendStudio: (command: StudioCommand) => void;
+}) {
   const [visit, send] = useReducer(studyPlanReducer, { kind: 'choose' });
   const route = useSyncExternalStore(
     studyStore.subscribe,
@@ -169,6 +186,8 @@ function Reader() {
             open={select}
             visit={visit}
             send={send}
+            studio={studio}
+            sendStudio={sendStudio}
           />
         ) : null}
       </main>

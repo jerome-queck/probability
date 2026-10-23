@@ -1,0 +1,9 @@
+# Visit-only finite model studio
+
+Studio lets a learner construct and compare a finite probability model. One list of 1 to 12 named outcomes owns raw integer-weight text and membership in A and B. Valid weights range from 0 to 999, with positive total weight. Exact integer sums and reduced fractions determine every answer. A zero-weight conditioning event leaves the conditional undefined. Independence uses the original model's exact product criterion.
+
+`src/modelStudio.ts` owns the visit through three operations that create, update and read it. The native form in `src/ModelStudioView.tsx` renders that reading. `App` owns the visit above the account-keyed reader. Internal navigation and in-page identity discovery retain it. Reload and Start over clear it. Leaving the document normally discards its memory, but browser Back may restore the page and its visit from the [back/forward cache](https://web.dev/articles/bfcache). Do not promise that departure or tab closure erases it. Top-level sign-in or sign-out may leave the page. Studio writes no progress, storage, API or URL state.
+
+A pin copies a validated model and event descriptions. Presets keep the pin and reflection. Clear comparison removes only the pin. Start over resets the whole visit. A plain-text download preserves the raw current draft, including invalid input and validation issues, plus any pin and reflection. Invalid drafts expose no stale results.
+
+The implementation follows the selected atom-list design, with contribution labels and explicit comparison clearing from the alternate design. Model and event descriptions sit in a disclosure after the outcomes so the first editable outcome remains visible on a narrow screen. The form filename includes `View` because case-insensitive filesystem resolution otherwise selects `modelStudio.ts` for a `ModelStudio` import before checking the TSX extension. There is no import, automatic persistence, extra router or dependency.

@@ -1,6 +1,6 @@
 import { lessons } from './content/lessons';
 
-export const views = ['learn', 'practice', 'reference'] as const;
+export const views = ['learn', 'practice', 'reference', 'studio'] as const;
 export type View = (typeof views)[number];
 export type Route =
   | { view: View; lessonId: null }
