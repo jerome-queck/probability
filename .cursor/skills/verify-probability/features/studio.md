@@ -32,4 +32,4 @@ Inspect the untouched original PNGs for every state at both widths. Journey capt
 
 ## Gotchas
 
-Studio state belongs to the unkeyed App. Internal navigation and in-page discovery/retry retain it. Reload, tab close, page departure and Start over clear it. Top-level sign-in or sign-out can depart the page. Do not claim retention across authentication navigation or confuse this visit with account-owned lesson progress. Descriptions do not define membership. Pinned and current event descriptions must remain labelled separately.
+Studio state belongs to the unkeyed App. Internal navigation and in-page discovery/retry retain it. Reload and Start over clear it. Page departure normally discards it, but browser Back may restore the document from memory. Top-level sign-in or sign-out can depart the page. Do not claim retention across authentication navigation or confuse this visit with account-owned lesson progress. Descriptions do not define membership. Pinned and current event descriptions must remain labelled separately.

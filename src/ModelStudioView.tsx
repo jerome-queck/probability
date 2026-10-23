@@ -52,8 +52,9 @@ export function ModelStudio({
           happened.
         </p>
         <p className="studio-lifetime">
-          This visit only. Internal navigation keeps your work. Reload, page
-          departure or Start over clears it. Download a note to keep a copy.
+          This visit only. Internal navigation keeps your work. Reload or Start
+          over clears it. Browser Back may restore a previous visit. Download a
+          note to keep a copy.
         </p>
       </header>
       <form onSubmit={(event) => event.preventDefault()}>
