@@ -15,7 +15,7 @@ Lessons with a `lab` field render an Experiment section (`#lab`, `data-lab=<id>`
 
 ## How to get to it (user POV)
 
-Open a lesson that has an Experiment link in its section bar.
+Open a lesson that includes an Experiment section. At desktop widths above 1100px, its context rail links directly to Experiment. At narrower widths, scroll to that section.
 
 ## Driving it with control-probability
 
@@ -26,7 +26,7 @@ For the law-of-large-numbers lab, click “New run” and inspect the changed re
 
 ## Visual states
 
-One state per lab once a lesson uses it: `<lab-id>-default` and `<lab-id>-moved` (desktop, mobile), compared with `baselines/labs/`.
+Two states per attached lab: `<lab-id>-default` and `<lab-id>-moved` (desktop, mobile), compared with `baselines/labs/`.
 
 - `birthday-default` (desktop, mobile) — C04 experiment as it loads.
 - `birthday-moved` (desktop, mobile) — `people` set to 40.
@@ -48,4 +48,4 @@ One state per lab once a lesson uses it: `<lab-id>-default` and `<lab-id>-moved`
 
 ## Gotchas
 
-Chart labs include axis labels, a legend and an accessible values table; Bayes explains expected positive counts in prose. Journeys assert changed numerical results, chart/table labels and deterministic table values. Captures select `#lab`, preserving controls and output rather than the lesson header. A lab exists in code before any lesson uses it; it can only be driven once a lesson references it. `check:drift` requires every lab ID in `src/content/types.ts` to have a row here.
+Every lab asks for a prediction before changing controls and an explanation afterward. An experiment illustrates a model; it does not prove its theorem. Chart labs include axis labels, a legend and an accessible values table; Bayes explains expected positive counts in prose. Journeys assert changed numerical results, chart/table labels and deterministic table values. Captures select `#lab`, preserving controls and output rather than the lesson header. A lab exists in code before any lesson uses it; it can only be driven once a lesson references it. `check:drift` requires every lab ID in `src/content/types.ts` to appear in backticks here.
