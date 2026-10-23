@@ -65,8 +65,9 @@
     },
     {
       "id": "studio",
-      "purpose": "Construct finite models, condition on evidence and compare exact probabilities without saving account state.",
+      "purpose": "Construct finite models, preserve native edits through account discovery and compare exact probabilities without saving account state.",
       "owners": [
+        "src/App.tsx",
         "src/ModelStudioView.tsx",
         "src/modelStudio.ts",
         "src/modelStudio.test.ts"

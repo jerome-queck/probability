@@ -36,3 +36,5 @@ Navigation journeys exercise current-lesson drawer selection by pointer and Ente
 Guided paths survive opening Next reading and Back. Recall keeps its roster/cursor through full-lesson Back/Forward and Learn → Continue set. Leaving Practice clears mounted scratch/reveals. Reload starts choose while durable ratings remain. Guided journeys capture these states independently from the URL-only navigation proof.
 
 Navigation journeys inspect visible topbar controls from 320 to 1280px, including both sides of the 600px and 860px breakpoints. They assert page fit, control bounds and nonoverlap, with captures at 601px and 861px. The duplicate Probability home label hides below 1101px; Learn remains available.
+
+The stable Reader retains Sidebar query, search-result chapter closures, focused search selection and an open mobile drawer through account discovery. The drawer keeps main content inert until its normal close or selection action. Account discovery does not replay route focus or scroll effects. Progress still closes at identity boundaries. Navigation journeys hold a real guest response to check these contracts at desktop and mobile widths.
