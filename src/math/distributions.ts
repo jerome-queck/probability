@@ -183,7 +183,7 @@ export function gammaPdf(alpha: number, lambda: number, x: number): number {
     if (alpha < 1) return Infinity;
     return alpha === 1 ? lambda : 0;
   }
-  if (alpha === 1) return lambda * Math.exp(-lambda * x);
+  if (alpha === 1) return Math.exp(Math.log(lambda) - lambda * x);
   return Math.exp(
     Math.log(lambda) +
       (alpha - 1) * (Math.log(lambda) + Math.log(x)) -
