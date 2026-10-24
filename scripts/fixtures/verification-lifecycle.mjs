@@ -3,8 +3,9 @@ import { EventEmitter } from 'node:events';
 import fs from 'node:fs';
 import { syncBuiltinESMExports } from 'node:module';
 import net from 'node:net';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
+import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
 
 const directory = process.env.LIFECYCLE_FIXTURE_DIR;
@@ -46,6 +47,11 @@ if (
 ) {
   process.removeAllListeners('SIGINT');
   process.removeAllListeners('SIGTERM');
+  if (scenario === 'stop-refuse')
+    fs.appendFileSync(
+      join(directory, 'servers.jsonl'),
+      `${JSON.stringify({ pid: process.pid, args: process.argv })}\n`,
+    );
   mark('server', { args: process.argv });
   console.log('owned fixture server');
   if (scenario === 'resist-term') process.on('SIGTERM', () => {});
@@ -53,6 +59,35 @@ if (
   await new Promise(() => {});
 }
 if (directory && !scenario.startsWith('real-')) {
+  const built = fileURLToPath(
+    new URL('../../dist/server/wrangler.json', import.meta.url),
+  );
+  const exists = fs.existsSync;
+  const read = fs.readFileSync;
+  fs.existsSync = (path) => String(path) === built || exists(path);
+  fs.readFileSync = (path, ...options) => {
+    if (String(path) === built)
+      return JSON.stringify({
+        name: 'lifecycle-fixture',
+        compatibility_date: '2026-10-24',
+        d1_databases:
+          scenario === 'migration-gate' ? [{ binding: 'FIXTURE_DB' }] : [],
+      });
+    if (
+      scenario === 'stop-refuse' &&
+      process.argv[2] === 'stop' &&
+      String(path).endsWith('/state.json') &&
+      !exists(join(directory, 'refused.json'))
+    ) {
+      const state = JSON.parse(read(path, 'utf8'));
+      mark('refused', { state, dataDir: dirname(String(path)) });
+      return JSON.stringify({
+        ...state,
+        token: '00000000-0000-0000-0000-000000000000',
+      });
+    }
+    return read(path, ...options);
+  };
   const spawn = childProcess.spawn;
   childProcess.spawn = (file, args, options) => {
     const child = spawn(file, args, options);
@@ -219,6 +254,26 @@ if (directory && scenario.startsWith('real-')) {
     };
     return browser;
   };
+}
+if (directory && scenario === 'stop-refuse') {
+  const page = () => ({
+    on() {},
+    goto: async () => {
+      throw new Error('injected journey action failure');
+    },
+    locator() {
+      throw new Error('inert capture unavailable');
+    },
+    close: async () => {},
+  });
+  chromium.launch = async () => ({
+    newContext: async () => ({
+      newPage: async () => page(),
+      close: async () => {},
+    }),
+    newPage: async () => page(),
+    close: async () => {},
+  });
 }
 syncBuiltinESMExports();
 

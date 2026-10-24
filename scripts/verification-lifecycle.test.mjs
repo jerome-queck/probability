@@ -89,6 +89,83 @@ test('actual journey retains an earlier failure when browser close rejects', {
   }
 });
 
+test('actual journeys retain a refused viewport owner without acquiring the next viewport', {
+  timeout: 30_000,
+}, async () => {
+  const directory = mkdtempSync(join(tmpdir(), 'probability-stop-refusal-'));
+  const out = join(directory, 'evidence');
+  const control = spawn(
+    process.execPath,
+    ['-e', 'setInterval(() => {}, 1000)'],
+    { stdio: 'ignore' },
+  );
+  const run = start(
+    ['scripts/verify-journeys.mjs', '--only', 'study', '--artifacts', out],
+    directory,
+    'stop-refuse',
+  );
+  let owners = [];
+  try {
+    const [status, rawSignal] = await run.closed;
+    const receipt = JSON.parse(readFileSync(join(out, 'result.json'), 'utf8'));
+    const refused = JSON.parse(
+      readFileSync(join(directory, 'refused.json'), 'utf8'),
+    );
+    owners = readFileSync(join(directory, 'servers.jsonl'), 'utf8')
+      .trim()
+      .split('\n')
+      .map((line) => JSON.parse(line));
+    assert.equal(status, 1, run.output());
+    assert.equal(rawSignal, null, run.output());
+    assert.equal(
+      owners.length,
+      1,
+      `a refused viewport must prevent another server acquisition\n${run.output()}`,
+    );
+    assert.equal(receipt.success, false);
+    assert.equal(receipt.full, false);
+    assert.deepEqual(
+      receipt.results.map((record) => record.viewport),
+      ['desktop'],
+    );
+    assert.equal(receipt.results[0].completed, false);
+    assert.match(
+      receipt.failures.join('\n'),
+      /injected journey action failure/,
+    );
+    assert.match(receipt.failures.join('\n'), /refusing to stop unowned/);
+    assert.deepEqual(receipt.retainedDataDirs, [refused.dataDir]);
+    assert.equal(
+      receipt.cleanup.find((entry) => entry.resource === 'server').status,
+      'refused',
+    );
+    assert.equal(existsSync(join(refused.dataDir, 'state.json')), true);
+    assert.match(
+      readFileSync(join(out, 'desktop.server.log'), 'utf8'),
+      /owned fixture server/,
+    );
+    assert.equal(alive(refused.state.pid), true, 'refused owner was signalled');
+    assert.equal(alive(control.pid), true, 'unrelated control process stopped');
+  } finally {
+    run.child.kill('SIGKILL');
+    if (existsSync(join(directory, 'servers.jsonl')))
+      owners = readFileSync(join(directory, 'servers.jsonl'), 'utf8')
+        .trim()
+        .split('\n')
+        .map((line) => JSON.parse(line));
+    for (const owner of owners) {
+      if (alive(owner.pid)) process.kill(-owner.pid, 'SIGKILL');
+      rmSync(resolve(owner.args.at(-1), '..'), {
+        recursive: true,
+        force: true,
+      });
+    }
+    control.kill('SIGTERM');
+    await Promise.all([run.closed, once(control, 'close')]);
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 for (const signal of ['SIGINT', 'SIGTERM']) {
   for (const publicCommand of [false, true]) {
     test(`${publicCommand ? 'public journey PID' : 'actual smoke'} ${signal} retains a failed receipt and stops its owned detached server`, {
