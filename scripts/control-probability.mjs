@@ -58,7 +58,9 @@ const executable =
   process.argv[1] &&
   import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
 const termination =
-  executable && ['launch', 'smoke'].includes(cmd) ? watchTermination() : null;
+  executable && ['launch', 'stop', 'smoke'].includes(cmd)
+    ? watchTermination()
+    : null;
 const valueOptions = new Set([
   'data-dir',
   'port',
@@ -162,7 +164,7 @@ async function launch() {
   signal?.throwIfAborted();
   mkdirSync(dataDir, { recursive: true });
   const existing = readState();
-  if (existing && alive(existing.pid))
+  if (existing && (alive(existing.pid) || groupAlive(existing.pid)))
     throw new Error(
       `already running (pid ${existing.pid}) for ${dataDir}; stop it first`,
     );
@@ -286,7 +288,7 @@ function owns(state) {
     const row = execFileSync(
       'ps',
       ['-p', String(state.pid), '-o', 'pgid=,command='],
-      { encoding: 'utf8', timeout: 500 },
+      { encoding: 'utf8', timeout: 500, detached: true },
     ).trim();
     const match = /^(\d+)\s+(.+)$/.exec(row);
     const expected = [
@@ -415,6 +417,7 @@ function groupAlive(pid) {
   const rows = execFileSync('ps', ['-axo', 'pgid=,stat='], {
     encoding: 'utf8',
     timeout: 500,
+    detached: true,
   });
   return rows.split('\n').some((row) => {
     const match = /^\s*(\d+)\s+(\S+)/.exec(row);
@@ -427,14 +430,24 @@ async function stop({ state = readState() } = {}) {
   if (!s) return console.log('nothing to stop');
   if (alive(s.pid)) {
     if (!owns(s)) throw new Error(`refusing to stop unowned pid ${s.pid}`);
-    process.kill(-s.pid, 'SIGTERM');
+    try {
+      process.kill(-s.pid, 'SIGTERM');
+    } catch (error) {
+      if (error.code !== 'ESRCH' || groupAlive(s.pid)) throw error;
+    }
   }
   const end = Math.min(
     termination?.cleanupDeadline() ?? Infinity,
     Date.now() + 7000,
   );
   while (groupAlive(s.pid) && Date.now() < end) {
-    if (Date.now() > end - 2000 && owns(s)) process.kill(-s.pid, 'SIGKILL');
+    if (Date.now() > end - 2000 && owns(s)) {
+      try {
+        process.kill(-s.pid, 'SIGKILL');
+      } catch (error) {
+        if (error.code !== 'ESRCH' || groupAlive(s.pid)) throw error;
+      }
+    }
     await new Promise((ok) => setTimeout(ok, 50));
   }
   if (groupAlive(s.pid))
@@ -1288,5 +1301,9 @@ if (
       console.error(`${cmd}: ${error.message}`);
       process.exitCode = termination?.interruption()?.exitCode ?? 1;
     })
-    .finally(() => termination?.dispose());
+    .finally(() => {
+      const interruption = termination?.interruption();
+      if (interruption) process.exitCode = interruption.exitCode;
+      termination?.dispose();
+    });
 }
