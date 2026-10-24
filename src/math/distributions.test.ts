@@ -113,6 +113,18 @@ test('gamma density stays finite near a large shape mode', () => {
   relativeClose(gammaPdf(150, 1, 149), 0.03266435131989559);
 });
 
+test('shape-one gamma density survives exponential underflow at rate 1e300', () => {
+  relativeClose(gammaPdf(1, 1e300, 7.5e-298), 1.901684963474956e-26);
+});
+
+test('shape-one gamma density survives exponential underflow at rate 1e100', () => {
+  relativeClose(gammaPdf(1, 1e100, 7.5e-98), 1.9016849634748705e-226);
+});
+
+test('shape-one gamma density avoids a rounded subnormal exponential factor', () => {
+  relativeClose(gammaPdf(1, 1e300, 7.4e-298), 4.188739880048034e-22);
+});
+
 test('binomial tail survives a subnormal powered factor', () => {
   relativeClose(binomialPmf(1000, 0.0006, 100), 2.430524582273285e-183);
 });
