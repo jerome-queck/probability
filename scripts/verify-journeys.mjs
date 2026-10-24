@@ -2658,11 +2658,7 @@ try {
         }
       }
     } finally {
-      try {
-        await stopViewport(activeViewport);
-      } catch (error) {
-        failures.push(`server cleanup: ${error.message}`);
-      }
+      await stopViewport(activeViewport);
     }
   }
 } catch (error) {
