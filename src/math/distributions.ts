@@ -10,11 +10,36 @@ function assertPositive(value: number, name: string) {
     throw new RangeError(`${name} must be a positive finite number.`);
 }
 
+function logChoose(n: number, k: number): number {
+  const r = Math.min(k, n - k);
+  let sum = 0;
+  let correction = 0;
+  for (let i = 1; i <= r; i += 1) {
+    const term = Math.log((n - r + i) / i) - correction;
+    const next = sum + term;
+    correction = next - sum - term;
+    sum = next;
+  }
+  return sum;
+}
+
 export function binomialPmf(n: number, p: number, k: number): number {
   assertNaturalNumber(n, 'n');
   assertProbability(p);
   if (!Number.isInteger(k) || k < 0 || k > n) return 0;
-  return Number(choose(n, k)) * p ** k * (1 - p) ** (n - k);
+  if (p === 0) return k === 0 ? 1 : 0;
+  if (p === 1) return k === n ? 1 : 0;
+  const success = p ** k;
+  const q = 1 - p;
+  const failure = q ** (n - k);
+  const minimumNormal = 2 ** -1022;
+  // Keep exact display ties only while factors and complementation retain precision.
+  if (1 - q === p && success >= minimumNormal && failure >= minimumNormal) {
+    const coefficient = Number(choose(n, k));
+    const result = coefficient * success * failure;
+    if (Number.isFinite(coefficient) && result >= minimumNormal) return result;
+  }
+  return Math.exp(logChoose(n, k) + k * Math.log(p) + (n - k) * Math.log1p(-p));
 }
 export const binomialSummary = (n: number, p: number): Summary => ({
   mean: n * p,
@@ -65,7 +90,11 @@ export function hypergeometricPmf(
     k > Math.min(n, m)
   )
     return 0;
-  return Number(choose(m, k) * choose(N - m, n - k)) / Number(choose(N, n));
+  const numerator = Number(choose(m, k) * choose(N - m, n - k));
+  const denominator = Number(choose(N, n));
+  if (Number.isFinite(numerator) && Number.isFinite(denominator))
+    return numerator / denominator;
+  return Math.exp(logChoose(m, k) + logChoose(N - m, n - k) - logChoose(N, n));
 }
 export function hypergeometricSummary(
   N: number,
@@ -113,27 +142,53 @@ export const exponentialSummary = (lambda: number): Summary => ({
   variance: 1 / lambda ** 2,
 });
 
-/** Gamma function via the Lanczos approximation (g = 7). */
-export function gammaFunction(z: number): number {
+function logGammaPositive(z: number): number {
   const c = [
     0.99999999999980993, 676.5203681218851, -1259.1392167224028,
     771.32342877765313, -176.61502916214059, 12.507343278686905,
     -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7,
   ];
-  if (z < 0.5) return Math.PI / (Math.sin(Math.PI * z) * gammaFunction(1 - z));
+  if (z < 0.5)
+    return (
+      Math.log(Math.PI) -
+      Math.log(Math.sin(Math.PI * z)) -
+      logGammaPositive(1 - z)
+    );
   const x = z - 1;
   let a = c[0];
   const t = x + 7.5;
   for (let i = 1; i < 9; i += 1) a += c[i] / (x + i);
-  return Math.sqrt(2 * Math.PI) * t ** (x + 0.5) * Math.exp(-t) * a;
+  return (
+    0.5 * Math.log(2 * Math.PI) + (x + 0.5) * Math.log(t) - t + Math.log(a)
+  );
+}
+
+/** Gamma function via the Lanczos approximation (g = 7). */
+export function gammaFunction(z: number): number {
+  if (z >= 0.5) return Math.exp(logGammaPositive(z));
+  const sine = Math.sin(Math.PI * z);
+  if (sine === 0) return 1 / sine;
+  return (
+    Math.sign(sine) *
+    Math.exp(
+      Math.log(Math.PI) - Math.log(Math.abs(sine)) - logGammaPositive(1 - z),
+    )
+  );
 }
 export function gammaPdf(alpha: number, lambda: number, x: number): number {
   assertPositive(alpha, 'alpha');
   assertPositive(lambda, 'lambda');
   if (x < 0) return 0;
-  return (
-    (lambda * Math.exp(-lambda * x) * (lambda * x) ** (alpha - 1)) /
-    gammaFunction(alpha)
+  if (x === 0) {
+    if (alpha < 1) return Infinity;
+    return alpha === 1 ? lambda : 0;
+  }
+  if (alpha === 1) return Math.exp(Math.log(lambda) - lambda * x);
+  return Math.exp(
+    Math.log(lambda) +
+      (alpha - 1) * (Math.log(lambda) + Math.log(x)) -
+      lambda * x -
+      logGammaPositive(alpha),
   );
 }
 export const gammaSummary = (alpha: number, lambda: number): Summary => ({
