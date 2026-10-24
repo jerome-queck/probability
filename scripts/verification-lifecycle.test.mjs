@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { once } from 'node:events';
 import {
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
@@ -22,6 +23,15 @@ const alive = (pid) => {
     return false;
   }
 };
+const groupMembers = (pid) =>
+  execFileSync('ps', ['-axo', 'pid=,pgid=,stat='], { encoding: 'utf8' })
+    .split('\n')
+    .flatMap((row) => {
+      const match = /^\s*(\d+)\s+(\d+)\s+(\S+)/.exec(row);
+      return Number(match?.[2]) === pid && !match[3].startsWith('Z')
+        ? [Number(match[1])]
+        : [];
+    });
 async function waitFor(check, label) {
   const deadline = Date.now() + 20_000;
   while (!check()) {
@@ -49,6 +59,292 @@ function start(args, directory, scenario) {
   const closed = once(child, 'close');
   const exited = once(child, 'exit');
   return { child, closed, exited, output: () => output };
+}
+
+for (const scenario of ['stop-esrch-term', 'stop-esrch-kill', 'stop-eperm']) {
+  test(`actual stop ${scenario} preserves the owned-state boundary`, {
+    timeout: 30_000,
+  }, async (t) => {
+    const directory = mkdtempSync(join(tmpdir(), 'probability-stop-race-'));
+    const dataDir = join(directory, 'instance');
+    const control = spawn(
+      process.execPath,
+      ['-e', 'setInterval(()=>{},1000)'],
+      {
+        stdio: 'ignore',
+      },
+    );
+    const launched = start(
+      ['scripts/control-probability.mjs', 'launch', '--data-dir', dataDir],
+      directory,
+      scenario,
+    );
+    let state;
+    let stopped;
+    try {
+      const [launchStatus] = await launched.closed;
+      assert.equal(launchStatus, 0, launched.output());
+      await waitFor(() => existsSync(join(directory, 'server.json')), 'server');
+      state = JSON.parse(readFileSync(join(dataDir, 'state.json'), 'utf8'));
+      stopped = start(
+        ['scripts/control-probability.mjs', 'stop', '--data-dir', dataDir],
+        directory,
+        scenario,
+      );
+      const [status, rawSignal] = await stopped.closed;
+      const injected = JSON.parse(
+        readFileSync(join(directory, 'signal-error.json'), 'utf8'),
+      );
+      const members = groupMembers(state.pid);
+      t.diagnostic(
+        JSON.stringify({
+          scenario,
+          status,
+          rawSignal,
+          injected,
+          members,
+          stateRetained: existsSync(join(dataDir, 'state.json')),
+          controlAlive: alive(control.pid),
+          output: stopped.output(),
+        }),
+      );
+      assert.equal(alive(control.pid), true, 'unrelated control stopped');
+      assert.equal(rawSignal, null, stopped.output());
+      if (scenario === 'stop-eperm') {
+        assert.equal(status, 1, stopped.output());
+        assert.match(stopped.output(), /EPERM/);
+        assert.equal(existsSync(join(dataDir, 'state.json')), true);
+        assert.equal(alive(state.pid), true, 'EPERM owner was signalled');
+      } else {
+        assert.equal(injected.kernelGroupAbsent, true);
+        assert.deepEqual(members, [], 'race fixture left a live group');
+        assert.equal(
+          status,
+          0,
+          `vanished owned group must stop successfully\n${stopped.output()}`,
+        );
+        assert.equal(existsSync(join(dataDir, 'state.json')), false);
+      }
+    } finally {
+      launched.child.kill('SIGKILL');
+      stopped?.child.kill('SIGKILL');
+      if (state && groupMembers(state.pid).length)
+        process.kill(-state.pid, 'SIGKILL');
+      if (state)
+        await waitFor(() => !groupMembers(state.pid).length, 'group cleanup');
+      control.kill('SIGTERM');
+      await once(control, 'close');
+      t.diagnostic(
+        JSON.stringify({
+          scenario,
+          cleanupMembers: state ? groupMembers(state.pid) : [],
+          controlAlive: alive(control.pid),
+        }),
+      );
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+}
+
+test('actual launch refuses a dead leader with a surviving recorded group', {
+  timeout: 30_000,
+}, async (t) => {
+  const directory = mkdtempSync(join(tmpdir(), 'probability-launch-orphan-'));
+  const dataDir = join(directory, 'instance');
+  const marker = join(directory, 'member.json');
+  const release = join(directory, 'release-member');
+  const memberCode = `const fs=require('node:fs');fs.writeFileSync(${JSON.stringify(marker)},JSON.stringify({pid:process.pid}));setInterval(()=>{if(fs.existsSync(${JSON.stringify(release)}))process.exit(0)},10)`;
+  const leader = spawn(
+    process.execPath,
+    [
+      '-e',
+      `const cp=require('node:child_process');const child=cp.spawn(process.execPath,['-e',${JSON.stringify(memberCode)}],{stdio:'ignore'});child.unref();`,
+    ],
+    { detached: true, stdio: 'ignore' },
+  );
+  const control = spawn(process.execPath, ['-e', 'setInterval(()=>{},1000)'], {
+    stdio: 'ignore',
+  });
+  let launched;
+  try {
+    await once(leader, 'exit');
+    await waitFor(() => existsSync(marker), 'surviving member');
+    mkdirSync(dataDir);
+    const state = JSON.stringify({
+      pid: leader.pid,
+      token: 'c1111111-1111-4111-8111-111111111111',
+      port: 8999,
+      url: 'http://127.0.0.1:8999',
+      mode: 'preview',
+    });
+    writeFileSync(join(dataDir, 'state.json'), state);
+    writeFileSync(join(dataDir, 'server.log'), 'retained dead leader evidence');
+    assert.equal(alive(leader.pid), false);
+    assert.ok(groupMembers(leader.pid).length, 'orphan fixture group absent');
+    launched = start(
+      ['scripts/control-probability.mjs', 'launch', '--data-dir', dataDir],
+      directory,
+      'launch-orphan',
+    );
+    const [status, rawSignal] = await launched.closed;
+    const unchanged =
+      readFileSync(join(dataDir, 'state.json'), 'utf8') === state;
+    t.diagnostic(
+      JSON.stringify({
+        status,
+        rawSignal,
+        leader: leader.pid,
+        members: groupMembers(leader.pid),
+        unchanged,
+        acquired: existsSync(join(directory, 'server-process.json')),
+        controlAlive: alive(control.pid),
+        output: launched.output(),
+      }),
+    );
+    assert.equal(alive(control.pid), true, 'unrelated control stopped');
+    assert.ok(groupMembers(leader.pid).length, 'retained group was signalled');
+    assert.equal(status, 1, 'launch must refuse the recorded surviving group');
+    assert.equal(rawSignal, null);
+    assert.equal(
+      unchanged,
+      true,
+      'launch replaced the only retained resource record',
+    );
+    assert.equal(
+      existsSync(join(directory, 'server-process.json')),
+      false,
+      'launch acquired another server',
+    );
+    assert.equal(
+      readFileSync(join(dataDir, 'server.log'), 'utf8'),
+      'retained dead leader evidence',
+    );
+  } finally {
+    launched?.child.kill('SIGKILL');
+    writeFileSync(release, 'release');
+    await waitFor(
+      () => !groupMembers(leader.pid).length,
+      'orphan fixture cleanup',
+    );
+    let replacement;
+    if (existsSync(join(directory, 'server-process.json'))) {
+      replacement = JSON.parse(
+        readFileSync(join(directory, 'server-process.json'), 'utf8'),
+      ).serverPid;
+      if (groupMembers(replacement).length)
+        process.kill(-replacement, 'SIGKILL');
+      await waitFor(
+        () => !groupMembers(replacement).length,
+        'replacement cleanup',
+      );
+    }
+    control.kill('SIGTERM');
+    await once(control, 'close');
+    t.diagnostic(
+      JSON.stringify({
+        cleanupMembers: groupMembers(leader.pid),
+        replacementMembers: replacement ? groupMembers(replacement) : [],
+        controlAlive: alive(control.pid),
+      }),
+    );
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+for (const publicCommand of [false, true]) {
+  for (const signal of ['SIGINT', 'SIGTERM']) {
+    test(`${publicCommand ? 'public' : 'actual'} stop PID ${signal} finishes resistant owned-group cleanup`, {
+      timeout: 30_000,
+    }, async (t) => {
+      const directory = mkdtempSync(join(tmpdir(), 'probability-public-stop-'));
+      const dataDir = join(directory, 'instance');
+      const control = spawn(
+        process.execPath,
+        ['-e', 'setInterval(()=>{},1000)'],
+        { stdio: 'ignore' },
+      );
+      const entrypoint = publicCommand
+        ? 'scripts/probability.mjs'
+        : 'scripts/control-probability.mjs';
+      const launched = start(
+        [entrypoint, 'launch', '--data-dir', dataDir],
+        directory,
+        'public-stop',
+      );
+      let stopped;
+      let state;
+      try {
+        const [launchStatus] = await launched.closed;
+        assert.equal(launchStatus, 0, launched.output());
+        await waitFor(
+          () => existsSync(join(directory, 'server.json')),
+          'resistant server',
+        );
+        state = JSON.parse(readFileSync(join(dataDir, 'state.json'), 'utf8'));
+        stopped = start(
+          [entrypoint, 'stop', '--data-dir', dataDir],
+          directory,
+          'public-stop',
+        );
+        await waitFor(
+          () => existsSync(join(directory, 'server-term.json')),
+          'server TERM before public interruption',
+        );
+        assert.equal(
+          alive(state.pid),
+          true,
+          'resistant server exited before interruption',
+        );
+        stopped.child.kill(signal);
+        const [status, rawSignal] = await stopped.closed;
+        const members = groupMembers(state.pid);
+        t.diagnostic(
+          JSON.stringify({
+            signal,
+            status,
+            rawSignal,
+            members,
+            stateRetained: existsSync(join(dataDir, 'state.json')),
+            controlAlive: alive(control.pid),
+            output: stopped.output(),
+          }),
+        );
+        assert.equal(alive(control.pid), true, 'unrelated control stopped');
+        assert.equal(status, signal === 'SIGINT' ? 130 : 143, stopped.output());
+        assert.equal(rawSignal, null, stopped.output());
+        assert.deepEqual(
+          members,
+          [],
+          'public stop abandoned its detached resistant server',
+        );
+        assert.equal(
+          existsSync(join(dataDir, 'state.json')),
+          false,
+          'public stop left cleaned state',
+        );
+      } finally {
+        launched.child.kill('SIGKILL');
+        stopped?.child.kill('SIGKILL');
+        if (state && groupMembers(state.pid).length)
+          process.kill(-state.pid, 'SIGKILL');
+        if (state)
+          await waitFor(
+            () => !groupMembers(state.pid).length,
+            'public-stop cleanup',
+          );
+        control.kill('SIGTERM');
+        await once(control, 'close');
+        t.diagnostic(
+          JSON.stringify({
+            signal,
+            cleanupMembers: state ? groupMembers(state.pid) : [],
+            controlAlive: alive(control.pid),
+          }),
+        );
+        rmSync(directory, { recursive: true, force: true });
+      }
+    });
+  }
 }
 
 test('actual journey retains an earlier failure when browser close rejects', {

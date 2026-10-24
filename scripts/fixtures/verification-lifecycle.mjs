@@ -54,9 +54,50 @@ if (
     );
   mark('server', { args: process.argv });
   console.log('owned fixture server');
-  if (scenario === 'resist-term') process.on('SIGTERM', () => {});
+  if (
+    ['resist-term', 'stop-esrch-kill', 'stop-eperm', 'public-stop'].includes(
+      scenario,
+    )
+  )
+    process.on('SIGTERM', () => mark('server-term'));
   setInterval(() => {}, 1000);
   await new Promise(() => {});
+}
+if (
+  directory &&
+  ['stop-esrch-term', 'stop-esrch-kill', 'stop-eperm'].includes(scenario) &&
+  process.argv[1]?.endsWith('/control-probability.mjs') &&
+  process.argv[2] === 'stop'
+) {
+  const kill = process.kill.bind(process);
+  process.kill = (pid, signal) => {
+    const target = scenario === 'stop-esrch-kill' ? 'SIGKILL' : 'SIGTERM';
+    if (pid >= 0 || signal !== target) return kill(pid, signal);
+    if (scenario === 'stop-eperm') {
+      mark('signal-error', { group: -pid, signal, code: 'EPERM' });
+      throw Object.assign(new Error('injected kill EPERM'), { code: 'EPERM' });
+    }
+    kill(pid, 'SIGKILL');
+    const end = Date.now() + 3000;
+    for (;;) {
+      try {
+        kill(pid, 0);
+      } catch (error) {
+        if (error.code !== 'ESRCH') throw error;
+        break;
+      }
+      if (Date.now() > end)
+        throw new Error('fixture group did not disappear before ESRCH');
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 10);
+    }
+    mark('signal-error', {
+      group: -pid,
+      signal,
+      code: 'ESRCH',
+      kernelGroupAbsent: true,
+    });
+    return kill(pid, signal);
+  };
 }
 if (directory && !scenario.startsWith('real-')) {
   const built = fileURLToPath(
