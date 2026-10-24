@@ -50,7 +50,13 @@ For publication, preserve `.openai/hosting.json`, use the supported Sites workfl
 
 ## Cleanup
 
-`npm run agent -- stop --data-dir .verify-run/my-check` stops only the exact nonce-tagged owned process group. Stale/foreign PIDs are refused. Automated runs preserve logs before removing their temporary local state. Artifacts survive cleanup; remote verification never stops a server.
+`npm run agent -- stop --data-dir .verify-run/my-check` stops only the exact nonce-tagged owned process group. An exited record is removed only when its group is absent; foreign identities are refused. Automated runs preserve logs before removing temporary state. Artifacts survive cleanup; remote verification never stops a server.
+
+Automated smoke and journeys handle SIGINT and SIGTERM through one finalizer. The first signal fixes exit status 130 or 143; repeated signals join the same cleanup. Receipts retain interruption observations, cleanup outcomes, earlier failures and retained state paths. Complete coverage remains separate from success. Public `journey` and `verify` forward PID-only and foreground-group cancellation through their owned subprocesses and wait for their logs and cleanup.
+
+Pending server/browser acquisition remains owned until its real promise settles. Browser close and server stop begin independently. The local cancellation budget is 45 seconds; public orchestration allows 60 seconds. Nested commands inherit an absolute deadline with four seconds reserved at each parent boundary, so a child finishes before its parent's receipt. A stalled browser close produces a failed `timed-out` receipt, then process exit invokes the installed Playwright cleanup. Treat that receipt as unresolved cleanup and externally check recorded processes; it never proves successful close.
+
+Server stop checks the exact nonce and argv before TERM or guarded KILL escalation and confirms group absence before deleting state. A dead leader with surviving members or a foreign identity retains state and fails. Retry only against the recorded owned instance; inspect the retained log and data-directory path. Standalone launch remains detached for later doctor/drive/stop commands. SIGKILL, SIGHUP, machine loss, blocked runtime/kernel work and unwritable evidence storage do not have this cancellation guarantee.
 
 ## Helpers
 

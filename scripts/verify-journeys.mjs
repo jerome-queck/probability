@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import {
   existsSync,
@@ -8,6 +7,7 @@ import {
   mkdtempSync,
   readdirSync,
   readFileSync,
+  renameSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -22,6 +22,9 @@ import {
   watchErrors,
 } from './browser-probability.mjs';
 import { workspaceIdentity } from './probability.mjs';
+import { runCommand, watchTermination } from './verification-process.mjs';
+
+const termination = watchTermination();
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const argv = process.argv.slice(2);
@@ -65,9 +68,14 @@ const out = resolve(
 if (existsSync(out) && readdirSync(out).length)
   throw new Error(`evidence directory is not empty: ${out}`);
 mkdirSync(out, { recursive: true });
-const source = workspaceIdentity();
 const results = [];
 const failures = [];
+let source = null;
+try {
+  source = workspaceIdentity();
+} catch (error) {
+  failures.push(`initial identity: ${error.message}`);
+}
 let reflow320 = false;
 const lesson = (id) => `/lessons/${id.toLowerCase()}`;
 const button = (page, name) => page.getByRole('button', { name, exact: true });
@@ -196,33 +204,28 @@ async function assertPlannerUnavailable(page, state) {
 }
 
 async function driver(command, dataDir, extra = []) {
-  const output = await new Promise((resolveOutput, reject) => {
-    const child = spawn(
-      process.execPath,
-      [
-        join(root, 'scripts/control-probability.mjs'),
-        command,
-        '--data-dir',
-        dataDir,
-        ...extra,
-      ],
-      { cwd: root, env: process.env },
-    );
-    let text = '';
-    child.stdout.on('data', (chunk) => {
-      text += chunk;
-    });
-    child.stderr.on('data', (chunk) => {
-      text += chunk;
-    });
-    child.on('error', reject);
-    child.on('exit', (code) =>
-      code === 0
-        ? resolveOutput(text)
-        : reject(new Error(`${command} failed: ${text}`)),
-    );
+  if (command !== 'stop') checkpoint();
+  const result = await runCommand({
+    file: process.execPath,
+    args: [
+      join(root, 'scripts/control-probability.mjs'),
+      command,
+      '--data-dir',
+      dataDir,
+      ...extra,
+    ],
+    cwd: root,
+    log: join(out, `${command}-${randomUUID()}.log`),
+    signal: command === 'stop' ? undefined : termination.signal,
+    deadline:
+      command === 'stop' ? termination.cleanupDeadline : termination.deadline,
+    budgetMs: termination.budgetMs,
   });
-  return output;
+  if (result.status || result.cleanupFailure)
+    throw new Error(
+      `${command} failed: ${result.cleanupFailure ?? result.output}`,
+    );
+  return result.output;
 }
 
 async function study(page, url, record, capture) {
@@ -1930,12 +1933,15 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
   await reveal(page);
   await pressed(button(page, '✓ I got it'), true);
   await capture(page, 'account-save-reloaded', '.practice');
+  checkpoint();
   const anonymous = await page
     .context()
     .browser()
     .newContext({ viewport: page.viewportSize() });
   try {
+    checkpoint();
     const other = await anonymous.newPage();
+    checkpoint();
     const errors = watchErrors(other);
     await goto(other, url, lesson('F02'));
     await guest(other);
@@ -2015,7 +2021,9 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
   await assertScratch(page, accountScratch);
   await assertRecoveryMenu();
   await pressed(button(activeProblem(page), '↺ Review again'), true);
+  checkpoint();
   const stale = await context.newPage();
+  checkpoint();
   const staleErrors = watchErrors(stale, (message) =>
     expectedHttpConsole(message, url, expectedHttp),
   );
@@ -2149,7 +2157,9 @@ async function accounts(page, url, record, capture, context, expectedHttp) {
   await recallScratch(page, 'This old tab must reset after real account loss.');
   await panel(page);
   await button(page, 'Preview guest import').click();
+  checkpoint();
   const signedOut = await context.newPage();
+  checkpoint();
   const signOutErrors = watchErrors(signedOut);
   try {
     await goto(signedOut, url, '/practice');
@@ -2286,7 +2296,143 @@ function expectedHttpConsole(message, url, expectedHttp) {
 }
 
 let browser;
+let pendingBrowser;
+let closingBrowser;
+let activeViewport;
+let terminal;
+let phase = 'running';
+let forceExit = false;
+const cleanup = [];
+function checkpoint() {
+  termination.signal.throwIfAborted();
+  if (phase !== 'running') throw new Error('journeys finalized');
+}
+const closeBrowser = () =>
+  (closingBrowser ??= (async () => {
+    try {
+      await pendingBrowser;
+    } catch {
+      return;
+    }
+    await browser?.close();
+  })());
+const stopViewport = (owner) => {
+  if (!owner) return Promise.resolve();
+  owner.stopping ??= (async () => {
+    try {
+      await owner.pending;
+    } catch {}
+    let error;
+    try {
+      await driver('stop', owner.dataDir);
+    } catch (failure) {
+      error = failure;
+    }
+    try {
+      if (existsSync(join(owner.dataDir, 'server.log')))
+        writeFileSync(
+          join(out, `${owner.width}.server.log`),
+          readFileSync(join(owner.dataDir, 'server.log')),
+        );
+    } catch (failure) {
+      failures.push(`log preservation: ${failure.message}`);
+    }
+    try {
+      if (!existsSync(join(owner.dataDir, 'state.json')))
+        rmSync(owner.dataDir, { recursive: true, force: true });
+    } catch (failure) {
+      failures.push(`state cleanup: ${failure.message}`);
+    }
+    if (error) throw error;
+  })();
+  return owner.stopping;
+};
+const clean = async (resource, operation) => {
+  let timer;
+  let expire;
+  let end = termination.cleanupDeadline();
+  const schedule = () => {
+    end = Math.min(end, termination.cleanupDeadline());
+    clearTimeout(timer);
+    timer = setTimeout(
+      () => expire(new Error('cleanup timed out')),
+      Math.max(1, end - Date.now()),
+    );
+  };
+  try {
+    const timeout = new Promise((_, reject) => {
+      expire = reject;
+      schedule();
+    });
+    termination.signal.addEventListener('abort', schedule, { once: true });
+    await Promise.race([operation, timeout]);
+    cleanup.push({
+      resource,
+      status: resource === 'browser' && !browser ? 'not-acquired' : 'stopped',
+    });
+  } catch (error) {
+    failures.push(`${resource} cleanup: ${error.message}`);
+    cleanup.push({
+      resource,
+      status: error.message.includes('timed out')
+        ? 'timed-out'
+        : error.message.includes('refusing')
+          ? 'refused'
+          : 'failed',
+      error: error.message,
+    });
+    forceExit = true;
+  } finally {
+    clearTimeout(timer);
+    termination.signal.removeEventListener('abort', schedule);
+  }
+};
+const finalize = () =>
+  (terminal ??= (async () => {
+    phase = 'finalizing';
+    await Promise.all([
+      clean('browser', closeBrowser()),
+      clean('server', stopViewport(activeViewport)),
+    ]);
+    try {
+      return finishReceipt();
+    } catch (error) {
+      if (phase === 'settled') throw error;
+      failures.push(`receipt construction: ${error.message}`);
+      const path = join(out, 'result.json');
+      const temporary = `${path}.${randomUUID()}.tmp`;
+      try {
+        writeFileSync(
+          temporary,
+          JSON.stringify({
+            source,
+            after: null,
+            failures,
+            interruption: termination.interruption(),
+            cleanup,
+            retainedDataDirs: activeViewport ? [activeViewport.dataDir] : [],
+            success: false,
+          }),
+          { flag: 'wx' },
+        );
+        renameSync(temporary, path);
+      } catch (failure) {
+        console.error(`receipt unavailable: ${failure.message}`);
+      }
+      phase = 'settled';
+      process.exit(termination.interruption()?.exitCode ?? 1);
+    }
+  })());
+const interrupted = () => {
+  void finalize().catch((error) => {
+    console.error(`finalization: ${error.message}`);
+    process.exit(termination.interruption().exitCode);
+  });
+};
+termination.signal.addEventListener('abort', interrupted, { once: true });
 try {
+  checkpoint();
+  if (!source) throw new Error('initial identity unavailable');
   const { chromium } = await import('playwright-core');
   const executablePath =
     process.env.CHROME_PATH ??
@@ -2296,24 +2442,50 @@ try {
       '/usr/bin/google-chrome-stable',
       '/usr/bin/chromium',
     ].find(existsSync);
-  browser = await chromium.launch({ executablePath, headless: true });
+  checkpoint();
+  pendingBrowser = chromium
+    .launch({
+      executablePath,
+      headless: true,
+      timeout: 30_000,
+      handleSIGINT: false,
+      handleSIGTERM: false,
+      handleSIGHUP: false,
+    })
+    .then((acquired) => {
+      browser = acquired;
+      return acquired;
+    });
+  await pendingBrowser;
+  checkpoint();
   for (const [width, viewport] of selectedViewports) {
+    checkpoint();
     const dataDir = mkdtempSync(join(tmpdir(), 'probability-journeys-'));
+    activeViewport = { dataDir, width };
     try {
+      checkpoint();
+      activeViewport.pending = driver('launch', dataDir, [
+        '--mode',
+        'dev',
+        '--migrate',
+      ]);
       writeFileSync(
         join(out, `${width}.launch.log`),
-        await driver('launch', dataDir, ['--mode', 'dev', '--migrate']),
+        await activeViewport.pending,
       );
       await driver('doctor', dataDir);
       const { url } = JSON.parse(
         readFileSync(join(dataDir, 'state.json'), 'utf8'),
       );
       for (const [id, journey] of selectedJourneys) {
+        checkpoint();
         const context = await browser.newContext({
           viewport,
           reducedMotion: 'reduce',
         });
+        checkpoint();
         const page = await context.newPage();
+        checkpoint();
         const expectedHttp = [];
         const errors = watchErrors(page, (message) =>
           expectedHttpConsole(message, url, expectedHttp),
@@ -2325,7 +2497,9 @@ try {
           failures: [],
           completed: false,
         };
+        results.push(record);
         const capture = async (target, name, selector) => {
+          checkpoint();
           const path = join(out, id, `${name}.${width}.png`);
           await capturePage(target, path, selector);
           record.captures.push(path);
@@ -2333,13 +2507,15 @@ try {
         };
         try {
           await journey(page, url, record, capture, context, expectedHttp);
+          checkpoint();
           record.completed = true;
         } catch (error) {
           record.failures.push(error.message);
           try {
+            checkpoint();
             await capturePage(page, join(out, id, `failure.${width}.png`));
           } catch {}
-          await driver('doctor', dataDir);
+          if (!termination.signal.aborted) await driver('doctor', dataDir);
         } finally {
           record.failures.push(
             ...errors.map((error) => `browser error: ${error}`),
@@ -2347,17 +2523,18 @@ try {
           failures.push(
             ...record.failures.map((error) => `${id}@${width}: ${error}`),
           );
-          results.push(record);
           await context.close();
         }
         console.log(
           `${record.failures.length ? 'FAIL' : 'PASS'} ${id}@${width}`,
         );
       }
+      checkpoint();
       if (width === 'mobile') {
         const page = await browser.newPage({
           viewport: { width: 320, height: 844 },
         });
+        checkpoint();
         const errors = watchErrors(page);
         try {
           await goto(page, url, '/practice');
@@ -2473,6 +2650,7 @@ try {
         } catch (error) {
           failures.push(`reflow@320: ${error.message}`);
           try {
+            checkpoint();
             await capturePage(page, join(out, 'reflow-320-failure.png'));
           } catch {}
         } finally {
@@ -2480,59 +2658,99 @@ try {
         }
       }
     } finally {
-      try {
-        await driver('stop', dataDir);
-      } catch (error) {
-        failures.push(`cleanup: ${error.message}`);
-      }
-      if (existsSync(join(dataDir, 'server.log')))
-        writeFileSync(
-          join(out, `${width}.server.log`),
-          readFileSync(join(dataDir, 'server.log')),
-        );
-      if (!existsSync(join(dataDir, 'state.json')))
-        rmSync(dataDir, { recursive: true, force: true });
+      await stopViewport(activeViewport);
     }
   }
 } catch (error) {
   failures.push(error.message);
 } finally {
-  await browser?.close();
+  await finalize();
 }
-const after = workspaceIdentity();
-if (
-  source.sourceDigest !== after.sourceDigest ||
-  source.buildDigest !== after.buildDigest
-)
-  failures.push('source or build changed during journeys');
-const result = {
-  at: new Date().toISOString(),
-  kind: complete ? 'local-ui-journeys' : 'selected-ui-journeys',
-  selection: {
-    journey: options.only ?? null,
-    viewport: options.viewport ?? null,
-  },
-  full:
-    complete &&
-    results.length === expectedGroups &&
-    results.every((record) => record.completed) &&
+function finishReceipt() {
+  let after = null;
+  try {
+    after = workspaceIdentity();
+  } catch (error) {
+    failures.push(`final identity: ${error.message}`);
+  }
+  if (
+    !source ||
+    !after ||
+    source.sourceDigest !== after.sourceDigest ||
+    source.buildDigest !== after.buildDigest
+  )
+    failures.push('source or build changed during journeys');
+  const result = {
+    at: new Date().toISOString(),
+    kind: complete ? 'local-ui-journeys' : 'selected-ui-journeys',
+    selection: {
+      journey: options.only ?? null,
+      viewport: options.viewport ?? null,
+    },
+    full:
+      complete &&
+      results.length === expectedGroups &&
+      results.every((record) => record.completed) &&
+      reflow320,
     reflow320,
-  reflow320,
-  source,
-  after,
-  results,
-  failures,
-  success:
-    results.length === expectedGroups &&
-    results.every((record) => record.completed) &&
-    failures.length === 0,
-  hostedAuthentication: 'unverified; local development fixture only',
-};
-writeFileSync(join(out, 'result.json'), JSON.stringify(result, null, 2));
-if (!result.success) {
-  console.error(failures.join('\n'));
-  process.exitCode = 1;
-} else
-  console.log(
-    `journeys ok — ${results.length} completed groups; ${complete ? 'full local UI run' : 'selected development run'}; reflow320=${reflow320}; evidence in ${out}`,
-  );
+    source,
+    after,
+    results,
+    failures,
+    success:
+      results.length === expectedGroups &&
+      results.every((record) => record.completed) &&
+      failures.length === 0,
+    interruption: termination.interruption(),
+    cleanup,
+    retainedDataDirs:
+      activeViewport && existsSync(join(activeViewport.dataDir, 'state.json'))
+        ? [activeViewport.dataDir]
+        : [],
+    hostedAuthentication: 'unverified; local development fixture only',
+  };
+  if (result.interruption) {
+    failures.push(`interrupted by ${result.interruption.signal}`);
+    result.success = false;
+  }
+  const receiptPath = join(out, 'result.json');
+  const temporary = `${receiptPath}.${randomUUID()}.tmp`;
+  try {
+    writeFileSync(temporary, JSON.stringify(result, null, 2), { flag: 'wx' });
+    renameSync(temporary, receiptPath);
+  } catch (error) {
+    failures.push(`receipt: ${error.message}`);
+    try {
+      writeFileSync(
+        temporary,
+        JSON.stringify({
+          source,
+          after: null,
+          failures,
+          success: false,
+          interruption: result.interruption,
+          cleanup,
+        }),
+      );
+      renameSync(temporary, receiptPath);
+    } catch (failure) {
+      console.error(`receipt unavailable: ${failure.message}`);
+    }
+    forceExit = true;
+  }
+  phase = 'settled';
+  termination.signal.removeEventListener('abort', interrupted);
+  termination.dispose();
+  console.error(`evidence in ${out}`);
+  if (result.interruption || forceExit)
+    process.exit(result.interruption?.exitCode ?? 1);
+  if (!result.success) {
+    console.error(failures.join('\n'));
+    process.exitCode = 1;
+  } else
+    console.log(
+      `journeys ok — ${results.length} completed groups; ${complete ? 'full local UI run' : 'selected development run'}; reflow320=${reflow320}; evidence in ${out}`,
+    );
+
+  return result;
+}
