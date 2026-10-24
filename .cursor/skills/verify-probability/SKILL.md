@@ -66,7 +66,7 @@ Changed mathematical text requires independent review on its final contents. Kee
 node scripts/control-probability.mjs stop --data-dir .verify-run/my-check
 ```
 
-Only exact owned process groups may stop. A stale or foreign PID is refused. Smoke/journeys clean their own servers and temporary D1 state after preserving logs. Artifact directories survive cleanup.
+Only exact owned process groups may stop. Exited records reconcile only after group absence; foreign identities are refused. Smoke/journeys preserve logs before removing temporary D1 state. Artifact directories survive cleanup. See [the canonical cleanup contract](../../../.agents/skills/verify/SKILL.md#cleanup) for signal statuses, nested deadlines, retained-state refusal and stalled-browser limitations.
 
 ## Helpers
 

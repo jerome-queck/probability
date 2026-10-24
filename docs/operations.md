@@ -11,6 +11,8 @@ journeys. Source checks and browser checks are separately available as `verify:s
 `verify:browser`. Browser receipts identify source/build digests, selected states, failures and
 original PNGs. Keep originals unchanged and create separate inspection copies.
 
+For interrupted local runs, follow the [verification cleanup contract](../.agents/skills/verify/SKILL.md#cleanup). SIGINT/SIGTERM retain failed receipts and logs after owned cleanup; the first signal selects 130/143. Retained-state and browser timeout outcomes require process inspection before retry. Standalone launches remain detached for subsequent driver commands.
+
 The full visual comparison uses the pinned Linux Chrome in CI. Other browsers and systems may
 render differently. Record those failures precisely; do not widen the threshold or call a
 capture-only run a visual pass. Intended changes need inspected candidate images followed by a

@@ -1,46 +1,258 @@
 import childProcess from 'node:child_process';
 import { EventEmitter } from 'node:events';
-import { appendFileSync, writeFileSync } from 'node:fs';
+import fs from 'node:fs';
 import { syncBuiltinESMExports } from 'node:module';
+import net from 'node:net';
 import { join } from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 import { chromium } from 'playwright-core';
 
 const directory = process.env.LIFECYCLE_FIXTURE_DIR;
 const scenario = process.env.LIFECYCLE_FIXTURE;
 const mark = (name, value = {}) =>
-  writeFileSync(join(directory, `${name}.json`), JSON.stringify({ pid: process.pid, ...value }));
-if (directory && process.argv[1]?.endsWith('/serve-probability.mjs')) {
+  fs.writeFileSync(
+    join(directory, `${name}.json`),
+    JSON.stringify({ pid: process.pid, ...value }),
+  );
+const gate = async (name) => {
+  while (!fs.existsSync(join(directory, name))) await delay(10);
+};
+if (directory) {
+  if (
+    scenario === 'repeat-signals' &&
+    /(?:control-probability|verify-journeys|probability)\.mjs$/.test(
+      process.argv[1] ?? '',
+    )
+  ) {
+    for (const signal of ['SIGINT', 'SIGTERM'])
+      process.on(signal, () =>
+        fs.appendFileSync(
+          join(directory, `signals-${process.pid}.txt`),
+          `${signal}\n`,
+        ),
+      );
+  }
+  const rename = fs.renameSync;
+  fs.renameSync = (from, to) => {
+    if (String(to).endsWith('/result.json'))
+      fs.appendFileSync(join(directory, 'receipts.txt'), `${to}\n`);
+    return rename(from, to);
+  };
+}
+if (
+  directory &&
+  process.argv[1]?.endsWith('/serve-probability.mjs') &&
+  !scenario.startsWith('real-')
+) {
+  process.removeAllListeners('SIGINT');
+  process.removeAllListeners('SIGTERM');
   mark('server', { args: process.argv });
   console.log('owned fixture server');
+  if (scenario === 'resist-term') process.on('SIGTERM', () => {});
   setInterval(() => {}, 1000);
   await new Promise(() => {});
 }
-if (directory && scenario === 'close-reject') {
-  chromium.launch = async () => ({ close: async () => { throw new Error('injected browser close failure'); } });
+if (directory && !scenario.startsWith('real-')) {
   const spawn = childProcess.spawn;
   childProcess.spawn = (file, args, options) => {
-    if (!args?.[0]?.endsWith('/control-probability.mjs')) return spawn(file, args, options);
+    const child = spawn(file, args, options);
+    if (args?.[0]?.endsWith('/serve-probability.mjs'))
+      mark('server-process', { serverPid: child.pid, args });
+    return child;
+  };
+}
+if (directory && scenario === 'close-reject') {
+  chromium.launch = async () => ({
+    close: async () => {
+      throw new Error('injected browser close failure');
+    },
+  });
+  const spawn = childProcess.spawn;
+  childProcess.spawn = (file, args, options) => {
+    if (!args?.[0]?.endsWith('/control-probability.mjs'))
+      return spawn(file, args, options);
     const child = new EventEmitter();
     child.stdout = new EventEmitter();
     child.stderr = new EventEmitter();
     process.nextTick(() => {
       const status = args[1] === 'launch' ? 1 : 0;
-      child.stderr.emit('data', Buffer.from(status ? 'injected earlier launch failure' : 'fixture stopped'));
+      child.stderr.emit(
+        'data',
+        Buffer.from(
+          status ? 'injected earlier launch failure' : 'fixture stopped',
+        ),
+      );
       child.emit('exit', status, null);
       child.emit('close', status, null);
     });
     return child;
   };
-  syncBuiltinESMExports();
 }
-if (directory && scenario === 'interrupt') {
-  globalThis.fetch = async () => new Response('Probability', { status: 200 });
-  chromium.launch = async () => {
-    const keepAlive = setInterval(() => {}, 1000);
-    mark('browser', { args: process.argv });
-    return {
-      newPage: async () => new Promise(() => {}),
-      close: async () => { clearInterval(keepAlive); appendFileSync(join(directory, 'closes.txt'), 'close\n'); },
+if (directory && scenario === 'port-gate') {
+  const createServer = net.createServer;
+  net.createServer = (...args) => {
+    const server = createServer(...args);
+    const listen = server.listen;
+    let cancelled = false;
+    const close = server.close;
+    server.close = (callback) => {
+      cancelled = true;
+      if (server.listening) return close.call(server, callback);
+      callback?.();
+      return server;
     };
+    server.listen = (...options) => {
+      mark('port');
+      void gate('release-port').then(() => {
+        if (!cancelled) listen.apply(server, options);
+      });
+      return server;
+    };
+    return server;
   };
 }
+if (directory && scenario === 'state-fail') {
+  const write = fs.writeFileSync;
+  fs.writeFileSync = (path, ...args) => {
+    if (String(path).endsWith('/state.json'))
+      throw new Error('injected state publication failure');
+    return write(path, ...args);
+  };
+}
+if (directory && scenario === 'migration-gate') {
+  const spawn = childProcess.spawn;
+  childProcess.spawn = (file, args, options) => {
+    if (args?.includes('migrations') && args?.includes('apply')) {
+      return spawn(
+        file,
+        [
+          '-e',
+          `require('node:fs').writeFileSync(${JSON.stringify(join(directory, 'migration.json'))}, JSON.stringify({pid:process.pid}));setInterval(()=>{},1000)`,
+        ],
+        options,
+      );
+    }
+    return spawn(file, args, options);
+  };
+}
+if (directory && !scenario.startsWith('real-')) {
+  globalThis.fetch = async (_url, options) => {
+    if (scenario === 'readiness-gate') {
+      mark('readiness');
+      const timer = setInterval(() => {}, 1000);
+      await new Promise((_, reject) =>
+        options.signal.addEventListener(
+          'abort',
+          () => {
+            clearInterval(timer);
+            reject(options.signal.reason);
+          },
+          { once: true },
+        ),
+      );
+    }
+    return new Response('Probability', { status: 200 });
+  };
+  if (scenario !== 'close-reject')
+    chromium.launch = async () => {
+      const keepAlive = setInterval(() => {}, 1000);
+      mark('browser', { args: process.argv });
+      if (scenario === 'late-browser') await gate('release-browser');
+      return {
+        newPage: async () => {
+          mark('ui');
+          await new Promise(() => {});
+        },
+        close: async () => {
+          fs.appendFileSync(join(directory, 'closes.txt'), 'close\n');
+          if (scenario === 'repeat-signals') {
+            mark('closing');
+            await gate('release-close');
+          }
+          clearInterval(keepAlive);
+        },
+      };
+    };
+}
+if (directory && scenario.startsWith('real-')) {
+  const spawn = childProcess.spawn;
+  childProcess.spawn = (file, args, options) => {
+    const child = spawn(file, args, options);
+    if (args?.includes('--remote-debugging-pipe'))
+      mark('browser-process', { browserPid: child.pid, args });
+    if (args?.[0]?.endsWith('/serve-probability.mjs'))
+      mark('server-process', { serverPid: child.pid, args });
+    return child;
+  };
+  const launch = chromium.launch.bind(chromium);
+  chromium.launch = async (options) => {
+    const browser = await launch(options);
+    mark('browser', { args: process.argv });
+    const close = browser.close.bind(browser);
+    browser.close = async () => {
+      fs.appendFileSync(join(directory, 'closes.txt'), 'close\n');
+      if (scenario === 'real-stall-close') {
+        mark('closing');
+        await new Promise(() => {});
+      }
+      return close();
+    };
+    if (scenario === 'real-late-browser') await gate('release-browser');
+    const holdPage = (page) => {
+      const goto = page.goto.bind(page);
+      page.goto = async (...args) => {
+        const result = await goto(...args);
+        mark('active', { url: page.url() });
+        await new Promise(() => {});
+        return result;
+      };
+      return page;
+    };
+    const page = browser.newPage.bind(browser);
+    browser.newPage = async (...args) => holdPage(await page(...args));
+    const context = browser.newContext.bind(browser);
+    browser.newContext = async (...args) => {
+      const acquired = await context(...args);
+      const page = acquired.newPage.bind(acquired);
+      acquired.newPage = async (...args) => holdPage(await page(...args));
+      return acquired;
+    };
+    return browser;
+  };
+}
+syncBuiltinESMExports();
+
+if (
+  directory &&
+  ['layer-gate', 'early-leader', 'parent-loss'].includes(scenario)
+) {
+  const spawn = childProcess.spawn;
+  childProcess.spawn = (file, args, options) => {
+    if (file !== 'npm') return spawn(file, args, options);
+    const selected = process.env.LIFECYCLE_LAYER ?? 'source';
+    const layer =
+      args[1] === 'verify:source'
+        ? 'source'
+        : args[1] === 'verify:browser'
+          ? 'browser'
+          : 'build';
+    const hold = scenario !== 'layer-gate' || selected === layer;
+    const code = hold
+      ? `
+      const fs=require('node:fs'), cp=require('node:child_process');
+      const dir=${JSON.stringify(directory)}, layer=${JSON.stringify(layer)};
+      fs.appendFileSync(dir+'/layers.txt',layer+'\\n');
+      console.log('layer '+layer+' started');
+      if (${JSON.stringify(scenario)} === 'early-leader') {
+        const child=cp.spawn(process.execPath,['-e',\`const fs=require('node:fs');fs.writeFileSync(\\\`\${dir}/leaf.json\\\`,JSON.stringify({pid:process.pid}));const timer=setInterval(()=>{if(fs.existsSync(\\\`\${dir}/release-leaf\\\`))process.exit(0)},10)\`],{stdio:'ignore'});
+        child.unref();process.exit(0);
+      } else {
+        fs.writeFileSync(dir+'/layer.json',JSON.stringify({pid:process.pid}));
+        setInterval(()=>{},1000);
+      }
+    `
+      : `require('node:fs').appendFileSync(${JSON.stringify(join(directory, 'layers.txt'))},${JSON.stringify(`${layer}\n`)});`;
+    return spawn(process.execPath, ['-e', code], options);
+  };
+}
+syncBuiltinESMExports();

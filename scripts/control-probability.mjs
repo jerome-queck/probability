@@ -12,6 +12,7 @@ import {
   openSync,
   readdirSync,
   readFileSync,
+  renameSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -36,6 +37,7 @@ export {
 
 import { workspaceIdentity } from './probability.mjs';
 import { selectSmokeStates } from './smoke-selection.mjs';
+import { runCommand, watchTermination } from './verification-process.mjs';
 
 export const commands = [
   'launch',
@@ -52,6 +54,11 @@ export const commands = [
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
 const cmd = args[0] ?? 'help';
+const executable =
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
+const termination =
+  executable && ['launch', 'smoke'].includes(cmd) ? watchTermination() : null;
 const valueOptions = new Set([
   'data-dir',
   'port',
@@ -131,24 +138,34 @@ const readState = () =>
     ? JSON.parse(readFileSync(statePathOf(), 'utf8'))
     : null;
 
-function freePort() {
-  return new Promise((ok) => {
-    const s = createServer();
-    s.listen(0, '127.0.0.1', () => {
-      const { port } = s.address();
-      s.close(() => ok(port));
+function freePort(signal) {
+  signal?.throwIfAborted();
+  return new Promise((ok, reject) => {
+    const server = createServer();
+    const finish = (error, port) => {
+      signal?.removeEventListener('abort', abort);
+      if (error) reject(error);
+      else ok(port);
+    };
+    const abort = () => server.close(() => finish(signal.reason));
+    server.once('error', (error) => server.close(() => finish(error)));
+    signal?.addEventListener('abort', abort, { once: true });
+    server.listen(0, '127.0.0.1', () => {
+      const { port } = server.address();
+      server.close(() => finish(signal?.aborted ? signal.reason : null, port));
     });
   });
 }
 
 async function launch() {
+  const signal = termination?.signal;
+  signal?.throwIfAborted();
   mkdirSync(dataDir, { recursive: true });
   const existing = readState();
   if (existing && alive(existing.pid))
     throw new Error(
       `already running (pid ${existing.pid}) for ${dataDir}; stop it first`,
     );
-  const port = Number(opt('port', 0)) || (await freePort());
   const mode = opt('mode', 'preview');
   if (!['preview', 'dev'].includes(mode))
     throw new Error(`unknown server mode ${mode}`);
@@ -159,58 +176,88 @@ async function launch() {
     throw new Error(
       'dist/ is missing; run npm run build first, or use --mode dev',
     );
-  if (args.includes('--migrate')) migrateLocalD1();
+  const port = Number(opt('port', 0)) || (await freePort(signal));
+  signal?.throwIfAborted();
+  if (args.includes('--migrate')) await migrateLocalD1();
+  signal?.throwIfAborted();
   const token = randomUUID();
-  const serverArgs = [
-    join(root, 'scripts/serve-probability.mjs'),
-    token,
-    mode,
-    String(port),
-    join(dataDir, 'storage'),
-  ];
   const log = join(dataDir, 'server.log');
-  const logFd = openSync(log, 'a');
-  const child = spawn(process.execPath, serverArgs, {
-    cwd: root,
-    detached: true,
-    stdio: ['ignore', logFd, logFd],
-  });
-  closeSync(logFd);
-  child.unref();
-  const url = `http://127.0.0.1:${port}`;
-  writeFileSync(
-    statePathOf(),
-    JSON.stringify(
-      {
-        pid: child.pid,
-        token,
-        port,
-        url,
-        mode,
-        log,
-        startedAt: new Date().toISOString(),
-      },
-      null,
-      2,
-    ),
-  );
-  for (let i = 0; i < 300; i += 1) {
-    if (!alive(child.pid)) break;
+  let state;
+  try {
+    const logFd = openSync(log, 'a');
+    let child;
     try {
-      const res = await fetch(url);
-      if (res.ok) {
-        console.log(
-          `READY ${url} pid=${child.pid} mode=${mode} data-dir=${dataDir}`,
-        );
-        return;
+      child = spawn(
+        process.execPath,
+        [
+          join(root, 'scripts/serve-probability.mjs'),
+          token,
+          mode,
+          String(port),
+          join(dataDir, 'storage'),
+        ],
+        {
+          cwd: root,
+          detached: true,
+          stdio: ['ignore', logFd, logFd],
+        },
+      );
+    } finally {
+      closeSync(logFd);
+    }
+    state = {
+      pid: child.pid,
+      token,
+      port,
+      url: `http://127.0.0.1:${port}`,
+      mode,
+      log,
+      startedAt: new Date().toISOString(),
+    };
+    const spawned = new Promise((ok, reject) => {
+      child.once('spawn', ok);
+      child.once('error', reject);
+    });
+    child.unref();
+    writeFileSync(statePathOf(), JSON.stringify(state, null, 2));
+    await spawned;
+    signal?.throwIfAborted();
+    for (let i = 0; i < 300; i += 1) {
+      signal?.throwIfAborted();
+      if (!alive(state.pid)) break;
+      try {
+        const request = AbortSignal.timeout(2000);
+        const response = await fetch(state.url, {
+          signal: signal ? AbortSignal.any([signal, request]) : request,
+        });
+        signal?.throwIfAborted();
+        if (response.ok) {
+          console.log(
+            `READY ${state.url} pid=${state.pid} mode=${mode} data-dir=${dataDir}`,
+          );
+          return;
+        }
+      } catch (error) {
+        if (signal?.aborted) throw error;
       }
-    } catch {}
-    await new Promise((r) => setTimeout(r, 200));
+      await new Promise((ok) => setTimeout(ok, 200));
+    }
+    throw new Error(
+      `server did not answer on ${state.url}; see ${keptLog ?? log}`,
+    );
+  } catch (error) {
+    if (state?.pid) {
+      try {
+        await stop({ state });
+      } catch (cleanup) {
+        throw new AggregateError(
+          [error, cleanup],
+          `${error.message}; rollback: ${cleanup.message}; state retained in ${dataDir}`,
+        );
+      }
+    }
+    throw error;
   }
-  // Do not leave an orphan holding the port, or a state file that blocks the next launch.
-  if (owns(readState())) await stop();
-  else if (!alive(child.pid)) rmSync(statePathOf(), { force: true });
-  throw new Error(`server did not answer on ${url}; see ${keptLog ?? log}`);
 }
 
 function alive(pid) {
@@ -239,7 +286,7 @@ function owns(state) {
     const row = execFileSync(
       'ps',
       ['-p', String(state.pid), '-o', 'pgid=,command='],
-      { encoding: 'utf8' },
+      { encoding: 'utf8', timeout: 500 },
     ).trim();
     const match = /^(\d+)\s+(.+)$/.exec(row);
     const expected = [
@@ -256,7 +303,7 @@ function owns(state) {
   }
 }
 
-function migrateLocalD1() {
+async function migrateLocalD1() {
   const built = join(root, 'dist/server/wrangler.json');
   if (!existsSync(built))
     throw new Error('Local migrations require npm run build first.');
@@ -273,10 +320,11 @@ function migrateLocalD1() {
       })),
     }),
   );
-  for (const db of config.d1_databases)
-    execFileSync(
-      process.execPath,
-      [
+  for (const db of config.d1_databases) {
+    termination?.signal.throwIfAborted();
+    const result = await runCommand({
+      file: process.execPath,
+      args: [
         join(root, 'node_modules/wrangler/bin/wrangler.js'),
         'd1',
         'migrations',
@@ -288,8 +336,16 @@ function migrateLocalD1() {
         '--persist-to',
         join(dataDir, 'storage'),
       ],
-      { cwd: root, env: process.env, stdio: 'inherit' },
-    );
+      cwd: root,
+      signal: termination?.signal,
+      deadline: termination?.deadline,
+      budgetMs: termination?.budgetMs,
+    });
+    if (result.status || result.cleanupFailure)
+      throw new Error(
+        `migration failed: ${result.cleanupFailure ?? result.output}`,
+      );
+  }
 }
 
 async function doctor() {
@@ -355,24 +411,37 @@ const save = (path, data) => {
 };
 const heading = (page) => page.locator('h1').first().innerText();
 
-async function stop() {
-  const s = readState();
+function groupAlive(pid) {
+  const rows = execFileSync('ps', ['-axo', 'pgid=,stat='], {
+    encoding: 'utf8',
+    timeout: 500,
+  });
+  return rows.split('\n').some((row) => {
+    const match = /^\s*(\d+)\s+(\S+)/.exec(row);
+    return Number(match?.[1]) === pid && !match?.[2].startsWith('Z');
+  });
+}
+
+async function stop({ state = readState() } = {}) {
+  const s = state;
   if (!s) return console.log('nothing to stop');
-  try {
-    if (alive(s.pid)) {
-      if (!owns(s)) throw new Error(`refusing to stop unowned pid ${s.pid}`);
-      process.kill(-s.pid, 'SIGTERM');
-      for (let i = 0; i < 50 && owns(s); i++)
-        await new Promise((r) => setTimeout(r, 100));
-      if (owns(s))
-        throw new Error(
-          `owned server ${s.pid} has not stopped; state retained`,
-        );
-    }
-  } catch (error) {
-    if (error.code !== 'ESRCH') throw error;
+  if (alive(s.pid)) {
+    if (!owns(s)) throw new Error(`refusing to stop unowned pid ${s.pid}`);
+    process.kill(-s.pid, 'SIGTERM');
   }
-  rmSync(statePathOf());
+  const end = Math.min(
+    termination?.cleanupDeadline() ?? Infinity,
+    Date.now() + 7000,
+  );
+  while (groupAlive(s.pid) && Date.now() < end) {
+    if (Date.now() > end - 2000 && owns(s)) process.kill(-s.pid, 'SIGKILL');
+    await new Promise((ok) => setTimeout(ok, 50));
+  }
+  if (groupAlive(s.pid))
+    throw new Error(
+      `owned server group ${s.pid} has not stopped or lost its owner; state retained`,
+    );
+  rmSync(statePathOf(), { force: true });
   console.log(`stopped pid ${s.pid} (artifacts kept)`);
 }
 
@@ -466,7 +535,7 @@ export async function revealPractice(page, lessons) {
     );
 }
 
-async function sweep(browserApp, url, failures, results) {
+async function sweep(browserApp, url, failures, results, checkpoint) {
   const contentDir = join(root, 'src/content');
   const slug = (text) =>
     text
@@ -508,16 +577,20 @@ async function sweep(browserApp, url, failures, results) {
     desktop: viewports.desktop,
   };
   for (const [vp, viewport] of Object.entries(widths)) {
+    checkpoint();
     const page = await browserApp.newPage({
       viewport,
       deviceScaleFactor: 1,
       reducedMotion: 'reduce',
     });
+    checkpoint();
     const errors = watchErrors(page);
     try {
       for (const { route, lessons } of routes) {
+        checkpoint();
         const label = `sweep ${route}@${vp}`;
-        const record = { route, viewport: vp, failures: [] };
+        const record = { route, viewport: vp, failures: [], completed: false };
+        results.push(record);
         errors.length = 0;
         try {
           await page.goto(url + route, { waitUntil: 'networkidle' });
@@ -665,6 +738,7 @@ async function sweep(browserApp, url, failures, results) {
               ),
             );
           }
+          record.completed = true;
         } catch (error) {
           record.failures.push(error.message.split('\n')[0]);
         }
@@ -674,7 +748,7 @@ async function sweep(browserApp, url, failures, results) {
         failures.push(
           ...record.failures.map((problem) => `${label}: ${problem}`),
         );
-        results.push(record);
+        checkpoint();
       }
     } finally {
       await page.close();
@@ -720,16 +794,151 @@ async function smoke() {
       `evidence directory is not empty: ${out}; choose a new directory`,
     );
   mkdirSync(out, { recursive: true });
-  const before = workspaceIdentity();
+  const failures = [];
+  let before = null;
+  try {
+    before = workspaceIdentity();
+  } catch (error) {
+    failures.push(`initial identity: ${error.message}`);
+  }
   const base = mkdtempSync(join(tmpdir(), 'probability-smoke-'));
   dataDir = base;
   keptLog = join(out, 'server.log');
-  const failures = [];
   const states = [];
   const swept = [];
   let browserApp;
+  let pendingLaunch;
+  let pendingBrowser;
+  let closingBrowser;
+  let stoppingServer;
+  let terminal;
+  let phase = 'running';
+  let forceExit = false;
+  const cleanup = [];
+  const checkpoint = () => {
+    termination?.signal.throwIfAborted();
+    if (phase !== 'running') throw new Error('verification finalized');
+  };
+  const closeBrowser = () =>
+    (closingBrowser ??= (async () => {
+      try {
+        await pendingBrowser;
+      } catch {
+        return;
+      }
+      await browserApp?.close();
+    })());
+  const stopServer = () =>
+    (stoppingServer ??= (async () => {
+      try {
+        await pendingLaunch;
+      } catch {}
+      await stop();
+    })());
+  const clean = async (resource, operation) => {
+    let timer;
+    let expire;
+    let end = termination.cleanupDeadline();
+    const schedule = () => {
+      end = Math.min(end, termination.cleanupDeadline());
+      clearTimeout(timer);
+      timer = setTimeout(
+        () => expire(new Error('cleanup timed out')),
+        Math.max(1, end - Date.now()),
+      );
+    };
+    try {
+      const timeout = new Promise((_, reject) => {
+        expire = reject;
+        schedule();
+      });
+      termination.signal.addEventListener('abort', schedule, { once: true });
+      await Promise.race([operation, timeout]);
+      cleanup.push({
+        resource,
+        status:
+          resource === 'browser' && !browserApp ? 'not-acquired' : 'stopped',
+      });
+    } catch (error) {
+      failures.push(`${resource} cleanup: ${error.message}`);
+      cleanup.push({
+        resource,
+        status: error.message.includes('timed out')
+          ? 'timed-out'
+          : error.message.includes('refusing')
+            ? 'refused'
+            : 'failed',
+        error: error.message,
+      });
+      forceExit = true;
+    } finally {
+      clearTimeout(timer);
+      termination.signal.removeEventListener('abort', schedule);
+    }
+  };
+  const finalize = () =>
+    (terminal ??= (async () => {
+      phase = 'finalizing';
+      await Promise.all([
+        clean('browser', closeBrowser()),
+        clean('server', stopServer()),
+      ]);
+      try {
+        const log = join(base, 'server.log');
+        if (existsSync(log)) writeFileSync(keptLog, readFileSync(log));
+      } catch (error) {
+        failures.push(`log preservation: ${error.message}`);
+      }
+      try {
+        if (!existsSync(statePathOf()))
+          rmSync(base, { recursive: true, force: true });
+      } catch (error) {
+        failures.push(`state cleanup: ${error.message}`);
+      }
+      try {
+        return finishReceipt();
+      } catch (error) {
+        if (phase === 'settled') throw error;
+        failures.push(`receipt construction: ${error.message}`);
+        const path = join(out, 'result.json');
+        const temporary = `${path}.${randomUUID()}.tmp`;
+        try {
+          writeFileSync(
+            temporary,
+            JSON.stringify({
+              source: before,
+              after: null,
+              failures,
+              interruption: termination.interruption(),
+              cleanup,
+              retainedDataDirs: [base],
+              success: false,
+            }),
+            { flag: 'wx' },
+          );
+          renameSync(temporary, path);
+        } catch (failure) {
+          console.error(
+            `receipt unavailable: ${failure.message}; retained ${base}`,
+          );
+        }
+        phase = 'settled';
+        process.exit(termination.interruption()?.exitCode ?? 1);
+      }
+    })());
+  const interrupted = () => {
+    void finalize().catch((error) => {
+      console.error(`finalization: ${error.message}; retained ${base}`);
+      process.exit(termination.interruption().exitCode);
+    });
+  };
+  termination?.signal.addEventListener('abort', interrupted, { once: true });
   try {
-    await launch();
+    checkpoint();
+    if (!before) throw new Error('initial identity unavailable');
+    pendingLaunch = launch();
+    await pendingLaunch;
+    checkpoint();
     const { chromium } = await import('playwright-core');
     const executablePath =
       process.env.CHROME_PATH ??
@@ -739,24 +948,32 @@ async function smoke() {
         '/usr/bin/google-chrome-stable',
         '/usr/bin/chromium',
       ].find(existsSync);
-    browserApp = await chromium.launch({
-      executablePath,
-      headless: true,
-      args: [
-        '--font-render-hinting=none',
-        '--disable-lcd-text',
-        '--force-color-profile=srgb',
-      ],
-    });
+    checkpoint();
+    pendingBrowser = chromium
+      .launch({
+        executablePath,
+        headless: true,
+        timeout: 30_000,
+        handleSIGINT: false,
+        handleSIGTERM: false,
+        handleSIGHUP: false,
+        args: [
+          '--font-render-hinting=none',
+          '--disable-lcd-text',
+          '--force-color-profile=srgb',
+        ],
+      })
+      .then((acquired) => {
+        browserApp = acquired;
+        return acquired;
+      });
+    await pendingBrowser;
+    checkpoint();
     const { url } = await doctor();
     for (const step of selected) {
+      checkpoint();
       for (const vp of step.viewports ?? Object.keys(viewports)) {
-        const page = await browserApp.newPage({
-          viewport: viewports[vp],
-          deviceScaleFactor: 1,
-          reducedMotion: 'reduce',
-        });
-        const errors = watchErrors(page);
+        checkpoint();
         const label = `${step.feature}/${step.id}@${vp}`;
         const shot = join(out, step.feature, `${step.id}.${vp}.png`);
         const record = {
@@ -765,7 +982,16 @@ async function smoke() {
           screenshot: shot,
           captureSelector: step.captureSelector ?? null,
           failures: [],
+          completed: false,
         };
+        states.push(record);
+        const page = await browserApp.newPage({
+          viewport: viewports[vp],
+          deviceScaleFactor: 1,
+          reducedMotion: 'reduce',
+        });
+        checkpoint();
+        const errors = watchErrors(page);
         try {
           await page.goto(url + step.url, { waitUntil: 'networkidle' });
           for (const action of step.actions ?? []) await act(page, action);
@@ -841,9 +1067,11 @@ async function smoke() {
             );
             if (problem) record.failures.push(`visual change — ${problem}`);
           }
+          checkpoint();
+          record.completed = true;
         } catch (error) {
           record.failures.push(error.message.split('\n')[0]);
-          if (!existsSync(shot)) {
+          if (!termination?.signal.aborted && !existsSync(shot)) {
             try {
               await capturePage(page, shot);
             } catch {}
@@ -855,100 +1083,139 @@ async function smoke() {
           failures.push(
             ...record.failures.map((problem) => `${label}: ${problem}`),
           );
-          states.push(record);
           console.log(
             `${record.failures.length ? 'FAIL' : 'PASS'} ${label} → ${record.path ?? step.url}`,
           );
           await page.close();
         }
+        checkpoint();
       }
     }
-    if (complete) await sweep(browserApp, url, failures, swept);
+    if (complete) await sweep(browserApp, url, failures, swept, checkpoint);
   } catch (error) {
     failures.push(error.message);
   } finally {
-    try {
-      await browserApp?.close();
-    } catch (error) {
-      failures.push(`browser cleanup: ${error.message}`);
-    }
-    try {
-      await stop();
-    } catch (error) {
-      failures.push(`server cleanup: ${error.message}`);
-    }
-    const log = join(base, 'server.log');
-    if (existsSync(log)) writeFileSync(keptLog, readFileSync(log));
-    if (!existsSync(statePathOf()))
-      rmSync(base, { recursive: true, force: true });
+    await finalize();
   }
-  const after = workspaceIdentity();
-  const comparable = (identity) =>
-    JSON.stringify(
-      identity.files.filter(
-        (file) =>
-          !update ||
-          !file.path.startsWith('.cursor/skills/verify-probability/baselines/'),
-      ),
+  function finishReceipt() {
+    let after = null;
+    try {
+      after = workspaceIdentity();
+    } catch (error) {
+      failures.push(`final identity: ${error.message}`);
+    }
+    const comparable = (identity) =>
+      JSON.stringify(
+        identity.files.filter(
+          (file) =>
+            !update ||
+            !file.path.startsWith(
+              '.cursor/skills/verify-probability/baselines/',
+            ),
+        ),
+      );
+    const sourceUnchanged = Boolean(
+      before && after && comparable(before) === comparable(after),
     );
-  const sourceUnchanged = comparable(before) === comparable(after);
-  const expectedStates = selected.reduce(
-    (sum, step) => sum + (step.viewports ?? Object.keys(viewports)).length,
-    0,
-  );
-  const expectedPages = complete
-    ? (JSON.parse(readFileSync(join(root, 'src/content/order.json'), 'utf8'))
-        .length +
-        4) *
-      4
-    : 0;
-  const coverageComplete =
-    states.length === expectedStates && swept.length === expectedPages;
-  if (!coverageComplete)
-    failures.push(
-      `incomplete coverage: ${states.length}/${expectedStates} states and ${swept.length}/${expectedPages} page-width checks`,
+    const expectedStates = selected.reduce(
+      (sum, step) => sum + (step.viewports ?? Object.keys(viewports)).length,
+      0,
     );
-  if (!sourceUnchanged || before.buildDigest !== after.buildDigest)
-    failures.push('source or built output changed during verification');
-  const result = {
-    at: new Date().toISOString(),
-    kind: update
-      ? 'baseline-generation'
-      : capture
-        ? 'development-capture'
-        : complete
-          ? 'release-smoke'
-          : 'selected-smoke',
-    full: complete && !capture && !update && coverageComplete,
-    coverage: {
-      expectedStates,
-      states: states.length,
-      expectedPages,
-      pages: swept.length,
-      complete: coverageComplete,
-    },
-    sourceUnchanged,
-    comparison: update
-      ? 'baselines-written-require-inspection'
-      : capture
-        ? 'skipped-development-only'
-        : 'pixelmatch',
-    selection,
-    source: before,
-    after,
-    states,
-    sweep: swept,
-    failures,
-    success: failures.length === 0,
-  };
-  writeFileSync(join(out, 'result.json'), JSON.stringify(result, null, 2));
-  if (failures.length) {
-    console.error(failures.map((failure) => `smoke: ${failure}`).join('\n'));
-    throw new Error(`${failures.length} failure(s); evidence in ${out}`);
+    const expectedPages = complete
+      ? (JSON.parse(readFileSync(join(root, 'src/content/order.json'), 'utf8'))
+          .length +
+          4) *
+        4
+      : 0;
+    const coverageComplete =
+      states.length === expectedStates &&
+      states.every((record) => record.completed) &&
+      swept.length === expectedPages &&
+      swept.every((record) => record.completed);
+    if (!coverageComplete)
+      failures.push(
+        `incomplete coverage: ${states.length}/${expectedStates} states and ${swept.length}/${expectedPages} page-width checks`,
+      );
+    if (!sourceUnchanged || before?.buildDigest !== after?.buildDigest)
+      failures.push('source or built output changed during verification');
+    const result = {
+      at: new Date().toISOString(),
+      kind: update
+        ? 'baseline-generation'
+        : capture
+          ? 'development-capture'
+          : complete
+            ? 'release-smoke'
+            : 'selected-smoke',
+      full: complete && !capture && !update && coverageComplete,
+      coverage: {
+        expectedStates,
+        states: states.length,
+        expectedPages,
+        pages: swept.length,
+        complete: coverageComplete,
+      },
+      sourceUnchanged,
+      comparison: update
+        ? 'baselines-written-require-inspection'
+        : capture
+          ? 'skipped-development-only'
+          : 'pixelmatch',
+      selection,
+      source: before,
+      after,
+      states,
+      sweep: swept,
+      failures,
+      interruption: termination?.interruption() ?? null,
+      cleanup,
+      retainedDataDirs: existsSync(statePathOf()) ? [base] : [],
+      success: failures.length === 0 && !termination?.signal.aborted,
+    };
+    if (result.interruption)
+      failures.push(`interrupted by ${result.interruption.signal}`);
+    const receiptPath = join(out, 'result.json');
+    const temporary = `${receiptPath}.${randomUUID()}.tmp`;
+    try {
+      writeFileSync(temporary, JSON.stringify(result, null, 2), { flag: 'wx' });
+      renameSync(temporary, receiptPath);
+    } catch (error) {
+      failures.push(`receipt: ${error.message}`);
+      try {
+        writeFileSync(
+          temporary,
+          JSON.stringify({
+            source: before,
+            after: null,
+            failures,
+            success: false,
+            interruption: result.interruption,
+            cleanup,
+          }),
+          { flag: 'w' },
+        );
+        renameSync(temporary, receiptPath);
+      } catch (failure) {
+        console.error(
+          `receipt unavailable: ${failure.message}; retained ${base}`,
+        );
+      }
+      forceExit = true;
+    }
+    phase = 'settled';
+    termination?.signal.removeEventListener('abort', interrupted);
+    console.error(`evidence in ${out}`);
+    if (result.interruption || forceExit)
+      process.exit(result.interruption?.exitCode ?? 1);
+    if (failures.length) {
+      console.error(failures.map((failure) => `smoke: ${failure}`).join('\n'));
+      throw new Error(`${failures.length} failure(s); evidence in ${out}`);
+    }
+    console.log(
+      `smoke ok — ${states.length} states; ${result.kind}; comparison=${result.comparison}; evidence in ${out}`,
+    );
+    return result;
   }
-  console.log(
-    `smoke ok — ${states.length} states; ${result.kind}; comparison=${result.comparison}; evidence in ${out}`,
-  );
 }
 
 const run = {
@@ -1000,10 +1267,11 @@ const run = {
   set-range --url PATH --name N --value V   move a lab slider, print the lab result
   snapshot --url PATH --path FILE      save the ARIA snapshot of <main>
   screenshot --url PATH --path FILE    save a PNG
-  stop                                 stop only the instance this data dir started; artifacts stay
+  stop                                 exact nonce/argv group only; refuse foreign state; artifacts stay
   smoke [--only F/ID | --feature ID] [--capture] [--artifacts NEW_DIR]
                                        exact selection; capture skips comparison and is development evidence
-  smoke [--update-baselines]            full release comparison by default; baseline generation requires inspection`),
+  smoke [--update-baselines]            full release comparison by default; baseline generation requires inspection
+  automated SIGINT/SIGTERM              join owned cleanup, retain failed receipt, exit 130/143; first signal wins`),
 };
 
 if (
@@ -1018,6 +1286,7 @@ if (
     })
     .catch((error) => {
       console.error(`${cmd}: ${error.message}`);
-      process.exitCode = 1;
-    });
+      process.exitCode = termination?.interruption()?.exitCode ?? 1;
+    })
+    .finally(() => termination?.dispose());
 }

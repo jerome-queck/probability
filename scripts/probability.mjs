@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { execFileSync, spawnSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import {
   existsSync,
@@ -8,10 +8,13 @@ import {
   readdirSync,
   readFileSync,
   readlinkSync,
+  renameSync,
   writeFileSync,
 } from 'node:fs';
 import { dirname, join, matchesGlob, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+
+import { runCommand, watchTermination } from './verification-process.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const mapPath = join(root, 'verification/features.json');
@@ -195,20 +198,17 @@ function parse(args) {
   return { command, options };
 }
 
-function run(args, logPath, executable = process.execPath) {
-  const result = spawnSync(executable, args, {
+async function run(args, logPath, executable = process.execPath, termination) {
+  return runCommand({
+    file: executable,
+    args,
+    log: logPath,
     cwd: root,
-    encoding: 'utf8',
-    maxBuffer: 32 * 1024 * 1024,
-    env: process.env,
+    signal: termination?.signal,
+    deadline: termination?.deadline,
+    budgetMs: termination?.budgetMs,
+    stream: !logPath,
   });
-  const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
-  if (logPath) {
-    mkdirSync(dirname(logPath), { recursive: true });
-    writeFileSync(logPath, output);
-  } else if (output) process.stderr.write(output);
-  if (result.error) throw result.error;
-  return result.status ?? 1;
 }
 
 export async function main(args) {
@@ -253,7 +253,8 @@ export async function main(args) {
         stop: 'Stop the instance recorded in --data-dir PATH.',
         journey:
           'Capture development evidence for exactly --id FEATURE/STATE or --feature ID.',
-        verify: 'Run --layer source, browser or all and save --evidence PATH.',
+        verify:
+          'Run --layer source, browser or all and save --evidence PATH. SIGINT/SIGTERM join owned cleanup and retain failed receipts (130/143).',
         remote:
           'Check HTTPS and the public shell at --url HTTPS_URL. Browser and account journeys are separate.',
       },
@@ -266,12 +267,13 @@ export async function main(args) {
     };
   if (command === 'doctor') {
     if (options['data-dir']) {
-      const status = run([
+      const status = await run([
         join(root, 'scripts/control-probability.mjs'),
         'doctor',
         ...data,
       ]);
-      if (status) throw new Error('Owned-instance doctor failed.');
+      if (status.status || status.cleanupFailure)
+        throw new Error('Owned-instance doctor failed.');
     }
     const chrome =
       process.env.CHROME_PATH ??
@@ -377,12 +379,25 @@ export async function main(args) {
         '--capture',
       );
     }
-    const code = run([
-      join(root, 'scripts/control-probability.mjs'),
-      ...driverArgs,
-    ]);
-    process.exitCode = code;
-    return { command, success: code === 0 };
+    const termination = watchTermination({ budgetMs: 60_000 });
+    try {
+      const child = await run(
+        [join(root, 'scripts/control-probability.mjs'), ...driverArgs],
+        undefined,
+        process.execPath,
+        termination,
+      );
+      const code = termination.interruption()?.exitCode ?? child.status;
+      process.exitCode = code;
+      return {
+        command,
+        success: code === 0 && !child.cleanupFailure,
+        interruption: termination.interruption(),
+        child,
+      };
+    } finally {
+      termination.dispose();
+    }
   }
   if (command === 'verify') {
     const layer = options.layer ?? 'all';
@@ -396,7 +411,14 @@ export async function main(args) {
       throw new Error(
         `Evidence already exists: ${evidence}; choose a new path.`,
       );
-    const source = workspaceIdentity();
+    const termination = watchTermination({ budgetMs: 60_000 });
+    const failures = [];
+    let source = null;
+    try {
+      source = workspaceIdentity();
+    } catch (error) {
+      failures.push(`initial identity: ${error.message}`);
+    }
     const checks = [];
     const tasks =
       layer === 'source'
@@ -408,36 +430,91 @@ export async function main(args) {
               ['build', 'build'],
               ['browser', 'verify:browser'],
             ];
-    for (const [id, script] of tasks) {
-      const log = join(
-        dirname(evidence),
-        `${id}-${randomUUID().slice(0, 8)}.log`,
-      );
-      const status = run(['run', script], log, 'npm');
-      checks.push({ id, status, log });
-      if (status) break;
+    let terminal;
+    const finalize = () =>
+      (terminal ??= (async () => {
+        let after = null;
+        try {
+          after = workspaceIdentity();
+        } catch (error) {
+          failures.push(`final identity: ${error.message}`);
+        }
+        const sourceUnchanged = Boolean(
+          source && after && source.sourceDigest === after.sourceDigest,
+        );
+        const result = {
+          source,
+          after,
+          sourceUnchanged,
+          full:
+            layer === 'all' &&
+            checks.length === tasks.length &&
+            checks.every((item) => item.status === 0),
+          checks,
+          failures,
+          interruption: termination.interruption(),
+          success:
+            sourceUnchanged &&
+            !termination.signal.aborted &&
+            !failures.length &&
+            checks.length === tasks.length &&
+            checks.every((item) => item.status === 0),
+          at: new Date().toISOString(),
+        };
+        mkdirSync(dirname(evidence), { recursive: true });
+        const temporary = `${evidence}.${randomUUID()}.tmp`;
+        try {
+          writeFileSync(temporary, JSON.stringify(result, null, 2), {
+            flag: 'wx',
+          });
+          renameSync(temporary, evidence);
+        } catch (error) {
+          failures.push(`receipt: ${error.message}`);
+          result.success = false;
+          try {
+            writeFileSync(
+              temporary,
+              JSON.stringify({
+                source,
+                after: null,
+                checks,
+                failures,
+                interruption: termination.interruption(),
+                success: false,
+              }),
+            );
+            renameSync(temporary, evidence);
+          } catch (failure) {
+            console.error(
+              `receipt unavailable: ${failure.message}; retained ${dirname(evidence)}`,
+            );
+          }
+        }
+        process.exitCode =
+          termination.interruption()?.exitCode ?? (result.success ? 0 : 1);
+        return result;
+      })());
+    try {
+      if (!source) throw new Error('initial identity unavailable');
+      for (const [id, script] of tasks) {
+        termination.signal.throwIfAborted();
+        const log = join(
+          dirname(evidence),
+          `${id}-${randomUUID().slice(0, 8)}.log`,
+        );
+        const child = await run(['run', script], log, 'npm', termination);
+        checks.push({ id, ...child, output: undefined, log });
+        if (child.cleanupFailure) failures.push(child.cleanupFailure);
+        if (child.status || termination.signal.aborted) break;
+      }
+    } catch (error) {
+      failures.push(error.message);
     }
-    const after = workspaceIdentity();
-    const sourceUnchanged = source.sourceDigest === after.sourceDigest;
-    const result = {
-      source,
-      after,
-      sourceUnchanged,
-      full:
-        layer === 'all' &&
-        checks.length === tasks.length &&
-        checks.every((item) => item.status === 0),
-      checks,
-      success:
-        sourceUnchanged &&
-        checks.length === tasks.length &&
-        checks.every((item) => item.status === 0),
-      at: new Date().toISOString(),
-    };
-    mkdirSync(dirname(evidence), { recursive: true });
-    writeFileSync(evidence, JSON.stringify(result, null, 2));
-    if (!result.success) process.exitCode = 1;
-    return result;
+    try {
+      return await finalize();
+    } finally {
+      termination.dispose();
+    }
   }
   if (command === 'remote') {
     if (!options.url) throw new Error('remote requires --url HTTPS_URL.');
